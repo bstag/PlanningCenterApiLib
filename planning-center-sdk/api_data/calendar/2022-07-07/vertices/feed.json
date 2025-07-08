@@ -1,0 +1,317 @@
+{
+  "data": {
+    "type": "Vertex",
+    "id": "feed",
+    "attributes": {
+      "name": "Feed",
+      "description": "A feed belonging to an organization.\n",
+      "example": "{\"type\":\"Feed\",\"id\":\"1\",\"attributes\":{\"can_delete\":true,\"default_church_center_visibility\":\"value\",\"feed_type\":\"value\",\"imported_at\":\"2000-01-01T12:00:00Z\",\"name\":\"string\",\"deleting\":true,\"sync_campus_tags\":true,\"source_id\":\"primary_key\"},\"relationships\":{\"event_owner\":{\"data\":{\"type\":\"Person\",\"id\":\"1\"}}}}",
+      "path": "https://api.planningcenteronline.com/calendar/v2/feeds",
+      "collection_only": false,
+      "deprecated": false
+    },
+    "relationships": {
+      "attributes": {
+        "data": [
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "id",
+              "type_annotation": {
+                "name": "primary_key",
+                "example": "primary_key"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "can_delete",
+              "type_annotation": {
+                "name": "boolean",
+                "example": true
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "default_church_center_visibility",
+              "type_annotation": {
+                "name": "string",
+                "example": "value"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": "Possible values: `hidden` or `published`"
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "feed_type",
+              "type_annotation": {
+                "name": "string",
+                "example": "value"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": "Possible values: `registrations`, `groups`, `ical`, or `form`"
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "imported_at",
+              "type_annotation": {
+                "name": "date_time",
+                "example": "2000-01-01T12:00:00Z"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "name",
+              "type_annotation": {
+                "name": "string",
+                "example": "string"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "deleting",
+              "type_annotation": {
+                "name": "boolean",
+                "example": true
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "sync_campus_tags",
+              "type_annotation": {
+                "name": "boolean",
+                "example": true
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": "Only available when requested with the `?fields` param"
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "source_id",
+              "type_annotation": {
+                "name": "primary_key",
+                "example": "primary_key"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          }
+        ]
+      },
+      "relationships": {
+        "data": [
+          {
+            "type": "Relationship",
+            "id": "event_owner",
+            "attributes": {
+              "association": "to_one",
+              "name": "event_owner",
+              "authorization_level": "public",
+              "graph_type": "Person",
+              "polymorphic": null,
+              "note": null
+            }
+          }
+        ]
+      },
+      "permissions": {
+        "data": {
+          "type": "Permissions",
+          "attributes": {
+            "can_create": false,
+            "can_update": false,
+            "can_destroy": false,
+            "read": null
+          }
+        }
+      },
+      "actions": {
+        "data": []
+      },
+      "outbound_edges": {
+        "data": []
+      },
+      "inbound_edges": {
+        "data": [
+          {
+            "type": "Edge",
+            "id": "feed-event-feed",
+            "attributes": {
+              "name": "feed",
+              "details": null,
+              "path": "https://api.planningcenteronline.com/calendar/v2/events/{event_id}/feed",
+              "filters": [],
+              "scopes": [],
+              "deprecated": false
+            },
+            "relationships": {
+              "head": {
+                "data": {
+                  "type": "Vertex",
+                  "id": "feed",
+                  "attributes": {
+                    "name": "Feed"
+                  }
+                }
+              },
+              "tail": {
+                "data": {
+                  "type": "Vertex",
+                  "id": "event",
+                  "attributes": {
+                    "name": "Event"
+                  }
+                }
+              },
+              "rate_limits": {
+                "data": []
+              }
+            }
+          },
+          {
+            "type": "Edge",
+            "id": "feed-organization-feeds",
+            "attributes": {
+              "name": "feeds",
+              "details": null,
+              "path": "https://api.planningcenteronline.com/calendar/v2/feeds",
+              "filters": [],
+              "scopes": [],
+              "deprecated": false
+            },
+            "relationships": {
+              "head": {
+                "data": {
+                  "type": "Vertex",
+                  "id": "feed",
+                  "attributes": {
+                    "name": "Feed"
+                  }
+                }
+              },
+              "tail": {
+                "data": {
+                  "type": "Vertex",
+                  "id": "organization",
+                  "attributes": {
+                    "name": "Organization"
+                  }
+                }
+              },
+              "rate_limits": {
+                "data": []
+              }
+            }
+          }
+        ]
+      },
+      "can_include": {
+        "data": []
+      },
+      "can_order": {
+        "data": [
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "name": "name",
+              "parameter": "order",
+              "type": "string",
+              "value": "name",
+              "description": "prefix with a hyphen (-name) to reverse the order"
+            }
+          }
+        ]
+      },
+      "can_query": {
+        "data": [
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "example": "?where[feed_type]=value",
+              "name": "feed_type",
+              "parameter": "where[feed_type]",
+              "type": "string",
+              "value": null,
+              "description": "Query on a specific feed_type\n\nPossible values: `registrations`, `groups`, `ical`, or `form`"
+            }
+          },
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "example": "?where[source_id]=primary_key",
+              "name": "source_id",
+              "parameter": "where[source_id]",
+              "type": "primary_key",
+              "value": null,
+              "description": "Query on a specific source_id"
+            }
+          }
+        ]
+      },
+      "per_page": {
+        "data": {
+          "type": "URLParameter",
+          "attributes": {
+            "minimum": 1,
+            "maximum": 100,
+            "default": 25,
+            "name": "per_page",
+            "parameter": "per_page",
+            "type": "integer",
+            "value": null,
+            "description": "how many records to return per page (min=1, max=100, default=25)"
+          }
+        }
+      },
+      "offset": {
+        "data": {
+          "type": "URLParameter",
+          "attributes": {
+            "name": "offset",
+            "parameter": "offset",
+            "type": "integer",
+            "value": null,
+            "description": "get results from given offset"
+          }
+        }
+      },
+      "rate_limits": {
+        "data": []
+      }
+    }
+  }
+}

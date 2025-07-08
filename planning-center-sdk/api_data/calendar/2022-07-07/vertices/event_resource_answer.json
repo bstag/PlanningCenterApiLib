@@ -1,0 +1,245 @@
+{
+  "data": {
+    "type": "Vertex",
+    "id": "event_resource_answer",
+    "attributes": {
+      "name": "EventResourceAnswer",
+      "description": "An answer to a question in a room or resource request.\n",
+      "example": "{\"type\":\"EventResourceAnswer\",\"id\":\"1\",\"attributes\":{\"answer\":{},\"db_answer\":\"string\",\"created_at\":\"2000-01-01T12:00:00Z\",\"updated_at\":\"2000-01-01T12:00:00Z\",\"question\":{}},\"relationships\":{\"created_by\":{\"data\":{\"type\":\"Person\",\"id\":\"1\"}},\"updated_by\":{\"data\":{\"type\":\"Person\",\"id\":\"1\"}},\"resource_question\":{\"data\":{\"type\":\"ResourceQuestion\",\"id\":\"1\"}},\"event_resource_request\":{\"data\":{\"type\":\"EventResourceRequest\",\"id\":\"1\"}}}}",
+      "path": "https://api.planningcenteronline.com/calendar/v2/event_resource_requests/{event_resource_request_id}/answers",
+      "collection_only": false,
+      "deprecated": false
+    },
+    "relationships": {
+      "attributes": {
+        "data": [
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "id",
+              "type_annotation": {
+                "name": "primary_key",
+                "example": "primary_key"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "answer",
+              "type_annotation": {
+                "name": "json",
+                "example": {}
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": "The answer formatted for display"
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "db_answer",
+              "type_annotation": {
+                "name": "string",
+                "example": "string"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": "Only available when requested with the `?fields` param"
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "created_at",
+              "type_annotation": {
+                "name": "date_time",
+                "example": "2000-01-01T12:00:00Z"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "updated_at",
+              "type_annotation": {
+                "name": "date_time",
+                "example": "2000-01-01T12:00:00Z"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          },
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "question",
+              "type_annotation": {
+                "name": "json",
+                "example": {}
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": "Question details as of when it was answered"
+            }
+          }
+        ]
+      },
+      "relationships": {
+        "data": [
+          {
+            "type": "Relationship",
+            "id": "created_by",
+            "attributes": {
+              "association": "to_one",
+              "name": "created_by",
+              "authorization_level": "public",
+              "graph_type": "Person",
+              "polymorphic": null,
+              "note": null
+            }
+          },
+          {
+            "type": "Relationship",
+            "id": "updated_by",
+            "attributes": {
+              "association": "to_one",
+              "name": "updated_by",
+              "authorization_level": "public",
+              "graph_type": "Person",
+              "polymorphic": null,
+              "note": null
+            }
+          },
+          {
+            "type": "Relationship",
+            "id": "resource_question",
+            "attributes": {
+              "association": "to_one",
+              "name": "resource_question",
+              "authorization_level": "public",
+              "graph_type": "ResourceQuestion",
+              "polymorphic": null,
+              "note": null
+            }
+          },
+          {
+            "type": "Relationship",
+            "id": "event_resource_request",
+            "attributes": {
+              "association": "to_one",
+              "name": "event_resource_request",
+              "authorization_level": "public",
+              "graph_type": "EventResourceRequest",
+              "polymorphic": null,
+              "note": null
+            }
+          }
+        ]
+      },
+      "permissions": {
+        "data": {
+          "type": "Permissions",
+          "attributes": {
+            "can_create": false,
+            "can_update": false,
+            "can_destroy": false,
+            "read": null
+          }
+        }
+      },
+      "actions": {
+        "data": []
+      },
+      "outbound_edges": {
+        "data": []
+      },
+      "inbound_edges": {
+        "data": [
+          {
+            "type": "Edge",
+            "id": "eventresourceanswer-eventresourcerequest-answers",
+            "attributes": {
+              "name": "answers",
+              "details": null,
+              "path": "https://api.planningcenteronline.com/calendar/v2/event_resource_requests/{event_resource_request_id}/answers",
+              "filters": [],
+              "scopes": [],
+              "deprecated": false
+            },
+            "relationships": {
+              "head": {
+                "data": {
+                  "type": "Vertex",
+                  "id": "event_resource_answer",
+                  "attributes": {
+                    "name": "EventResourceAnswer"
+                  }
+                }
+              },
+              "tail": {
+                "data": {
+                  "type": "Vertex",
+                  "id": "event_resource_request",
+                  "attributes": {
+                    "name": "EventResourceRequest"
+                  }
+                }
+              },
+              "rate_limits": {
+                "data": []
+              }
+            }
+          }
+        ]
+      },
+      "can_include": {
+        "data": []
+      },
+      "can_order": {
+        "data": []
+      },
+      "can_query": {
+        "data": []
+      },
+      "per_page": {
+        "data": {
+          "type": "URLParameter",
+          "attributes": {
+            "minimum": 1,
+            "maximum": 100,
+            "default": 25,
+            "name": "per_page",
+            "parameter": "per_page",
+            "type": "integer",
+            "value": null,
+            "description": "how many records to return per page (min=1, max=100, default=25)"
+          }
+        }
+      },
+      "offset": {
+        "data": {
+          "type": "URLParameter",
+          "attributes": {
+            "name": "offset",
+            "parameter": "offset",
+            "type": "integer",
+            "value": null,
+            "description": "get results from given offset"
+          }
+        }
+      },
+      "rate_limits": {
+        "data": []
+      }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "name": "EventConnection",
+  "description": "A connection between a Calendar event and a record in another product",
+  "example": "{\"type\":\"EventConnection\",\"id\":\"1\",\"attributes\":{\"connected_to_id\":\"primary_key\",\"connected_to_name\":\"string\",\"connected_to_type\":\"string\",\"product_name\":\"string\",\"connected_to_url\":\"string\"},\"relationships\":{\"event\":{\"data\":{\"type\":\"Event\",\"id\":\"1\"}}}}",
+  "path": "https://api.planningcenteronline.com/calendar/v2/events/{event_id}/event_connections",
+  "collection_only": false,
+  "deprecated": false,
+  "attributes": [
+    {
+      "name": "id",
+      "type_annotation": "primary_key",
+      "description": null
+    },
+    {
+      "name": "connected_to_id",
+      "type_annotation": "primary_key",
+      "description": "Unique identifier for the connected record"
+    },
+    {
+      "name": "connected_to_name",
+      "type_annotation": "string",
+      "description": "Name of the record that the event is connected to"
+    },
+    {
+      "name": "connected_to_type",
+      "type_annotation": "string",
+      "description": "Currently we support `signup`, `group`, `event`, and `service_type`"
+    },
+    {
+      "name": "product_name",
+      "type_annotation": "string",
+      "description": "Currently we support `registrations`, `groups`, `check-ins`, and `services`"
+    },
+    {
+      "name": "connected_to_url",
+      "type_annotation": "string",
+      "description": "A link to the connected record"
+    }
+  ],
+  "relationships": [
+    {
+      "name": "event",
+      "association": "to_one",
+      "graph_type": "Event"
+    }
+  ],
+  "permissions": {
+    "can_create": true,
+    "can_update": true,
+    "can_destroy": true,
+    "create_assignable": [
+      "connected_to_id",
+      "connected_to_name",
+      "connected_to_type",
+      "product_name"
+    ],
+    "update_assignable": [
+      "connected_to_id",
+      "connected_to_name",
+      "connected_to_type",
+      "product_name"
+    ]
+  },
+  "inbound_edges": [
+    {
+      "name": "event_connections",
+      "path": "https://api.planningcenteronline.com/calendar/v2/events/{event_id}/event_connections",
+      "head": "EventConnection",
+      "tail": "Event"
+    }
+  ],
+  "can_query": [
+    {
+      "name": "product_name",
+      "parameter": "where[product_name]",
+      "type": "string",
+      "example": "?where[product_name]=string",
+      "description": "Query on a specific product_name"
+    }
+  ],
+  "per_page": {
+    "minimum": 1,
+    "maximum": 100,
+    "default": 25,
+    "description": "how many records to return per page (min=1, max=100, default=25)"
+  },
+  "offset": {
+    "description": "get results from given offset"
+  }
+}

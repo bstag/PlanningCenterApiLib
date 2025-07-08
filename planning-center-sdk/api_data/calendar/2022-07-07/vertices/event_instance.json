@@ -1,0 +1,143 @@
+{
+  "name": "EventInstance",
+  "description": "A specific occurrence of an event.\n\nIf the event is recurring, `recurrence` will be set and\n`recurrence_description` will provide an overview of the recurrence pattern.\n",
+  "example": "{\"type\":\"EventInstance\",\"id\":\"1\",\"attributes\":{\"all_day_event\":true,\"compact_recurrence_description\":\"string\",\"created_at\":\"2000-01-01T12:00:00Z\",\"ends_at\":\"2000-01-01T12:00:00Z\",\"location\":\"string\",\"name\":\"string\",\"recurrence\":\"string\",\"recurrence_description\":\"string\",\"starts_at\":\"2000-01-01T12:00:00Z\",\"updated_at\":\"2000-01-01T12:00:00Z\",\"church_center_url\":\"string\",\"published_starts_at\":\"string\",\"published_ends_at\":\"string\"},\"relationships\":{\"event\":{\"data\":{\"type\":\"Event\",\"id\":\"1\"}}}}",
+  "path": "https://api.planningcenteronline.com/calendar/v2/event_instances",
+  "attributes": [
+    {
+      "name": "id",
+      "type_annotation": "primary_key",
+      "description": "Unique identifier for the event instance"
+    },
+    {
+      "name": "all_day_event",
+      "type_annotation": "boolean",
+      "description": "Indicates whether event instance lasts all day"
+    },
+    {
+      "name": "compact_recurrence_description",
+      "type_annotation": "string",
+      "description": "Compact representation of event instance's recurrence pattern\n"
+    },
+    {
+      "name": "created_at",
+      "type_annotation": "date_time",
+      "description": "UTC time at which the event instance was created"
+    },
+    {
+      "name": "ends_at",
+      "type_annotation": "date_time",
+      "description": "UTC time at which the event instance ends"
+    },
+    {
+      "name": "location",
+      "type_annotation": "string",
+      "description": "Representation of where the event instance takes place"
+    },
+    {
+      "name": "name",
+      "type_annotation": "string",
+      "description": "Name of event. Can be overridden for specific instances"
+    },
+    {
+      "name": "recurrence",
+      "type_annotation": "string",
+      "description": "For a recurring event instance, the interval of how often the event instance occurs\n"
+    },
+    {
+      "name": "recurrence_description",
+      "type_annotation": "string",
+      "description": "Longer description of the event instance's recurrence pattern\n"
+    },
+    {
+      "name": "starts_at",
+      "type_annotation": "date_time",
+      "description": "UTC time at which the event instance starts"
+    },
+    {
+      "name": "updated_at",
+      "type_annotation": "date_time",
+      "description": "UTC time at which the event instance was updated"
+    },
+    {
+      "name": "church_center_url",
+      "type_annotation": "string",
+      "description": "The URL for the event on Church Center"
+    },
+    {
+      "name": "published_starts_at",
+      "type_annotation": "string",
+      "description": "Publicly visible start time"
+    },
+    {
+      "name": "published_ends_at",
+      "type_annotation": "string",
+      "description": "Publicly visible end time"
+    }
+  ],
+  "relationships": [
+    {
+      "name": "event",
+      "association": "to_one",
+      "graph_type": "Event"
+    }
+  ],
+  "can_include": [
+    {
+      "name": "event",
+      "description": "include associated event"
+    },
+    {
+      "name": "event_times",
+      "description": "include associated event_times"
+    },
+    {
+      "name": "resource_bookings",
+      "description": "include associated resource_bookings"
+    },
+    {
+      "name": "tags",
+      "description": "include associated tags"
+    }
+  ],
+  "can_order": [
+    {
+      "name": "created_at",
+      "description": "prefix with a hyphen (-created_at) to reverse the order"
+    },
+    {
+      "name": "ends_at",
+      "description": "prefix with a hyphen (-ends_at) to reverse the order"
+    },
+    {
+      "name": "starts_at",
+      "description": "prefix with a hyphen (-starts_at) to reverse the order"
+    },
+    {
+      "name": "updated_at",
+      "description": "prefix with a hyphen (-updated_at) to reverse the order"
+    }
+  ],
+  "can_query": [
+    {
+      "name": "created_at",
+      "example": "?where[created_at]=2000-01-01T12:00:00Z",
+      "description": "Query on a specific created_at"
+    },
+    {
+      "name": "ends_at",
+      "example": "?where[ends_at]=2000-01-01T12:00:00Z",
+      "description": "Query on a specific ends_at"
+    },
+    {
+      "name": "starts_at",
+      "example": "?where[starts_at]=2000-01-01T12:00:00Z",
+      "description": "Query on a specific starts_at"
+    },
+    {
+      "name": "updated_at",
+      "example": "?where[updated_at]=2000-01-01T12:00:00Z",
+      "description": "Query on a specific updated_at"
+    }
+  ]
+}

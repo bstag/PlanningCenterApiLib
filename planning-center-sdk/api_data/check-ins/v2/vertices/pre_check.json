@@ -1,0 +1,158 @@
+{
+  "data": {
+    "type": "Vertex",
+    "id": "pre_check",
+    "attributes": {
+      "name": "PreCheck",
+      "description": null,
+      "example": "{\"type\":\"PreCheck\",\"id\":\"1\",\"attributes\":{},\"relationships\":{}}",
+      "path": "https://api.planningcenteronline.com/check-ins/v2",
+      "collection_only": false,
+      "deprecated": false
+    },
+    "relationships": {
+      "attributes": {
+        "data": [
+          {
+            "type": "Attribute",
+            "attributes": {
+              "name": "id",
+              "type_annotation": {
+                "name": "primary_key",
+                "example": "primary_key"
+              },
+              "note": null,
+              "permission_level": "public",
+              "description": null
+            }
+          }
+        ]
+      },
+      "relationships": {
+        "data": []
+      },
+      "permissions": {
+        "data": {
+          "type": "Permissions",
+          "attributes": {
+            "can_create": false,
+            "can_update": false,
+            "can_destroy": false,
+            "read": null
+          }
+        }
+      },
+      "actions": {
+        "data": []
+      },
+      "outbound_edges": {
+        "data": []
+      },
+      "inbound_edges": {
+        "data": []
+      },
+      "can_include": {
+        "data": [
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "name": "check_in",
+              "parameter": "include",
+              "type": "string",
+              "value": "check_in",
+              "description": "include associated check_in"
+            }
+          },
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "name": "event",
+              "parameter": "include",
+              "type": "string",
+              "value": "event",
+              "description": "include associated event"
+            }
+          },
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "name": "event_period",
+              "parameter": "include",
+              "type": "string",
+              "value": "event_period",
+              "description": "include associated event_period"
+            }
+          },
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "name": "event_time",
+              "parameter": "include",
+              "type": "string",
+              "value": "event_time",
+              "description": "include associated event_time"
+            }
+          },
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "name": "person",
+              "parameter": "include",
+              "type": "string",
+              "value": "person",
+              "description": "include associated person"
+            }
+          }
+        ]
+      },
+      "can_order": {
+        "data": []
+      },
+      "can_query": {
+        "data": [
+          {
+            "type": "URLParameter",
+            "attributes": {
+              "example": "?where[code]=string",
+              "name": "code",
+              "parameter": "where[code]",
+              "type": "string",
+              "value": null,
+              "description": "Query on a specific code"
+            }
+          }
+        ]
+      },
+      "per_page": {
+        "data": {
+          "type": "URLParameter",
+          "attributes": {
+            "minimum": 1,
+            "maximum": 100,
+            "default": 25,
+            "name": "per_page",
+            "parameter": "per_page",
+            "type": "integer",
+            "value": null,
+            "description": "how many records to return per page (min=1, max=100, default=25)"
+          }
+        }
+      },
+      "offset": {
+        "data": {
+          "type": "URLParameter",
+          "attributes": {
+            "name": "offset",
+            "parameter": "offset",
+            "type": "integer",
+            "value": null,
+            "description": "get results from given offset"
+          }
+        }
+      },
+      "rate_limits": {
+        "data": []
+      }
+    }
+  }
+}
