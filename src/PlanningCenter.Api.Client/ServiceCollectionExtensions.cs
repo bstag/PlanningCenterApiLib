@@ -2,6 +2,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Services;
 
@@ -38,8 +39,40 @@ public static class ServiceCollectionExtensions
         // Add memory cache if not already registered
         services.TryAddSingleton<IMemoryCache, MemoryCache>();
         
-        // Register core services
-        services.AddSingleton<IAuthenticator, OAuthAuthenticator>();
+        // Register the appropriate authenticator based on configuration
+        services.AddSingleton<IAuthenticator>(serviceProvider =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptions<PlanningCenterOptions>>();
+            var logger = serviceProvider.GetRequiredService<ILogger<IAuthenticator>>();
+            
+            // Priority: PAT > OAuth > Access Token
+            if (!string.IsNullOrWhiteSpace(options.Value.PersonalAccessToken))
+            {
+                var patLogger = serviceProvider.GetRequiredService<ILogger<PersonalAccessTokenAuthenticator>>();
+                return new PersonalAccessTokenAuthenticator(options, patLogger);
+            }
+            else if (!string.IsNullOrWhiteSpace(options.Value.ClientId) && !string.IsNullOrWhiteSpace(options.Value.ClientSecret))
+            {
+                var httpClient = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(OAuthAuthenticator));
+                var oauthLogger = serviceProvider.GetRequiredService<ILogger<OAuthAuthenticator>>();
+                return new OAuthAuthenticator(httpClient, options, oauthLogger);
+            }
+            else if (!string.IsNullOrWhiteSpace(options.Value.AccessToken))
+            {
+                // For now, treat access token like PAT (this could be enhanced later)
+                var accessTokenOptions = Microsoft.Extensions.Options.Options.Create(new PlanningCenterOptions
+                {
+                    PersonalAccessToken = options.Value.AccessToken,
+                    BaseUrl = options.Value.BaseUrl
+                });
+                var patLogger = serviceProvider.GetRequiredService<ILogger<PersonalAccessTokenAuthenticator>>();
+                return new PersonalAccessTokenAuthenticator(accessTokenOptions, patLogger);
+            }
+            else
+            {
+                throw new InvalidOperationException("No valid authentication method configured. Please provide PersonalAccessToken, OAuth credentials, or AccessToken.");
+            }
+        });
         services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
         services.AddScoped<IApiConnection, ApiConnection>();
         
@@ -116,6 +149,33 @@ public static class ServiceCollectionExtensions
         return services.AddPlanningCenterApiClient(options =>
         {
             options.AccessToken = accessToken;
+            
+            if (!string.IsNullOrWhiteSpace(baseUrl))
+            {
+                options.BaseUrl = baseUrl;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Adds Planning Center API client services with a Personal Access Token (PAT).
+    /// This is the recommended method for personal scripts and server-side applications.
+    /// </summary>
+    /// <param name="services">The service collection to add services to</param>
+    /// <param name="personalAccessToken">Personal Access Token in the format "app_id:secret"</param>
+    /// <param name="baseUrl">Optional custom base URL (defaults to official API)</param>
+    /// <returns>The service collection for method chaining</returns>
+    public static IServiceCollection AddPlanningCenterApiClientWithPAT(
+        this IServiceCollection services,
+        string personalAccessToken,
+        string? baseUrl = null)
+    {
+        if (string.IsNullOrWhiteSpace(personalAccessToken))
+            throw new ArgumentException("Personal Access Token cannot be null or empty", nameof(personalAccessToken));
+
+        return services.AddPlanningCenterApiClient(options =>
+        {
+            options.PersonalAccessToken = personalAccessToken;
             
             if (!string.IsNullOrWhiteSpace(baseUrl))
             {

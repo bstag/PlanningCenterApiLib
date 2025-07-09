@@ -15,6 +15,8 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 // Add Planning Center API client
 // NOTE: You need to provide actual credentials for this to work
 // You can get these from your Planning Center API application settings
+
+// Option 1: OAuth Authentication (for user-facing applications)
 builder.Services.AddPlanningCenterApiClient(options =>
 {
     // For demo purposes - in real applications, use configuration or environment variables
@@ -28,6 +30,20 @@ builder.Services.AddPlanningCenterApiClient(options =>
     options.EnableCaching = true;
     options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
 });
+
+// Option 2: Personal Access Token (PAT) Authentication (for server-side applications)
+// Uncomment the lines below and comment out the OAuth configuration above to use PAT
+/*
+builder.Services.AddPlanningCenterApiClientWithPAT(
+    Environment.GetEnvironmentVariable("PLANNING_CENTER_PAT") ?? "your-app-id:your-secret");
+
+builder.Services.Configure<PlanningCenterOptions>(options =>
+{
+    options.EnableDetailedLogging = true;
+    options.EnableCaching = true;
+    options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
+});
+*/
 
 // Build the host
 var host = builder.Build();
@@ -149,20 +165,32 @@ try
     logger.LogInformation("   ✅ Comprehensive error handling and logging");
     logger.LogInformation("");
     logger.LogInformation("📖 To run this example with real data:");
+    logger.LogInformation("   Option 1 - OAuth:");
     logger.LogInformation("   1. Set PLANNING_CENTER_CLIENT_ID environment variable");
     logger.LogInformation("   2. Set PLANNING_CENTER_CLIENT_SECRET environment variable");
     logger.LogInformation("   3. Run: dotnet run");
+    logger.LogInformation("");
+    logger.LogInformation("   Option 2 - Personal Access Token (recommended for scripts):");
+    logger.LogInformation("   1. Set PLANNING_CENTER_PAT environment variable (format: app_id:secret)");
+    logger.LogInformation("   2. Uncomment PAT configuration in Program.cs");
+    logger.LogInformation("   3. Comment out OAuth configuration");
+    logger.LogInformation("   4. Run: dotnet run");
 }
 catch (Exception ex)
 {
     logger.LogError(ex, "❌ An error occurred during execution");
     
-    if (ex.Message.Contains("your-client-id") || ex.Message.Contains("Authentication"))
+    if (ex.Message.Contains("your-client-id") || ex.Message.Contains("your-app-id") || ex.Message.Contains("Authentication"))
     {
         logger.LogWarning("");
         logger.LogWarning("🔑 Authentication Error - Please set your credentials:");
+        logger.LogWarning("");
+        logger.LogWarning("   Option 1 - OAuth (for user-facing apps):");
         logger.LogWarning("   export PLANNING_CENTER_CLIENT_ID=\"your-actual-client-id\"");
         logger.LogWarning("   export PLANNING_CENTER_CLIENT_SECRET=\"your-actual-client-secret\"");
+        logger.LogWarning("");
+        logger.LogWarning("   Option 2 - Personal Access Token (for server apps):");
+        logger.LogWarning("   export PLANNING_CENTER_PAT=\"your-app-id:your-secret\"");
         logger.LogWarning("");
         logger.LogWarning("   You can get these from your Planning Center API application settings.");
     }

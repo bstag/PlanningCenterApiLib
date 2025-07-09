@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanningCenter.Api.Client.F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanningCenter.Api.Client.Worker", "..\examples\PlanningCenter.Api.Client.Worker\PlanningCenter.Api.Client.Worker.csproj", "{2BB4132E-A4D9-CF43-7173-F2A535D886AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanningCenter.Api.Client.PAT.Console", "..\examples\PlanningCenter.Api.Client.PAT.Console\PlanningCenter.Api.Client.PAT.Console.csproj", "{8C9A9B9C-9C9D-9D9E-9E9F-9F0A0A1B2C3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,10 @@ Global
 		{2BB4132E-A4D9-CF43-7173-F2A535D886AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BB4132E-A4D9-CF43-7173-F2A535D886AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BB4132E-A4D9-CF43-7173-F2A535D886AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C9A9B9C-9C9D-9D9E-9E9F-9F0A0A1B2C3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C9A9B9C-9C9D-9D9E-9E9F-9F0A0A1B2C3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C9A9B9C-9C9D-9D9E-9E9F-9F0A0A1B2C3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C9A9B9C-9C9D-9D9E-9E9F-9F0A0A1B2C3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -71,6 +77,7 @@ Global
 		{0FD4B177-69E9-2BEF-D89B-39125403DDE4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{96029974-DA49-E4B8-63FD-081E84A0CA86} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2BB4132E-A4D9-CF43-7173-F2A535D886AD} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{8C9A9B9C-9C9D-9D9E-9E9F-9F0A0A1B2C3D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D6399C8B-D67B-4738-89DE-760E428B5A03}

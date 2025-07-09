@@ -262,8 +262,19 @@ public class ApiConnection : IApiConnection, IDisposable
         var request = new HttpRequestMessage(method, endpoint);
         
         // Add authentication
-        var accessToken = await _authenticator.GetAccessTokenAsync(cancellationToken);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        var authValue = await _authenticator.GetAccessTokenAsync(cancellationToken);
+        
+        // Check if it's a Basic auth header (for PAT) or Bearer token (for OAuth)
+        if (authValue.StartsWith("Basic "))
+        {
+            // For Personal Access Token - use the full Basic auth header
+            request.Headers.Add("Authorization", authValue);
+        }
+        else
+        {
+            // For OAuth - use Bearer token
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authValue);
+        }
         
         // Add request body for POST/PUT/PATCH
         if (data != null && (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch))

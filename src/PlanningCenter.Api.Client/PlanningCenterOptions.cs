@@ -27,6 +27,13 @@ public class PlanningCenterOptions
     public string? AccessToken { get; set; }
     
     /// <summary>
+    /// Personal Access Token for API requests.
+    /// This should be in the format "app_id:secret" and will be used with Basic Authentication.
+    /// If provided, this takes precedence over OAuth credentials.
+    /// </summary>
+    public string? PersonalAccessToken { get; set; }
+    
+    /// <summary>
     /// Refresh token for automatic token renewal.
     /// </summary>
     public string? RefreshToken { get; set; }
@@ -83,12 +90,13 @@ public class PlanningCenterOptions
         if (!Uri.TryCreate(BaseUrl, UriKind.Absolute, out _))
             throw new ArgumentException("BaseUrl must be a valid absolute URI", nameof(BaseUrl));
         
-        // Must have either OAuth credentials or an access token
+        // Must have either OAuth credentials, an access token, or a personal access token
         var hasOAuthCredentials = !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
         var hasAccessToken = !string.IsNullOrWhiteSpace(AccessToken);
+        var hasPersonalAccessToken = !string.IsNullOrWhiteSpace(PersonalAccessToken);
         
-        if (!hasOAuthCredentials && !hasAccessToken)
-            throw new ArgumentException("Either OAuth credentials (ClientId and ClientSecret) or AccessToken must be provided");
+        if (!hasOAuthCredentials && !hasAccessToken && !hasPersonalAccessToken)
+            throw new ArgumentException("Either OAuth credentials (ClientId and ClientSecret), AccessToken, or PersonalAccessToken must be provided");
         
         if (RequestTimeout <= TimeSpan.Zero)
             throw new ArgumentException("RequestTimeout must be greater than zero", nameof(RequestTimeout));
