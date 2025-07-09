@@ -34,9 +34,9 @@ public class PagedResponse<T> : IPagedResponse<T>
     public bool HasPreviousPage => Links.CanNavigatePrevious;
     
     // Internal properties for navigation (will be set by the implementation)
-    internal IApiConnection? ApiConnection { get; set; }
-    internal QueryParameters? OriginalParameters { get; set; }
-    internal string? OriginalEndpoint { get; set; }
+    public IApiConnection? ApiConnection { get; set; }
+    public QueryParameters? OriginalParameters { get; set; }
+    public string? OriginalEndpoint { get; set; }
     
     /// <summary>
     /// Gets the next page of results using the same query parameters.

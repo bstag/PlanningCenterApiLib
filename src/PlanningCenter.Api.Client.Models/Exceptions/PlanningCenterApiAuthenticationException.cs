@@ -22,8 +22,9 @@ public class PlanningCenterApiAuthenticationException : PlanningCenterApiExcepti
         string? requestId = null,
         string? requestUrl = null,
         string? requestMethod = null,
-        string? rawResponse = null)
-        : base(message, 401, "authentication_failed", requestId, requestUrl, requestMethod, rawResponse)
+        string? rawResponse = null,
+        Exception? innerException = null)
+        : base(message, 401, "authentication_failed", requestId, requestUrl, requestMethod, rawResponse, innerException)
     {
         AuthenticationScheme = authenticationScheme;
         IsTokenExpired = isTokenExpired;
