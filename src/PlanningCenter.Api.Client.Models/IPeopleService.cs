@@ -11,6 +11,14 @@ public interface IPeopleService
     // Basic CRUD operations
     
     /// <summary>
+    /// Gets the current authenticated user's person record.
+    /// This is useful for testing authentication and getting the current user's information.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The current user's person record</returns>
+    Task<Core.Person> GetMeAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Gets a single person by ID.
     /// </summary>
     /// <param name="id">The person's unique identifier</param>

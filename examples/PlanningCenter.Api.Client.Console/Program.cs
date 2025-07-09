@@ -58,8 +58,21 @@ try
     // Get the People service
     var peopleService = host.Services.GetRequiredService<IPeopleService>();
     
-    // Example 1: List people with pagination
-    logger.LogInformation("📋 Example 1: Listing people with built-in pagination...");
+    // Example 1: Get current user (great for testing authentication)
+    logger.LogInformation("👤 Example 1: Getting current authenticated user...");
+    
+    var currentUser = await peopleService.GetMeAsync();
+    logger.LogInformation("✅ Authentication successful! Current user: {FullName} (ID: {Id})", 
+        currentUser.FullName, currentUser.Id);
+    logger.LogInformation("   Status: {Status}, Membership: {MembershipStatus}", 
+        currentUser.Status, currentUser.MembershipStatus ?? "Not specified");
+    if (!string.IsNullOrEmpty(currentUser.AvatarUrl))
+    {
+        logger.LogInformation("   Avatar: {AvatarUrl}", currentUser.AvatarUrl);
+    }
+    
+    // Example 2: List people with pagination
+    logger.LogInformation("📋 Example 2: Listing people with built-in pagination...");
     
     var parameters = new QueryParameters
     {
@@ -82,25 +95,38 @@ try
             person.FullName, person.Id, person.Status);
     }
     
-    // Example 2: Navigate to next page using built-in helper
-    if (firstPage.HasNextPage)
+    // Example 3: Navigate through a few pages using built-in helpers
+    var currentPage = firstPage;
+    var pageCount = 1;
+    var maxPages = 3; // Limit to 3 pages for demo
+    
+    while (currentPage.HasNextPage && pageCount < maxPages)
     {
-        logger.LogInformation("➡️ Example 2: Getting next page using built-in navigation...");
+        logger.LogInformation("➡️ Example 3: Getting page {PageNumber} using built-in navigation...", pageCount + 1);
         
-        var nextPage = await firstPage.GetNextPageAsync();
+        var nextPage = await currentPage.GetNextPageAsync();
         if (nextPage != null)
         {
-            logger.LogInformation("✅ Retrieved next page with {Count} people", nextPage.Data.Count);
+            currentPage = nextPage;
+            pageCount++;
             
-            foreach (var person in nextPage.Data.Take(2))
+            logger.LogInformation("✅ Retrieved page {CurrentPage} with {Count} people", 
+                currentPage.Meta.CurrentPage, currentPage.Data.Count);
+            
+            // Show first person from this page
+            var firstPerson = currentPage.Data.FirstOrDefault();
+            if (firstPerson != null)
             {
-                logger.LogInformation("👤 {FullName} (ID: {Id})", person.FullName, person.Id);
+                logger.LogInformation("👤 First person on page: {FullName} (ID: {Id})", 
+                    firstPerson.FullName, firstPerson.Id);
             }
         }
     }
     
-    // Example 3: Get all people automatically (handles pagination behind the scenes)
-    logger.LogInformation("🔄 Example 3: Getting ALL people automatically (this may take a while for large datasets)...");
+    logger.LogInformation("📄 Navigated through {PageCount} pages total", pageCount);
+    
+    // Example 4: Get limited people automatically (handles pagination behind the scenes)
+    logger.LogInformation("🔄 Example 4: Getting limited people automatically...");
     
     var limitedParameters = new QueryParameters
     {
@@ -108,19 +134,19 @@ try
         PerPage = 5  // Small page size for demo
     };
     
-    // For demo purposes, let's limit to first 20 people to avoid long waits
+    // For demo purposes, let's limit to first 15 people to avoid long waits
     var paginationOptions = new PaginationOptions
     {
-        MaxItems = 20  // Limit to 20 people for demo
+        MaxItems = 15  // Limit to 15 people for demo
     };
     
     var allPeople = await peopleService.GetAllAsync(limitedParameters, paginationOptions);
     
-    logger.LogInformation("✅ Retrieved ALL {Count} people automatically (pagination handled behind the scenes)", 
+    logger.LogInformation("✅ Retrieved {Count} people automatically (pagination handled behind the scenes)", 
         allPeople.Count);
     
-    // Example 4: Stream people memory-efficiently
-    logger.LogInformation("🌊 Example 4: Streaming people memory-efficiently...");
+    // Example 5: Stream people memory-efficiently
+    logger.LogInformation("🌊 Example 5: Streaming people memory-efficiently...");
     
     var streamCount = 0;
     await foreach (var person in peopleService.StreamAsync(limitedParameters, paginationOptions))
@@ -135,9 +161,9 @@ try
     
     logger.LogInformation("✅ Streamed {Count} people total", streamCount);
     
-    // Example 5: Create a new person (commented out to avoid creating test data)
+    // Example 6: Create a new person (commented out to avoid creating test data)
     /*
-    logger.LogInformation("➕ Example 5: Creating a new person...");
+    logger.LogInformation("➕ Example 6: Creating a new person...");
     
     var createRequest = new PersonCreateRequest
     {
@@ -158,6 +184,7 @@ try
     logger.LogInformation("🎉 All examples completed successfully!");
     logger.LogInformation("");
     logger.LogInformation("🔑 Key Features Demonstrated:");
+    logger.LogInformation("   ✅ Authentication testing with /me endpoint");
     logger.LogInformation("   ✅ Built-in pagination helpers eliminate manual pagination logic");
     logger.LogInformation("   ✅ Automatic page fetching with GetAllAsync()");
     logger.LogInformation("   ✅ Memory-efficient streaming with StreamAsync()");

@@ -26,6 +26,29 @@ public class PeopleService : IPeopleService
     }
 
     /// <summary>
+    /// Gets the current authenticated user's person record.
+    /// This is useful for testing authentication and getting the current user's information.
+    /// </summary>
+    public async Task<Person> GetMeAsync(CancellationToken cancellationToken = default)
+    {
+        _logger.LogDebug("Getting current user's person record");
+
+        var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
+            $"{BaseEndpoint}/me", cancellationToken);
+
+        if (response?.Data == null)
+        {
+            throw new PlanningCenterApiGeneralException("Failed to get current user - no data returned");
+        }
+
+        var person = MapPersonDtoToPerson(response.Data);
+        _logger.LogInformation("Successfully retrieved current user: {PersonId} - {FullName}", 
+            person.Id, person.FullName);
+        
+        return person;
+    }
+
+    /// <summary>
     /// Gets a single person by ID.
     /// </summary>
     public async Task<Person?> GetAsync(string id, CancellationToken cancellationToken = default)

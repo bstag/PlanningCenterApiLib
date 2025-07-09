@@ -47,8 +47,21 @@ try
     // Get the People service
     var peopleService = host.Services.GetRequiredService<IPeopleService>();
     
-    // Example 1: Test authentication by listing a few people
-    logger.LogInformation("🔐 Example 1: Testing PAT authentication...");
+    // Example 1: Test PAT authentication with /me endpoint
+    logger.LogInformation("🔐 Example 1: Testing PAT authentication with current user...");
+    
+    var currentUser = await peopleService.GetMeAsync();
+    logger.LogInformation("✅ PAT Authentication successful!");
+    logger.LogInformation("👤 Current user: {FullName} (ID: {Id})", currentUser.FullName, currentUser.Id);
+    logger.LogInformation("   Status: {Status}, Membership: {MembershipStatus}", 
+        currentUser.Status, currentUser.MembershipStatus ?? "Not specified");
+    if (!string.IsNullOrEmpty(currentUser.AvatarUrl))
+    {
+        logger.LogInformation("   Avatar: {AvatarUrl}", currentUser.AvatarUrl);
+    }
+    
+    // Example 2: List a few people to demonstrate pagination
+    logger.LogInformation("📋 Example 2: Listing people with PAT authentication...");
     
     var parameters = new QueryParameters
     {
@@ -58,8 +71,7 @@ try
     
     var firstPage = await peopleService.ListAsync(parameters);
     
-    logger.LogInformation("✅ PAT Authentication successful!");
-    logger.LogInformation("📋 Retrieved {Count} people from page {CurrentPage} of {TotalPages} (Total: {TotalCount})",
+    logger.LogInformation("✅ Retrieved {Count} people from page {CurrentPage} of {TotalPages} (Total: {TotalCount})",
         firstPage.Data.Count,
         firstPage.Meta.CurrentPage, 
         firstPage.Meta.TotalPages, 
@@ -72,22 +84,22 @@ try
             person.FullName, person.Id, person.Status);
     }
     
-    // Example 2: Demonstrate that PAT doesn't need token refresh
-    logger.LogInformation("🔄 Example 2: Testing token validity (PATs are always valid)...");
+    // Example 3: Demonstrate that PAT doesn't need token refresh
+    logger.LogInformation("🔄 Example 3: Testing token validity (PATs are always valid)...");
     
     var authenticator = host.Services.GetRequiredService<IAuthenticator>();
     var isValid = await authenticator.IsTokenValidAsync();
     logger.LogInformation("✅ Token is valid: {IsValid}", isValid);
     
-    // Example 3: Get access token (will be Basic Auth header)
-    logger.LogInformation("🎫 Example 3: Getting access token...");
+    // Example 4: Get access token (will be Basic Auth header)
+    logger.LogInformation("🎫 Example 4: Getting access token...");
     
     var accessToken = await authenticator.GetAccessTokenAsync();
     logger.LogInformation("✅ Access token retrieved (Basic Auth format): {TokenPrefix}...", 
         accessToken.Length > 20 ? accessToken[..20] : accessToken);
     
-    // Example 4: Demonstrate streaming with PAT
-    logger.LogInformation("🌊 Example 4: Streaming people with PAT authentication...");
+    // Example 5: Demonstrate limited streaming with PAT
+    logger.LogInformation("🌊 Example 5: Streaming limited people with PAT authentication...");
     
     var streamParameters = new QueryParameters
     {
@@ -97,7 +109,7 @@ try
     
     var paginationOptions = new PaginationOptions
     {
-        MaxItems = 10  // Limit to 10 people for demo
+        MaxItems = 9  // Limit to 9 people (3 pages) for demo
     };
     
     var streamCount = 0;
@@ -116,6 +128,7 @@ try
     logger.LogInformation("🎉 All PAT authentication examples completed successfully!");
     logger.LogInformation("");
     logger.LogInformation("🔑 Key PAT Authentication Features:");
+    logger.LogInformation("   ✅ Authentication testing with /me endpoint");
     logger.LogInformation("   ✅ Simple Basic Authentication with app_id:secret format");
     logger.LogInformation("   ✅ No token refresh needed - PATs don't expire");
     logger.LogInformation("   ✅ Perfect for server-side applications and scripts");
