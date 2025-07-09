@@ -17,12 +17,15 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 // You can get these from your Planning Center API application settings
 
 // Option 1: OAuth Authentication (for user-facing applications)
+/*
 builder.Services.AddPlanningCenterApiClient(options =>
 {
     // For demo purposes - in real applications, use configuration or environment variables
-    options.ClientId = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_ID") ?? "your-client-id";
-    options.ClientSecret = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_SECRET") ?? "your-client-secret";
+    options.ClientId = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_ID") ?? "";
+    options.ClientSecret = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_SECRET") ?? "";
     
+     options.BaseUrl = "https://api.planningcenteronline.com";   
+
     // Optional: Enable detailed logging for debugging (be careful in production)
     options.EnableDetailedLogging = true;
     
@@ -30,10 +33,10 @@ builder.Services.AddPlanningCenterApiClient(options =>
     options.EnableCaching = true;
     options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
 });
-
+*/
 // Option 2: Personal Access Token (PAT) Authentication (for server-side applications)
 // Uncomment the lines below and comment out the OAuth configuration above to use PAT
-/*
+
 builder.Services.AddPlanningCenterApiClientWithPAT(
     Environment.GetEnvironmentVariable("PLANNING_CENTER_PAT") ?? "your-app-id:your-secret");
 
@@ -43,7 +46,6 @@ builder.Services.Configure<PlanningCenterOptions>(options =>
     options.EnableCaching = true;
     options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
 });
-*/
 
 // Build the host
 var host = builder.Build();

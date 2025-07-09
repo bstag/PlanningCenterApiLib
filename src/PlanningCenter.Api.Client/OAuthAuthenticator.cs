@@ -51,6 +51,12 @@ public class OAuthAuthenticator : IAuthenticator, IDisposable
         {
             _tokenExpiresAt = DateTime.UtcNow.AddHours(1);
         }
+
+        if (_httpClient.BaseAddress == null && !string.IsNullOrWhiteSpace(_options.BaseUrl))
+        {
+            // Ensure the HttpClient can handle relative endpoints like "/oauth/token"
+            _httpClient.BaseAddress = new Uri(_options.BaseUrl);
+        }
     }
 
     /// <summary>

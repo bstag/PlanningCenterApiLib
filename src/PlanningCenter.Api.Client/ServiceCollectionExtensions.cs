@@ -45,21 +45,15 @@ public static class ServiceCollectionExtensions
             var options = serviceProvider.GetRequiredService<IOptions<PlanningCenterOptions>>();
             var logger = serviceProvider.GetRequiredService<ILogger<IAuthenticator>>();
             
-            // Priority: PAT > OAuth > Access Token
+            // Priority: PersonalAccessToken > AccessToken (treated as PAT) > OAuth
             if (!string.IsNullOrWhiteSpace(options.Value.PersonalAccessToken))
             {
                 var patLogger = serviceProvider.GetRequiredService<ILogger<PersonalAccessTokenAuthenticator>>();
                 return new PersonalAccessTokenAuthenticator(options, patLogger);
             }
-            else if (!string.IsNullOrWhiteSpace(options.Value.ClientId) && !string.IsNullOrWhiteSpace(options.Value.ClientSecret))
-            {
-                var httpClient = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(OAuthAuthenticator));
-                var oauthLogger = serviceProvider.GetRequiredService<ILogger<OAuthAuthenticator>>();
-                return new OAuthAuthenticator(httpClient, options, oauthLogger);
-            }
             else if (!string.IsNullOrWhiteSpace(options.Value.AccessToken))
             {
-                // For now, treat access token like PAT (this could be enhanced later)
+                // Treat access token like PAT even if OAuth credentials are present
                 var accessTokenOptions = Microsoft.Extensions.Options.Options.Create(new PlanningCenterOptions
                 {
                     PersonalAccessToken = options.Value.AccessToken,
@@ -67,6 +61,12 @@ public static class ServiceCollectionExtensions
                 });
                 var patLogger = serviceProvider.GetRequiredService<ILogger<PersonalAccessTokenAuthenticator>>();
                 return new PersonalAccessTokenAuthenticator(accessTokenOptions, patLogger);
+            }
+            else if (!string.IsNullOrWhiteSpace(options.Value.ClientId) && !string.IsNullOrWhiteSpace(options.Value.ClientSecret))
+            {
+                var httpClient = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(nameof(OAuthAuthenticator));
+                var oauthLogger = serviceProvider.GetRequiredService<ILogger<OAuthAuthenticator>>();
+                return new OAuthAuthenticator(httpClient, options, oauthLogger);
             }
             else
             {
