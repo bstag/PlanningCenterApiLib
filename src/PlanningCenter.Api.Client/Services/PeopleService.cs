@@ -793,7 +793,7 @@ internal class JsonApiRequest<T>
 /// <summary>
 /// JSON:API response wrapper for single resources.
 /// </summary>
-internal class JsonApiSingleResponse<T>
+public class JsonApiSingleResponse<T>
 {
     public T? Data { get; set; }
     public PagedResponseMeta? Meta { get; set; }

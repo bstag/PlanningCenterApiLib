@@ -212,6 +212,15 @@ public class TestDataBuilder
     }
 
     /// <summary>
+    /// Alias for CreatePersons to maintain backward compatibility with existing tests.
+    /// </summary>
+    public List<Person> CreatePeople(int count, Action<Person, int>? customize = null)
+    {
+        // Delegate to the newer CreatePersons implementation
+        return CreatePersons(count, customize);
+    }
+
+    /// <summary>
     /// Creates multiple test PersonDtos.
     /// </summary>
     public List<PersonDto> CreatePersonDtos(int count, Action<PersonDto, int>? customize = null)
