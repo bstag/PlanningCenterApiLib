@@ -26,6 +26,15 @@ public class PhoneNumber
     public bool IsPrimary { get; set; }
     
     /// <summary>
+    /// Alias for IsPrimary to maintain compatibility with tests
+    /// </summary>
+    public bool Primary
+    {
+        get => IsPrimary;
+        set => IsPrimary = value;
+    }
+    
+    /// <summary>
     /// Whether this phone number can receive SMS messages
     /// </summary>
     public bool CanReceiveSms { get; set; }
@@ -44,6 +53,11 @@ public class PhoneNumber
     /// When the phone number was last updated
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+    
+    /// <summary>
+    /// Source tracking - which API module this phone number data came from
+    /// </summary>
+    public string DataSource { get; set; } = "People";
     
     /// <summary>
     /// Gets the phone number formatted for display

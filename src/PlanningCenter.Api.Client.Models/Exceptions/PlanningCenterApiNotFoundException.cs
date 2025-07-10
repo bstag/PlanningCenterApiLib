@@ -15,6 +15,13 @@ public class PlanningCenterApiNotFoundException : PlanningCenterApiException
     /// </summary>
     public string ResourceId { get; }
     
+    public PlanningCenterApiNotFoundException(string message) 
+        : base(message, 404, "not_found")
+    {
+        ResourceType = "Unknown";
+        ResourceId = "Unknown";
+    }
+    
     public PlanningCenterApiNotFoundException(
         string resourceType, 
         string resourceId, 

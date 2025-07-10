@@ -144,12 +144,12 @@ public class Person
     /// <summary>
     /// When the person record was created
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
     
     /// <summary>
     /// When the person record was last updated
     /// </summary>
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
     
     /// <summary>
     /// Avatar or profile picture URL
@@ -187,6 +187,21 @@ public class Person
     /// Gets the primary email for this person
     /// </summary>
     public Email? PrimaryEmailObject => Emails.FirstOrDefault(e => e.IsPrimary) ?? Emails.FirstOrDefault();
+    
+    /// <summary>
+    /// Gets the display name for this person (nickname if available, otherwise full name)
+    /// </summary>
+    public string DisplayName => !string.IsNullOrWhiteSpace(Nickname) ? Nickname : FullName;
+    
+    /// <summary>
+    /// Gets whether this person is active
+    /// </summary>
+    public bool IsActive => string.Equals(Status, "active", StringComparison.OrdinalIgnoreCase);
+    
+    /// <summary>
+    /// Gets whether this person has an avatar/profile picture
+    /// </summary>
+    public bool HasAvatar => !string.IsNullOrWhiteSpace(AvatarUrl);
 }
 
 /// <summary>

@@ -107,7 +107,7 @@ public class PlanningCenterApiExceptionTests
         var retryAfter = TimeSpan.FromMinutes(5);
 
         // Act
-        var exception = new PlanningCenterApiRateLimitException("Rate limit exceeded", retryAfter);
+        var exception = new PlanningCenterApiRateLimitException("Rate limit exceeded", null, retryAfter);
 
         // Assert
         exception.RetryAfter.Should().Be(retryAfter);
@@ -224,7 +224,7 @@ public class PlanningCenterApiExceptionTests
             new PlanningCenterApiAuthorizationException("Access denied"),
             new PlanningCenterApiNotFoundException("Not found"),
             new PlanningCenterApiValidationException("Validation failed"),
-            new PlanningCenterApiRateLimitException("Rate limited", TimeSpan.FromMinutes(5)),
+            new PlanningCenterApiRateLimitException("Rate limited", null, TimeSpan.FromMinutes(5)),
             new PlanningCenterApiServerException("Server error"),
             new PlanningCenterApiGeneralException("General error")
         };

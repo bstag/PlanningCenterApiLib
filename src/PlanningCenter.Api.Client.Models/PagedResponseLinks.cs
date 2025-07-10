@@ -17,6 +17,15 @@ public class PagedResponseLinks
     public string? Previous { get; set; }
     
     /// <summary>
+    /// Alias for Previous to maintain compatibility with tests
+    /// </summary>
+    public string? Prev
+    {
+        get => Previous;
+        set => Previous = value;
+    }
+    
+    /// <summary>
     /// URL for the current page
     /// </summary>
     public string? Self { get; set; }

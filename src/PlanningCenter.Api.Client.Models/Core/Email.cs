@@ -26,6 +26,15 @@ public class Email
     public bool IsPrimary { get; set; }
     
     /// <summary>
+    /// Alias for IsPrimary to maintain compatibility with tests
+    /// </summary>
+    public bool Primary
+    {
+        get => IsPrimary;
+        set => IsPrimary = value;
+    }
+    
+    /// <summary>
     /// Whether the email address has been verified
     /// </summary>
     public bool IsVerified { get; set; }
@@ -44,6 +53,11 @@ public class Email
     /// When the email was last updated
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+    
+    /// <summary>
+    /// Source tracking - which API module this email data came from
+    /// </summary>
+    public string DataSource { get; set; } = "People";
     
     /// <summary>
     /// Validates the email address format

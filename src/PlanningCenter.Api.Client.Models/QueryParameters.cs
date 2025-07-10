@@ -26,6 +26,15 @@ public class QueryParameters
     public string? OrderBy { get; set; }
     
     /// <summary>
+    /// Alias for OrderBy to maintain compatibility with tests
+    /// </summary>
+    public string? Order
+    {
+        get => OrderBy;
+        set => OrderBy = value;
+    }
+    
+    /// <summary>
     /// Number of items to return per page.
     /// If not specified, the API default will be used (typically 25).
     /// </summary>
@@ -93,5 +102,25 @@ public class QueryParameters
         }
         
         return string.Join("&", parameters);
+    }
+    
+    /// <summary>
+    /// Creates a new QueryParameters instance with pagination settings for a specific page.
+    /// </summary>
+    /// <param name="page">The page number (1-based)</param>
+    /// <param name="pageSize">The number of items per page</param>
+    /// <returns>A new QueryParameters instance with updated pagination</returns>
+    /// <exception cref="ArgumentException">Thrown when page or pageSize is less than 1</exception>
+    public QueryParameters WithPage(int page, int pageSize)
+    {
+        if (page < 1)
+            throw new ArgumentException("Page must be greater than 0", nameof(page));
+        if (pageSize < 1)
+            throw new ArgumentException("Page size must be greater than 0", nameof(pageSize));
+            
+        var clone = Clone();
+        clone.PerPage = pageSize;
+        clone.Offset = (page - 1) * pageSize;
+        return clone;
     }
 }

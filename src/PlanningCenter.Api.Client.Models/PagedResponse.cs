@@ -33,6 +33,21 @@ public class PagedResponse<T> : IPagedResponse<T>
     /// </summary>
     public bool HasPreviousPage => Links.CanNavigatePrevious;
     
+    /// <summary>
+    /// Indicates if this is the first page of results
+    /// </summary>
+    public bool IsFirstPage => Meta.CurrentPage <= 1;
+    
+    /// <summary>
+    /// Indicates if this is the last page of results
+    /// </summary>
+    public bool IsLastPage => Meta.CurrentPage >= Meta.TotalPages;
+    
+    /// <summary>
+    /// Indicates if the current page has no data
+    /// </summary>
+    public bool IsEmpty => Data.Count == 0;
+    
     // Internal properties for navigation (will be set by the implementation)
     public IApiConnection? ApiConnection { get; set; }
     public QueryParameters? OriginalParameters { get; set; }

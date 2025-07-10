@@ -165,7 +165,7 @@ public class TestDataBuilder
 
         return new PagedResponse<T>
         {
-            Data = data,
+            Data = data.ToList(),
             Meta = new PagedResponseMeta
             {
                 TotalCount = totalCount,

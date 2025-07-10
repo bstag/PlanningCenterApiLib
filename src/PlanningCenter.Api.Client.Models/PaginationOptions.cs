@@ -40,6 +40,12 @@ public class PaginationOptions
     public bool PrefetchNextPage { get; set; } = false;
     
     /// <summary>
+    /// Maximum number of concurrent requests to make when fetching multiple pages.
+    /// Used for parallel processing of pagination requests.
+    /// </summary>
+    public int MaxConcurrentRequests { get; set; } = 3;
+    
+    /// <summary>
     /// Creates pagination options optimized for memory efficiency.
     /// Uses smaller page sizes and includes rate limiting delays.
     /// </summary>

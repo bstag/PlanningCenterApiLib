@@ -51,6 +51,15 @@ public class Address
     public bool IsPrimary { get; set; }
     
     /// <summary>
+    /// Alias for IsPrimary to maintain compatibility with tests
+    /// </summary>
+    public bool Primary
+    {
+        get => IsPrimary;
+        set => IsPrimary = value;
+    }
+    
+    /// <summary>
     /// When the address was created
     /// </summary>
     public DateTime CreatedAt { get; set; }
@@ -59,6 +68,11 @@ public class Address
     /// When the address was last updated
     /// </summary>
     public DateTime UpdatedAt { get; set; }
+    
+    /// <summary>
+    /// Source tracking - which API module this address data came from
+    /// </summary>
+    public string DataSource { get; set; } = "People";
     
     /// <summary>
     /// Gets the full address as a formatted string

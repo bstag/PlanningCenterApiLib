@@ -55,4 +55,29 @@ public class PagedResponseMeta
     /// Gets a human-readable status string for progress reporting
     /// </summary>
     public string StatusDescription => $"Page {CurrentPage} of {TotalPages} ({Count} items, {TotalCount} total)";
+    
+    /// <summary>
+    /// Fields that can be used for ordering results
+    /// </summary>
+    public string[] CanOrderBy { get; set; } = Array.Empty<string>();
+    
+    /// <summary>
+    /// Fields that can be used for querying/filtering results
+    /// </summary>
+    public string[] CanQueryBy { get; set; } = Array.Empty<string>();
+    
+    /// <summary>
+    /// Related resources that can be included in the response
+    /// </summary>
+    public string[] CanInclude { get; set; } = Array.Empty<string>();
+    
+    /// <summary>
+    /// Fields that can be used for filtering results
+    /// </summary>
+    public string[] CanFilter { get; set; } = Array.Empty<string>();
+    
+    /// <summary>
+    /// Information about the parent resource (if applicable)
+    /// </summary>
+    public Dictionary<string, object> Parent { get; set; } = new();
 }
