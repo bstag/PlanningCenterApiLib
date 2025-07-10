@@ -19,7 +19,7 @@ This is the definitive implementation roadmap for the Planning Center .NET SDK v
 - [X] Create authentication system with token management
 - [X] Implement caching infrastructure
 - [ ] Build webhook validation system
-- [X] Set up dependency injection framework
+- [ ] Set up dependency injection framework
 
 ### Phase 2-4: Core Modules (Week 6-14)
 - [ ] **People Module** - Complete person management system
