@@ -16,32 +16,32 @@ public class PagedResponse<T> : IPagedResponse<T>
     /// <summary>
     /// Pagination metadata including total count, current page, etc.
     /// </summary>
-    public PagedResponseMeta Meta { get; set; } = new();
+    public PagedResponseMeta? Meta { get; set; }
     
     /// <summary>
     /// Navigation links for pagination (next, previous, first, last)
     /// </summary>
-    public PagedResponseLinks Links { get; set; } = new();
+    public PagedResponseLinks? Links { get; set; }
     
     /// <summary>
     /// Indicates if there are more pages available after the current page
     /// </summary>
-    public bool HasNextPage => Links.CanNavigateNext;
+    public bool HasNextPage => Links?.CanNavigateNext ?? false;
     
     /// <summary>
     /// Indicates if there are previous pages available before the current page
     /// </summary>
-    public bool HasPreviousPage => Links.CanNavigatePrevious;
+    public bool HasPreviousPage => Links?.CanNavigatePrevious ?? false;
     
     /// <summary>
     /// Indicates if this is the first page of results
     /// </summary>
-    public bool IsFirstPage => Meta.CurrentPage <= 1;
+    public bool IsFirstPage => (Meta?.CurrentPage ?? 1) <= 1;
     
     /// <summary>
     /// Indicates if this is the last page of results
     /// </summary>
-    public bool IsLastPage => Meta.CurrentPage >= Meta.TotalPages;
+    public bool IsLastPage => (Meta?.CurrentPage ?? 1) >= (Meta?.TotalPages ?? 1);
     
     /// <summary>
     /// Indicates if the current page has no data
@@ -68,7 +68,7 @@ public class PagedResponse<T> : IPagedResponse<T>
         
         // Create parameters for the next page
         var nextPageParameters = OriginalParameters.Clone();
-        nextPageParameters.Offset = Meta.Offset + Meta.PerPage;
+        nextPageParameters.Offset = (Meta?.Offset ?? 0) + (Meta?.PerPage ?? 25);
         
         return await ApiConnection.GetPagedAsync<T>(OriginalEndpoint, nextPageParameters, cancellationToken);
     }
@@ -88,7 +88,7 @@ public class PagedResponse<T> : IPagedResponse<T>
         
         // Create parameters for the previous page
         var previousPageParameters = OriginalParameters.Clone();
-        var previousOffset = Math.Max(0, Meta.Offset - Meta.PerPage);
+        var previousOffset = Math.Max(0, (Meta?.Offset ?? 0) - (Meta?.PerPage ?? 25));
         previousPageParameters.Offset = previousOffset;
         
         return await ApiConnection.GetPagedAsync<T>(OriginalEndpoint, previousPageParameters, cancellationToken);

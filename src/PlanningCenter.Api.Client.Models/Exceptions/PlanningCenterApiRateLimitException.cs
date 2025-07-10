@@ -38,7 +38,7 @@ public class PlanningCenterApiRateLimitException : PlanningCenterApiException
         : base(message, 429, "rate_limit_exceeded", requestId, requestUrl, requestMethod, rawResponse)
     {
         ResetTime = resetTime;
-        RetryAfter = retryAfter;
+        RetryAfter = retryAfter ?? TimeSpan.FromMinutes(1); // Default to 1 minute if not specified
         RateLimit = rateLimit;
         RemainingRequests = remainingRequests;
     }

@@ -136,12 +136,12 @@ public class PersonTests
     public void FullName_ShouldReturnFirstName_WhenOnlyFirstNameIsSet()
     {
         // Arrange
-        var person = _testDataBuilder.CreatePerson(p =>
+        var person = new Person
         {
-            p.FirstName = "John";
-            p.MiddleName = null;
-            p.LastName = null;
-        });
+            FirstName = "John",
+            MiddleName = null,
+            LastName = ""
+        };
 
         // Act
         var fullName = person.FullName;
@@ -243,12 +243,13 @@ public class PersonTests
     public void DisplayName_ShouldReturnFullName_WhenNicknameIsNotSet()
     {
         // Arrange
-        var person = _testDataBuilder.CreatePerson(p =>
+        var person = new Person
         {
-            p.FirstName = "John";
-            p.LastName = "Doe";
-            p.Nickname = null;
-        });
+            FirstName = "John",
+            LastName = "Doe",
+            MiddleName = null,
+            Nickname = null
+        };
 
         // Act
         var displayName = person.DisplayName;

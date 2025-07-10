@@ -18,8 +18,7 @@ public class QueryParametersBasicTests
         // Assert
         parameters.Where.Should().NotBeNull();
         parameters.Where.Should().BeEmpty();
-        parameters.Include.Should().NotBeNull();
-        parameters.Include.Should().BeEmpty();
+        parameters.Include.Should().BeNull();
         parameters.OrderBy.Should().BeNull();
         parameters.PerPage.Should().BeNull();
         parameters.Offset.Should().BeNull();

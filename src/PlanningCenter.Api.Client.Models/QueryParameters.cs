@@ -17,7 +17,7 @@ public class QueryParameters
     /// Related data to include in the response.
     /// Example: ["addresses", "emails", "phone_numbers"]
     /// </summary>
-    public string[] Include { get; set; } = Array.Empty<string>();
+    public string[]? Include { get; set; }
     
     /// <summary>
     /// Field to sort results by. Prefix with '-' for descending order.
@@ -56,7 +56,7 @@ public class QueryParameters
         return new QueryParameters
         {
             Where = new Dictionary<string, object>(Where),
-            Include = Include.ToArray(),
+            Include = Include?.ToArray() ?? Array.Empty<string>(),
             OrderBy = OrderBy,
             PerPage = PerPage,
             Offset = Offset
@@ -79,13 +79,13 @@ public class QueryParameters
         }
         
         // Add includes
-        if (Include.Length > 0)
+        if (Include != null && Include.Length > 0)
         {
-            parameters.Add($"include={Uri.EscapeDataString(string.Join(",", Include))}");
+            parameters.Add($"include={string.Join(",", Include)}");
         }
         
         // Add order by
-        if (!string.IsNullOrEmpty(OrderBy))
+        if (!string.IsNullOrWhiteSpace(OrderBy))
         {
             parameters.Add($"order={Uri.EscapeDataString(OrderBy)}");
         }
