@@ -113,6 +113,50 @@ public class MockApiConnection
     }
 
     /// <summary>
+    /// Verifies that a specific PATCH request was made.
+    /// </summary>
+    public void VerifyPatchRequest(string endpoint, Times? times = null)
+    {
+        var actualTimes = times ?? Times.Once();
+        var matchingRequests = _requests.Count(r => r.Method == "PATCH" && r.Endpoint == endpoint);
+        
+        if (actualTimes == Times.Never() && matchingRequests > 0)
+        {
+            throw new Exception($"Expected no PATCH requests to {endpoint}, but was called {matchingRequests} times");
+        }
+        else if (actualTimes == Times.Once() && matchingRequests != 1)
+        {
+            throw new Exception($"Expected PATCH request to {endpoint} once, but was called {matchingRequests} times");
+        }
+        else if (actualTimes == Times.AtLeastOnce() && matchingRequests < 1)
+        {
+            throw new Exception($"Expected PATCH request to {endpoint} at least once, but was never called");
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a specific DELETE request was made.
+    /// </summary>
+    public void VerifyDeleteRequest(string endpoint, Times? times = null)
+    {
+        var actualTimes = times ?? Times.Once();
+        var matchingRequests = _requests.Count(r => r.Method == "DELETE" && r.Endpoint == endpoint);
+        
+        if (actualTimes == Times.Never() && matchingRequests > 0)
+        {
+            throw new Exception($"Expected no DELETE requests to {endpoint}, but was called {matchingRequests} times");
+        }
+        else if (actualTimes == Times.Once() && matchingRequests != 1)
+        {
+            throw new Exception($"Expected DELETE request to {endpoint} once, but was called {matchingRequests} times");
+        }
+        else if (actualTimes == Times.AtLeastOnce() && matchingRequests < 1)
+        {
+            throw new Exception($"Expected DELETE request to {endpoint} at least once, but was never called");
+        }
+    }
+
+    /// <summary>
     /// Verifies that a specific POST request was made.
     /// </summary>
     public void VerifyPostRequest(string endpoint, Times? times = null)
@@ -159,9 +203,45 @@ public class MockApiConnection
 
     private void SetupMockBehavior()
     {
-        // Note: Simplified mock setup to avoid complex generic constraints with It.IsAnyType
-        // For now, we'll set up specific method calls in individual tests as needed
-        // This provides basic request tracking functionality
+        // Set up the mock to use our internal response tracking
+        _mock.Setup(x => x.GetAsync<It.IsAnyType>(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns<string, CancellationToken>((endpoint, ct) => 
+            {
+                _requests.Add(("GET", endpoint, null));
+                return GetResponseAsync<object>("GET", endpoint);
+            });
+
+        _mock.Setup(x => x.PostAsync<It.IsAnyType>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            .Returns<string, object, CancellationToken>((endpoint, data, ct) => 
+            {
+                _requests.Add(("POST", endpoint, data));
+                return GetResponseAsync<object>("POST", endpoint);
+            });
+
+        _mock.Setup(x => x.PatchAsync<It.IsAnyType>(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            .Returns<string, object, CancellationToken>((endpoint, data, ct) => 
+            {
+                _requests.Add(("PATCH", endpoint, data));
+                return GetResponseAsync<object>("PATCH", endpoint);
+            });
+
+        _mock.Setup(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Returns<string, CancellationToken>((endpoint, ct) => 
+            {
+                _requests.Add(("DELETE", endpoint, null));
+                if (_responses.ContainsKey($"DELETE:{endpoint}"))
+                {
+                    return Task.CompletedTask;
+                }
+                throw new InvalidOperationException($"No response configured for DELETE {endpoint}");
+            });
+
+        _mock.Setup(x => x.GetPagedAsync<It.IsAnyType>(It.IsAny<string>(), It.IsAny<QueryParameters?>(), It.IsAny<CancellationToken>()))
+            .Returns<string, QueryParameters?, CancellationToken>((endpoint, parameters, ct) => 
+            {
+                _requests.Add(("GET", endpoint, parameters));
+                return GetPagedResponseAsync<object>("PAGED", endpoint);
+            });
     }
 
     private Task<T> GetResponseAsync<T>(string method, string endpoint)

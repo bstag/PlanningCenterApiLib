@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client;
+using PlanningCenter.Api.Client.Console;
 using PlanningCenter.Api.Client.Models;
 
 // Create host builder with dependency injection
@@ -46,6 +47,9 @@ builder.Services.Configure<PlanningCenterOptions>(options =>
     options.EnableCaching = true;
     options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
 });
+
+// Register the example service
+builder.Services.AddTransient<PeopleManagementExample>();
 
 // Build the host
 var host = builder.Build();
@@ -163,7 +167,13 @@ try
     
     logger.LogInformation("✅ Streamed {Count} people total", streamCount);
     
-    // Example 6: Create a new person (commented out to avoid creating test data)
+    // Example 6: Comprehensive People Management (including address, email, phone management)
+    logger.LogInformation("🏠 Example 6: Comprehensive People Management...");
+    
+    var peopleExample = host.Services.GetRequiredService<PeopleManagementExample>();
+    await peopleExample.RunExampleAsync();
+    
+    // Example 7: Create a new person (commented out to avoid creating test data)
     /*
     logger.LogInformation("➕ Example 6: Creating a new person...");
     
