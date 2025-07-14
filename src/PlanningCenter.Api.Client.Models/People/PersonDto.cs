@@ -60,8 +60,18 @@ public class PersonAttributesDto
     public string? EmergencyContactPhone { get; set; }
     public string? AvatarUrl { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    
+    public DateTime UpdatedAt { get; set; } = new();
+
+    /// <summary>
+    /// Indicates whether this person is a child account.
+    /// </summary>
+    public bool? Child { get; set; }
+
+    /// <summary>
+    /// Contact data convenience object returned by the API.
+    /// </summary>
+    public Dictionary<string, object>? ContactData { get; set; }
+
     /// <summary>
     /// Additional custom attributes that may be present
     /// </summary>

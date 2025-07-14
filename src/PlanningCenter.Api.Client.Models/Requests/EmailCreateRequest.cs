@@ -19,6 +19,11 @@ public class EmailCreateRequest
     /// Whether this should be the primary email address
     /// </summary>
     public bool IsPrimary { get; set; }
+    
+    /// <summary>
+    /// Alias for IsPrimary expected by legacy tests.
+    /// </summary>
+    public bool Primary { get => IsPrimary; set => IsPrimary = value; }
 }
 
 /// <summary>
@@ -40,4 +45,8 @@ public class EmailUpdateRequest
     /// Whether this should be the primary email address
     /// </summary>
     public bool? IsPrimary { get; set; }
+    /// <summary>
+    /// Alias for IsPrimary expected by legacy tests.
+    /// </summary>
+    public bool? Primary { get => IsPrimary; set => IsPrimary = value; }
 }

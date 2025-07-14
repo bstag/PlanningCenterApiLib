@@ -21,6 +21,16 @@ public class PaginationOptions
     public int? MaxItems { get; set; }
     
     /// <summary>
+    /// Page number to request (1-based). If null, SDK will use cursor-based pagination.
+    /// </summary>
+    public int? Page { get; set; }
+
+    /// <summary>
+    /// Number of items per page requested. Alias of PageSize for legacy tests.
+    /// </summary>
+    public int? PerPage { get => PageSize; set => PageSize = value; }
+    
+    /// <summary>
     /// Estimated total count of items for optimization purposes.
     /// Used to calculate optimal page sizes and memory allocation.
     /// If not provided, defaults to 1000.

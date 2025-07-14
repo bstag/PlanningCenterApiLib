@@ -21,6 +21,11 @@ public class PhoneNumberCreateRequest
     public bool IsPrimary { get; set; }
     
     /// <summary>
+    /// Alias for IsPrimary expected by legacy tests.
+    /// </summary>
+    public bool Primary { get => IsPrimary; set => IsPrimary = value; }
+    
+    /// <summary>
     /// Whether this phone number can receive SMS messages
     /// </summary>
     public bool CanReceiveSms { get; set; } = true;
@@ -50,6 +55,10 @@ public class PhoneNumberUpdateRequest
     /// Whether this should be the primary phone number
     /// </summary>
     public bool? IsPrimary { get; set; }
+    /// <summary>
+    /// Alias for IsPrimary expected by legacy tests.
+    /// </summary>
+    public bool? Primary { get => IsPrimary; set => IsPrimary = value; }
     
     /// <summary>
     /// Whether this phone number can receive SMS messages

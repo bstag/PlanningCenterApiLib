@@ -69,6 +69,18 @@ public class Person
     /// Person's age (calculated from birthdate)
     /// </summary>
     public int? Age => Birthdate?.Date.CalculateAge();
+
+    /// <summary>
+    /// Indicates whether the person is classified as a child in the Planning Center system.
+    /// Mirrors the "child" boolean attribute returned by the API.
+    /// </summary>
+    public bool IsChild { get; set; }
+
+    /// <summary>
+    /// Arbitrary contact data blob returned by the API (e.g., email/phone convenience object).
+    /// Represented as an untyped dictionary for forward-compatibility with new keys.
+    /// </summary>
+    public Dictionary<string, object>? ContactData { get; set; }
     
     /// <summary>
     /// Person's gender

@@ -44,6 +44,11 @@ public class AddressCreateRequest
     /// Whether this should be the primary address
     /// </summary>
     public bool IsPrimary { get; set; }
+    
+    /// <summary>
+    /// Alias for IsPrimary expected by legacy tests.
+    /// </summary>
+    public bool Primary { get => IsPrimary; set => IsPrimary = value; }
 }
 
 /// <summary>
@@ -90,4 +95,9 @@ public class AddressUpdateRequest
     /// Whether this should be the primary address
     /// </summary>
     public bool? IsPrimary { get; set; }
+    
+    /// <summary>
+    /// Alias for IsPrimary expected by legacy tests.
+    /// </summary>
+    public bool? Primary { get => IsPrimary; set => IsPrimary = value; }
 }
