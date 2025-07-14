@@ -47,8 +47,29 @@ public class MockApiConnection : IApiConnection
 
     public Task<IPagedResponse<T>> GetPagedAsync<T>(string endpoint, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        // For first pass simply throw; we don't need pagination yet.
-        throw new NotImplementedException();
+        if (_getResponses.TryGetValue(endpoint, out var obj) && obj is IPagedResponse<T> pagedResponse)
+            return Task.FromResult(pagedResponse);
+        
+        // If no paged response is configured, try to create one from a regular response
+        if (_getResponses.TryGetValue(endpoint, out var regularObj) && regularObj is IEnumerable<T> items)
+        {
+            var itemsList = items.ToList();
+            var pagedResult = new PagedResponse<T>
+            {
+                Data = itemsList,
+                Meta = new PagedResponseMeta 
+                { 
+                    TotalCount = itemsList.Count, 
+                    Count = itemsList.Count,
+                    PerPage = parameters?.PerPage ?? 25,
+                    Offset = parameters?.Offset ?? 0
+                },
+                Links = new PagedResponseLinks()
+            };
+            return Task.FromResult<IPagedResponse<T>>(pagedResult);
+        }
+        
+        throw new InvalidOperationException($"No paged GET stub configured for {endpoint}");
     }
 
     private Task<T> ReturnMutation<T>(string verb, string endpoint)

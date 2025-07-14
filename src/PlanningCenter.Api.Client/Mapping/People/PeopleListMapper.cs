@@ -73,5 +73,68 @@ namespace PlanningCenter.Api.Client.Mapping.People
 
             return jsonApiRequest;
         }
+
+        /// <summary>
+        /// Maps a PeopleListUpdateRequest to a JSON:API request DTO.
+        /// </summary>
+        public static Dictionary<string, object> MapToUpdateRequest(string id, PeopleListUpdateRequest request)
+        {
+            var jsonApiRequest = new Dictionary<string, object>
+            {
+                ["data"] = new Dictionary<string, object>
+                {
+                    ["type"] = "List",
+                    ["id"] = id,
+                    ["attributes"] = new Dictionary<string, object>()
+                }
+            };
+
+            var attributes = (Dictionary<string, object>)((Dictionary<string, object>)jsonApiRequest["data"])["attributes"];
+
+            // Add fields that are being updated
+            if (!string.IsNullOrEmpty(request.Name))
+            {
+                attributes["name"] = request.Name;
+            }
+
+            if (!string.IsNullOrEmpty(request.Description))
+            {
+                attributes["description"] = request.Description;
+            }
+
+            if (request.IsPublic.HasValue)
+            {
+                attributes["is_public"] = request.IsPublic.Value;
+            }
+
+            return jsonApiRequest;
+        }
+
+        /// <summary>
+        /// Maps a ListMemberCreateRequest to a JSON:API request DTO.
+        /// </summary>
+        public static Dictionary<string, object> MapToListMemberCreateRequest(ListMemberCreateRequest request)
+        {
+            var jsonApiRequest = new Dictionary<string, object>
+            {
+                ["data"] = new Dictionary<string, object>
+                {
+                    ["type"] = "ListMember",
+                    ["relationships"] = new Dictionary<string, object>
+                    {
+                        ["person"] = new Dictionary<string, object>
+                        {
+                            ["data"] = new Dictionary<string, string>
+                            {
+                                ["type"] = "Person",
+                                ["id"] = request.PersonId
+                            }
+                        }
+                    }
+                }
+            };
+
+            return jsonApiRequest;
+        }
     }
 }

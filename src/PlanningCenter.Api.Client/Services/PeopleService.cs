@@ -7,6 +7,7 @@ using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Models.Exceptions;
 using PlanningCenter.Api.Client.Models.JsonApi.People;
 using PlanningCenter.Api.Client.Models.JsonApi;
+using System.Linq;
 
 namespace PlanningCenter.Api.Client.Services;
 
@@ -1199,6 +1200,257 @@ public class PeopleService : IPeopleService
 
         _logger.LogInformation("Successfully retrieved page {Page} with {Count} list members for list {ListId}",
             response.Meta.CurrentPage, members.Count, listId);
+
+        return mappedResponse;
+    }
+
+    /// <summary>
+    /// Gets a single workflow card by ID.
+    /// </summary>
+    public async Task<WorkflowCard?> GetWorkflowCardAsync(string workflowId, string cardId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(workflowId))
+            throw new ArgumentException("Workflow ID cannot be null or empty", nameof(workflowId));
+        if (string.IsNullOrWhiteSpace(cardId))
+            throw new ArgumentException("Card ID cannot be null or empty", nameof(cardId));
+
+        _logger.LogDebug("Getting workflow card {CardId} from workflow {WorkflowId}", cardId, workflowId);
+
+        try
+        {
+            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<WorkflowCardDto>>(
+                $"{BaseEndpoint}/workflows/{workflowId}/cards/{cardId}", cancellationToken);
+
+            if (response?.Data == null)
+            {
+                _logger.LogDebug("Workflow card {CardId} not found in workflow {WorkflowId}", cardId, workflowId);
+                return null;
+            }
+
+            var card = WorkflowCardMapper.MapToDomain(response.Data);
+            _logger.LogInformation("Successfully retrieved workflow card: {CardId} from workflow {WorkflowId}", cardId, workflowId);
+
+            return card;
+        }
+        catch (PlanningCenterApiNotFoundException)
+        {
+            _logger.LogDebug("Workflow card {CardId} not found in workflow {WorkflowId}", cardId, workflowId);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Gets a single form submission by ID.
+    /// </summary>
+    public async Task<FormSubmission?> GetFormSubmissionAsync(string formId, string submissionId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(formId))
+            throw new ArgumentException("Form ID cannot be null or empty", nameof(formId));
+        if (string.IsNullOrWhiteSpace(submissionId))
+            throw new ArgumentException("Submission ID cannot be null or empty", nameof(submissionId));
+
+        _logger.LogDebug("Getting form submission {SubmissionId} from form {FormId}", submissionId, formId);
+
+        try
+        {
+            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<FormSubmissionDto>>(
+                $"{BaseEndpoint}/forms/{formId}/form_submissions/{submissionId}", cancellationToken);
+
+            if (response?.Data == null)
+            {
+                _logger.LogDebug("Form submission {SubmissionId} not found in form {FormId}", submissionId, formId);
+                return null;
+            }
+
+            var submission = FormMapper.MapToDomain(response.Data);
+            _logger.LogInformation("Successfully retrieved form submission: {SubmissionId} from form {FormId}", submissionId, formId);
+
+            return submission;
+        }
+        catch (PlanningCenterApiNotFoundException)
+        {
+            _logger.LogDebug("Form submission {SubmissionId} not found in form {FormId}", submissionId, formId);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing people list.
+    /// </summary>
+    public async Task<PeopleList> UpdatePeopleListAsync(string id, PeopleListUpdateRequest request, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("List ID cannot be null or empty", nameof(id));
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        _logger.LogDebug("Updating people list {ListId} with name: {Name}", id, request.Name);
+
+        var jsonApiRequest = PeopleListMapper.MapToUpdateRequest(id, request);
+
+        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<PeopleListDto>>(
+            $"{BaseEndpoint}/lists/{id}", jsonApiRequest, cancellationToken);
+
+        if (response?.Data == null)
+        {
+            throw new PlanningCenterApiGeneralException("Failed to update people list - no data returned");
+        }
+
+        var list = PeopleListMapper.MapToDomain(response.Data);
+        _logger.LogInformation("Successfully updated people list: {ListId}, name: {ListName}",
+            list.Id, list.Name);
+
+        return list;
+    }
+
+    /// <summary>
+    /// Deletes a people list.
+    /// </summary>
+    public async Task DeletePeopleListAsync(string id, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("List ID cannot be null or empty", nameof(id));
+
+        _logger.LogDebug("Deleting people list {ListId}", id);
+
+        await _apiConnection.DeleteAsync($"{BaseEndpoint}/lists/{id}", cancellationToken);
+
+        _logger.LogInformation("Successfully deleted people list: {ListId}", id);
+    }
+
+    /// <summary>
+    /// Lists people in a specific list.
+    /// </summary>
+    public async Task<IPagedResponse<Person>> ListPeopleInListAsync(string listId, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(listId))
+            throw new ArgumentException("List ID cannot be null or empty", nameof(listId));
+
+        _logger.LogDebug("Listing people in list {ListId} with parameters: {@Parameters}", listId, parameters);
+
+        var response = await _apiConnection.GetPagedAsync<PersonDto>(
+            $"{BaseEndpoint}/lists/{listId}/people", parameters, cancellationToken);
+
+        // Map DTOs to domain models
+        var people = response.Data.Select(PersonMapper.MapToDomain).ToList();
+
+        // Create a new paged response with mapped data
+        var mappedResponse = new PagedResponse<Person>
+        {
+            Data = people,
+            Meta = response.Meta,
+            Links = response.Links
+        };
+
+        // Copy navigation properties if the response is a concrete PagedResponse
+        if (response is PagedResponse<PersonDto> concreteResponse)
+        {
+            mappedResponse.ApiConnection = concreteResponse.ApiConnection;
+            mappedResponse.OriginalParameters = concreteResponse.OriginalParameters;
+            mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
+        }
+
+        _logger.LogInformation("Successfully retrieved page {Page} with {Count} people in list {ListId}",
+            response.Meta.CurrentPage, people.Count, listId);
+
+        return mappedResponse;
+    }
+
+    /// <summary>
+    /// Adds a person to a list.
+    /// </summary>
+    public async Task<ListMember> AddPersonToListAsync(string listId, ListMemberCreateRequest request, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(listId))
+            throw new ArgumentException("List ID cannot be null or empty", nameof(listId));
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        _logger.LogDebug("Adding person {PersonId} to list {ListId}", request.PersonId, listId);
+
+        var jsonApiRequest = PeopleListMapper.MapToListMemberCreateRequest(request);
+
+        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<ListMemberDto>>(
+            $"{BaseEndpoint}/lists/{listId}/people", jsonApiRequest, cancellationToken);
+
+        if (response?.Data == null)
+        {
+            throw new PlanningCenterApiGeneralException("Failed to add person to list - no data returned");
+        }
+
+        var member = PeopleListMapper.MapToDomain(response.Data);
+        _logger.LogInformation("Successfully added person {PersonId} to list {ListId}",
+            request.PersonId, listId);
+
+        return member;
+    }
+
+    /// <summary>
+    /// Removes a person from a list.
+    /// </summary>
+    public async Task RemovePersonFromListAsync(string listId, string personId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(listId))
+            throw new ArgumentException("List ID cannot be null or empty", nameof(listId));
+        if (string.IsNullOrWhiteSpace(personId))
+            throw new ArgumentException("Person ID cannot be null or empty", nameof(personId));
+
+        _logger.LogDebug("Removing person {PersonId} from list {ListId}", personId, listId);
+
+        await _apiConnection.DeleteAsync($"{BaseEndpoint}/lists/{listId}/people/{personId}", cancellationToken);
+
+        _logger.LogInformation("Successfully removed person {PersonId} from list {ListId}", personId, listId);
+    }
+
+    /// <summary>
+    /// Deletes a household.
+    /// </summary>
+    public async Task DeleteHouseholdAsync(string id, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("Household ID cannot be null or empty", nameof(id));
+
+        _logger.LogDebug("Deleting household {HouseholdId}", id);
+
+        await _apiConnection.DeleteAsync($"{BaseEndpoint}/households/{id}", cancellationToken);
+
+        _logger.LogInformation("Successfully deleted household: {HouseholdId}", id);
+    }
+
+    /// <summary>
+    /// Lists people in a specific household.
+    /// </summary>
+    public async Task<IPagedResponse<Person>> ListPeopleInHouseholdAsync(string householdId, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(householdId))
+            throw new ArgumentException("Household ID cannot be null or empty", nameof(householdId));
+
+        _logger.LogDebug("Listing people in household {HouseholdId} with parameters: {@Parameters}", householdId, parameters);
+
+        var response = await _apiConnection.GetPagedAsync<PersonDto>(
+            $"{BaseEndpoint}/households/{householdId}/people", parameters, cancellationToken);
+
+        // Map DTOs to domain models
+        var people = response.Data.Select(PersonMapper.MapToDomain).ToList();
+
+        // Create a new paged response with mapped data
+        var mappedResponse = new PagedResponse<Person>
+        {
+            Data = people,
+            Meta = response.Meta,
+            Links = response.Links
+        };
+
+        // Copy navigation properties if the response is a concrete PagedResponse
+        if (response is PagedResponse<PersonDto> concreteResponse)
+        {
+            mappedResponse.ApiConnection = concreteResponse.ApiConnection;
+            mappedResponse.OriginalParameters = concreteResponse.OriginalParameters;
+            mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
+        }
+
+        _logger.LogInformation("Successfully retrieved page {Page} with {Count} people in household {HouseholdId}",
+            response.Meta.CurrentPage, people.Count, householdId);
 
         return mappedResponse;
     }
