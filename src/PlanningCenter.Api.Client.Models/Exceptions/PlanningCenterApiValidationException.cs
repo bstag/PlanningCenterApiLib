@@ -20,7 +20,7 @@ public class PlanningCenterApiValidationException : PlanningCenterApiException
         string? rawResponse = null)
         : base(message, statusCode, "validation_failed", requestId, requestUrl, requestMethod, rawResponse)
     {
-        ValidationErrors = validationErrors ?? new Dictionary<string, List<string>>();
+        ValidationErrors = validationErrors ?? new();
     }
     
     /// <summary>
@@ -31,11 +31,11 @@ public class PlanningCenterApiValidationException : PlanningCenterApiException
         get
         {
             var messages = new List<string>();
-            foreach (var (field, errors) in ValidationErrors)
+            foreach (var (fieldName, errors) in ValidationErrors)
             {
                 foreach (var error in errors)
                 {
-                    messages.Add($"{field}: {error}");
+                    messages.Add($"{fieldName}: {error}");
                 }
             }
             return messages;
@@ -50,28 +50,29 @@ public class PlanningCenterApiValidationException : PlanningCenterApiException
     /// <summary>
     /// Adds a validation error for a specific field
     /// </summary>
-    public void AddError(string field, string error)
+    public void AddError(string fieldName, string error)
     {
-        if (!ValidationErrors.ContainsKey(field))
+        if (!ValidationErrors.TryGetValue(fieldName, out var errors))
         {
-            ValidationErrors[field] = new List<string>();
+            errors = new();
+            ValidationErrors[fieldName] = errors;
         }
-        ValidationErrors[field].Add(error);
+        errors.Add(error);
     }
     
     /// <summary>
     /// Checks if there are validation errors for a specific field
     /// </summary>
-    public bool HasErrorsForField(string field)
+    public bool HasErrorsForField(string fieldName)
     {
-        return ValidationErrors.ContainsKey(field) && ValidationErrors[field].Any();
+        return ValidationErrors.TryGetValue(fieldName, out var errors) && errors.Count > 0;
     }
     
     /// <summary>
     /// Gets validation errors for a specific field
     /// </summary>
-    public List<string> GetErrorsForField(string field)
+    public List<string> GetErrorsForField(string fieldName)
     {
-        return ValidationErrors.TryGetValue(field, out var errors) ? errors : new List<string>();
+        return ValidationErrors.TryGetValue(fieldName, out var errors) ? errors : new();
     }
 }

@@ -172,7 +172,14 @@ public class PeopleManagementExample
         if (firstPage.HasNextPage)
         {
             var nextPage = await firstPage.GetNextPageAsync();
-            _logger.LogInformation("Next page has {Count} people", nextPage.Data.Count);
+            if (nextPage != null)
+            {
+                _logger.LogInformation("Next page has {Count} people", nextPage.Data.Count);
+            }
+            else
+            {
+                _logger.LogInformation("No additional pages.");
+            }
         }
     }
 
