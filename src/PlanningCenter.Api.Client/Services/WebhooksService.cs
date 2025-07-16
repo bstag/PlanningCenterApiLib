@@ -127,7 +127,7 @@ public class WebhooksService : IWebhooksService
         try
         {
             var jsonApiRequest = WebhooksMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<WebhookSubscriptionCreateDto>, JsonApiSingleResponse<WebhookSubscriptionDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
                 $"{BaseEndpoint}/subscriptions", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -162,7 +162,7 @@ public class WebhooksService : IWebhooksService
         try
         {
             var jsonApiRequest = WebhooksMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<WebhookSubscriptionUpdateDto>, JsonApiSingleResponse<WebhookSubscriptionDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
                 $"{BaseEndpoint}/subscriptions/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -220,7 +220,7 @@ public class WebhooksService : IWebhooksService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/subscriptions/{id}/activate", null, cancellationToken);
 
             if (response?.Data == null)
@@ -259,7 +259,7 @@ public class WebhooksService : IWebhooksService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/subscriptions/{id}/deactivate", null, cancellationToken);
 
             if (response?.Data == null)
@@ -356,7 +356,7 @@ public class WebhooksService : IWebhooksService
         catch (JsonException ex)
         {
             _logger.LogError(ex, "Error deserializing webhook event payload");
-            throw new PlanningCenterApiGeneralException($"Invalid JSON payload: {ex.Message}", ex);
+            throw new PlanningCenterApiGeneralException($"Invalid JSON payload: {ex.Message}", innerException: ex);
         }
         catch (Exception ex)
         {
@@ -381,7 +381,7 @@ public class WebhooksService : IWebhooksService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, dynamic>(
+            var response = await _apiConnection.PostAsync<dynamic>(
                 $"{BaseEndpoint}/subscriptions/{id}/test", null, cancellationToken);
 
             // This would parse the actual response in a complete implementation
@@ -427,7 +427,7 @@ public class WebhooksService : IWebhooksService
             var testPayload = new { test = true, timestamp = DateTime.UtcNow };
             var request = new { url = url, secret = secret, payload = testPayload };
 
-            var response = await _apiConnection.PostAsync<object, dynamic>(
+            var response = await _apiConnection.PostAsync<dynamic>(
                 $"{BaseEndpoint}/test", request, cancellationToken);
 
             // This would parse the actual response in a complete implementation
@@ -473,7 +473,7 @@ public class WebhooksService : IWebhooksService
 
         var allSubscriptions = new List<WebhookSubscription>();
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxPages = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
 
         try
@@ -523,7 +523,7 @@ public class WebhooksService : IWebhooksService
         _logger.LogDebug("Streaming webhook subscriptions with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxPages = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
 
         var currentParameters = parameters ?? new QueryParameters();
@@ -619,7 +619,7 @@ public class WebhooksService : IWebhooksService
                 };
             }
 
-            var availableEvents = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
+            var availableEvents = response.Data.Select<dynamic, AvailableEvent>(dto => WebhooksMapper.MapToDomain((AvailableEventDto)dto)).ToList();
             
             var pagedResponse = new PagedResponse<AvailableEvent>
             {
@@ -664,7 +664,7 @@ public class WebhooksService : IWebhooksService
                 };
             }
 
-            var availableEvents = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
+            var availableEvents = response.Data.Select<dynamic, AvailableEvent>(dto => WebhooksMapper.MapToDomain((AvailableEventDto)dto)).ToList();
             
             var pagedResponse = new PagedResponse<AvailableEvent>
             {
@@ -741,7 +741,7 @@ public class WebhooksService : IWebhooksService
                 };
             }
 
-            var events = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
+            var events = response.Data.Select<dynamic, Event>(dto => WebhooksMapper.MapToDomain((WebhookEventDto)dto)).ToList();
             
             var pagedResponse = new PagedResponse<Event>
             {
@@ -769,7 +769,7 @@ public class WebhooksService : IWebhooksService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/events/{eventId}/redeliver", null, cancellationToken);
 
             if (response?.Data == null)

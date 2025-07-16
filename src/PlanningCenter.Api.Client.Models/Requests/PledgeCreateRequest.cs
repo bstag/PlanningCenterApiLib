@@ -40,35 +40,4 @@ namespace PlanningCenter.Api.Client.Models.Requests
         /// </summary>
         public string? JointGiverId { get; set; }
     }
-
-    /// <summary>
-    /// Request model for updating a pledge.
-    /// </summary>
-    public class PledgeUpdateRequest
-    {
-        /// <summary>
-        /// Gets or sets the pledged amount in cents.
-        /// </summary>
-        public long? AmountCents { get; set; }
-
-        /// <summary>
-        /// Gets or sets the joint giver amount in cents.
-        /// </summary>
-        public long? JointGiverAmountCents { get; set; }
-
-        /// <summary>
-        /// Gets or sets the fund ID this pledge is for.
-        /// </summary>
-        public string? FundId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the pledge campaign ID.
-        /// </summary>
-        public string? PledgeCampaignId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the joint giver person ID.
-        /// </summary>
-        public string? JointGiverId { get; set; }
-    }
 }

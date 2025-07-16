@@ -1,8 +1,10 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.People;
+using PlanningCenter.Api.Client.Models.JsonApi.Core;
 using PersonDto = PlanningCenter.Api.Client.Models.People.PersonDto;
 using PhoneNumberDto = PlanningCenter.Api.Client.Models.People.PhoneNumberDto;
 using AddressDto = PlanningCenter.Api.Client.Models.People.AddressDto;
@@ -583,7 +585,7 @@ public class PeopleServiceTests
         {
             Name = "Smith Family",
             PrimaryContactId = "person123",
-            PersonIds = new[] { "person123", "person456" }
+            PersonIds = new List<string> { "person123", "person456" }
         };
 
         var householdDto = CreateHouseholdDto(h =>
@@ -614,7 +616,7 @@ public class PeopleServiceTests
         {
             Name = "",
             PrimaryContactId = "person123",
-            PersonIds = new[] { "person123" }
+            PersonIds = new List<string> { "person123" }
         };
 
         // Act & Assert
@@ -748,14 +750,14 @@ public class PeopleServiceTests
         var request = new WorkflowCardCreateRequest
         {
             PersonId = "person123",
-            Note = "Test workflow card"
+            Notes = "Test workflow card"
         };
 
         var cardDto = CreateWorkflowCardDto(c =>
         {
             c.Id = "newcard123";
             c.Attributes.PersonId = "person123";
-            c.Attributes.Note = "Test workflow card";
+            c.Attributes.Notes = "Test workflow card";
         });
 
         var response = new JsonApiSingleResponse<WorkflowCardDto> { Data = cardDto };
@@ -768,7 +770,7 @@ public class PeopleServiceTests
         result.Should().NotBeNull();
         result.Id.Should().Be("newcard123");
         result.PersonId.Should().Be("person123");
-        result.Note.Should().Be("Test workflow card");
+        result.Notes.Should().Be("Test workflow card");
     }
 
     [Fact]
@@ -777,13 +779,13 @@ public class PeopleServiceTests
         // Arrange
         var request = new WorkflowCardUpdateRequest
         {
-            Note = "Updated note"
+            Notes = "Updated note"
         };
 
         var cardDto = CreateWorkflowCardDto(c =>
         {
             c.Id = "card123";
-            c.Attributes.Note = "Updated note";
+            c.Attributes.Notes = "Updated note";
         });
 
         var response = new JsonApiSingleResponse<WorkflowCardDto> { Data = cardDto };
@@ -795,7 +797,7 @@ public class PeopleServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be("card123");
-        result.Note.Should().Be("Updated note");
+        result.Notes.Should().Be("Updated note");
     }
 
     [Fact]
@@ -856,7 +858,7 @@ public class PeopleServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be("submission123");
-        result.PersonId.Should().Be(submissionDto.Attributes.PersonId);
+        result.PersonId.Should().Be(submissionDto.Relationships!.Person!.Id);
     }
 
     [Fact]
@@ -892,7 +894,7 @@ public class PeopleServiceTests
         var submissionDto = CreateFormSubmissionDto(s =>
         {
             s.Id = "newsubmission123";
-            s.Attributes.PersonId = "person123";
+            s.Relationships!.Person = new RelationshipData { Id = "person123", Type = "Person" };
         });
 
         var response = new JsonApiSingleResponse<FormSubmissionDto> { Data = submissionDto };
@@ -1050,7 +1052,7 @@ public class PeopleServiceTests
         var memberDto = CreateListMemberDto(m =>
         {
             m.Id = "member123";
-            m.Attributes.PersonId = "person123";
+            m.Relationships!.Person = new RelationshipData { Id = "person123", Type = "Person" };
         });
 
         var response = new JsonApiSingleResponse<ListMemberDto> { Data = memberDto };
@@ -1199,9 +1201,9 @@ public class PeopleServiceTests
             {
                 PersonId = "person123",
                 WorkflowId = "workflow123",
-                CurrentStep = "step1",
+                StepId = "step1",
                 CompletedAt = null,
-                Note = "Test note",
+                Notes = "Test note",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow
             }
@@ -1236,8 +1238,7 @@ public class PeopleServiceTests
             {
                 Name = "Test Form",
                 Description = "A test form",
-                Active = true,
-                Archived = false,
+                IsArchived = false,
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 UpdatedAt = DateTime.UtcNow
             }
@@ -1270,10 +1271,13 @@ public class PeopleServiceTests
             Type = "FormSubmission",
             Attributes = new FormSubmissionAttributesDto
             {
-                PersonId = "person123",
-                FormId = "form123",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow
+            },
+            Relationships = new FormSubmissionRelationshipsDto
+            {
+                Person = new RelationshipData { Id = "person123", Type = "Person" },
+                Form = new RelationshipData { Id = "form123", Type = "Form" }
             }
         };
         customize(dto);
@@ -1306,12 +1310,8 @@ public class PeopleServiceTests
             {
                 Name = "Test List",
                 Description = "A test list",
-                AutoRefresh = false,
                 Status = "active",
-                HasInactiveResults = false,
-                IncludeInactive = false,
-                Returns = "Person",
-                TotalPeople = 10,
+                PeopleCount = 10,
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 UpdatedAt = DateTime.UtcNow
             }
@@ -1344,10 +1344,13 @@ public class PeopleServiceTests
             Type = "ListMember",
             Attributes = new ListMemberAttributesDto
             {
-                PersonId = "person123",
-                ListId = "list123",
                 CreatedAt = DateTime.UtcNow.AddDays(-1),
                 UpdatedAt = DateTime.UtcNow
+            },
+            Relationships = new ListMemberRelationshipsDto
+            {
+                Person = new RelationshipData { Id = "person123", Type = "Person" },
+                List = new RelationshipData { Id = "list123", Type = "List" }
             }
         };
         customize(dto);

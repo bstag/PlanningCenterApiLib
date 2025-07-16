@@ -47,6 +47,57 @@ public class QueryParameters
     public int? Offset { get; set; }
     
     /// <summary>
+    /// Adds a filter condition to the query parameters.
+    /// </summary>
+    /// <param name="key">The field name to filter by</param>
+    /// <param name="value">The value to filter for</param>
+    /// <returns>This QueryParameters instance for method chaining</returns>
+    public QueryParameters AddFilter(string key, object value)
+    {
+        Where[key] = value;
+        return this;
+    }
+    
+    /// <summary>
+    /// Adds an include directive to the query parameters.
+    /// </summary>
+    /// <param name="include">The related data to include</param>
+    /// <returns>This QueryParameters instance for method chaining</returns>
+    public QueryParameters AddInclude(string include)
+    {
+        var currentIncludes = Include?.ToList() ?? new List<string>();
+        if (!currentIncludes.Contains(include))
+        {
+            currentIncludes.Add(include);
+        }
+        Include = currentIncludes.ToArray();
+        return this;
+    }
+    
+    /// <summary>
+    /// Adds a sort directive to the query parameters.
+    /// </summary>
+    /// <param name="sort">The field to sort by (prefix with '-' for descending)</param>
+    /// <returns>This QueryParameters instance for method chaining</returns>
+    public QueryParameters AddSort(string sort)
+    {
+        OrderBy = sort;
+        return this;
+    }
+    
+    /// <summary>
+    /// Adds a parameter to the query string.
+    /// </summary>
+    /// <param name="key">The parameter name</param>
+    /// <param name="value">The parameter value</param>
+    /// <returns>This QueryParameters instance for method chaining</returns>
+    public QueryParameters Add(string key, object value)
+    {
+        Where[key] = value;
+        return this;
+    }
+    
+    /// <summary>
     /// Creates a deep copy of the query parameters.
     /// Useful for creating variations of a query without modifying the original.
     /// </summary>

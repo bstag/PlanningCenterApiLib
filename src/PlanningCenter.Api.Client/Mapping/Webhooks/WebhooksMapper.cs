@@ -111,15 +111,14 @@ public static class WebhooksMapper
     /// <summary>
     /// Maps an AvailableEventDto to an AvailableEvent domain model.
     /// </summary>
-    public static AvailableEvent MapToDomain(dynamic dto)
+    public static AvailableEvent MapToDomain(AvailableEventDto dto)
     {
-        // This would be implemented with proper AvailableEventDto in a complete implementation
         return new AvailableEvent
         {
-            Id = dto.Id?.ToString() ?? string.Empty,
-            Name = dto.Attributes?.Name?.ToString() ?? "unknown.event",
-            Module = dto.Attributes?.Module?.ToString() ?? "unknown",
-            Description = dto.Attributes?.Description?.ToString(),
+            Id = dto.Id,
+            Name = dto.Attributes.Name,
+            Module = dto.Attributes.Module,
+            Description = dto.Attributes.Description,
             DataSource = "Webhooks"
         };
     }
@@ -129,18 +128,17 @@ public static class WebhooksMapper
     #region Event Mapping (Placeholder)
 
     /// <summary>
-    /// Maps an EventDto to an Event domain model.
+    /// Maps a WebhookEventDto to an Event domain model.
     /// </summary>
-    public static Event MapToDomain(dynamic dto)
+    public static Event MapToDomain(WebhookEventDto dto)
     {
-        // This would be implemented with proper EventDto in a complete implementation
         return new Event
         {
-            Id = dto.Id?.ToString() ?? string.Empty,
-            WebhookSubscriptionId = dto.Relationships?.WebhookSubscription?.Id?.ToString() ?? string.Empty,
-            AvailableEventId = dto.Relationships?.AvailableEvent?.Id?.ToString() ?? string.Empty,
-            EventName = dto.Attributes?.EventName?.ToString() ?? "unknown.event",
-            DeliveryStatus = dto.Attributes?.DeliveryStatus?.ToString() ?? "pending",
+            Id = dto.Id,
+            WebhookSubscriptionId = string.Empty, // Would need relationships if available
+            AvailableEventId = string.Empty, // Would need relationships if available
+            EventName = dto.Attributes.EventType,
+            DeliveryStatus = dto.Attributes.DeliveryStatus,
             DataSource = "Webhooks"
         };
     }

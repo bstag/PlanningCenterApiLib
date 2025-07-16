@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Services;
+using PlanningCenter.Api.Client.Fluent;
 
 namespace PlanningCenter.Api.Client;
 
@@ -79,8 +80,11 @@ public static class ServiceCollectionExtensions
         // Register module services
         services.AddScoped<IPeopleService, PeopleService>();
         
-        // Register main client (will be implemented in Part 3)
-        // services.AddScoped<IPlanningCenterClient, PlanningCenterClient>();
+        // Register main client
+        services.AddScoped<IPlanningCenterClient, PlanningCenterClient>();
+        
+        // Register fluent client
+        services.AddScoped<IPlanningCenterFluentClient, PlanningCenterFluentClient>();
 
         return services;
     }
@@ -182,5 +186,18 @@ public static class ServiceCollectionExtensions
                 options.BaseUrl = baseUrl;
             }
         });
+    }
+
+    /// <summary>
+    /// Adds Planning Center API client services. This is an alias for AddPlanningCenterApiClient.
+    /// </summary>
+    /// <param name="services">The service collection to add services to</param>
+    /// <param name="configureOptions">Action to configure the Planning Center options</param>
+    /// <returns>The service collection for method chaining</returns>
+    public static IServiceCollection AddPlanningCenterApi(
+        this IServiceCollection services,
+        Action<PlanningCenterOptions> configureOptions)
+    {
+        return services.AddPlanningCenterApiClient(configureOptions);
     }
 }

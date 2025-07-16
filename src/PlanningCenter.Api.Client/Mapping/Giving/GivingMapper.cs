@@ -326,6 +326,26 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
             return new JsonApiRequest<PledgeCreateDto> { Data = dto };
         }
 
+        /// <summary>
+        /// Maps a PledgeUpdateRequest to a JSON:API request.
+        /// </summary>
+        public static JsonApiRequest<PledgeUpdateDto> MapUpdateRequestToJsonApi(string id, PledgeUpdateRequest request)
+        {
+            var dto = new PledgeUpdateDto
+            {
+                Id = id,
+                Type = "Pledge",
+                Attributes = new PledgeUpdateAttributesDto
+                {
+                    AmountCents = request.AmountCents ?? 0,
+                    AmountCurrency = request.AmountCurrency ?? "USD",
+                    JointGiverAmountCents = request.JointGiverAmountCents
+                }
+            };
+
+            return new JsonApiRequest<PledgeUpdateDto> { Data = dto };
+        }
+
         #endregion
 
         #region RecurringDonation Mapping
@@ -352,6 +372,58 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
             };
         }
 
+        /// <summary>
+        /// Maps a RecurringDonationCreateRequest to a JSON:API request.
+        /// </summary>
+        public static JsonApiRequest<RecurringDonationCreateDto> MapCreateRequestToJsonApi(RecurringDonationCreateRequest request)
+        {
+            var dto = new RecurringDonationCreateDto
+            {
+                Type = "RecurringDonation",
+                Attributes = new RecurringDonationCreateAttributesDto
+                {
+                    AmountCents = request.AmountCents,
+                    AmountCurrency = request.AmountCurrency,
+                    Schedule = request.Schedule
+                }
+            };
+
+            if (!string.IsNullOrEmpty(request.PersonId) || !string.IsNullOrEmpty(request.PaymentSourceId))
+            {
+                dto.Relationships = new RecurringDonationCreateRelationshipsDto();
+                
+                if (!string.IsNullOrEmpty(request.PersonId))
+                    dto.Relationships.Person = new RelationshipData { Type = "Person", Id = request.PersonId };
+                
+                if (!string.IsNullOrEmpty(request.PaymentSourceId))
+                    dto.Relationships.PaymentSource = new RelationshipData { Type = "PaymentSource", Id = request.PaymentSourceId };
+            }
+
+            return new JsonApiRequest<RecurringDonationCreateDto> { Data = dto };
+        }
+
+        /// <summary>
+        /// Maps a RecurringDonationUpdateRequest to a JSON:API request.
+        /// </summary>
+        public static JsonApiRequest<RecurringDonationUpdateDto> MapUpdateRequestToJsonApi(string id, RecurringDonationUpdateRequest request)
+        {
+            var dto = new RecurringDonationUpdateDto
+            {
+                Id = id,
+                Type = "RecurringDonation",
+                Attributes = new RecurringDonationUpdateAttributesDto
+                {
+                    AmountCents = request.AmountCents ?? 0,
+                    AmountCurrency = request.AmountCurrency ?? "USD",
+                    Schedule = request.Schedule,
+                    NextOccurrence = request.NextOccurrence,
+                    Status = request.Status
+                }
+            };
+
+            return new JsonApiRequest<RecurringDonationUpdateDto> { Data = dto };
+        }
+
         #endregion
 
         #region Refund Mapping
@@ -374,6 +446,28 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
                 UpdatedAt = dto.Attributes.UpdatedAt,
                 DataSource = "Giving"
             };
+        }
+
+        /// <summary>
+        /// Maps a RefundCreateRequest to a JSON:API request.
+        /// </summary>
+        public static JsonApiRequest<RefundCreateDto> MapCreateRequestToJsonApi(RefundCreateRequest request)
+        {
+            var dto = new RefundCreateDto
+            {
+                Type = "Refund",
+                Attributes = new RefundCreateAttributesDto
+                {
+                    AmountCents = request.AmountCents,
+                    AmountCurrency = request.AmountCurrency,
+                    Reason = request.Reason
+                }
+            };
+
+            // Note: DonationId would typically be passed separately or handled differently
+            // For now, we'll skip relationships since the request doesn't have DonationId
+
+            return new JsonApiRequest<RefundCreateDto> { Data = dto };
         }
 
         #endregion
@@ -549,6 +643,80 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
         public RelationshipData? Fund { get; set; }
         public RelationshipData? PledgeCampaign { get; set; }
         public RelationshipData? JointGiver { get; set; }
+    }
+
+    public class PledgeUpdateDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Type { get; set; } = "Pledge";
+        public PledgeUpdateAttributesDto Attributes { get; set; } = new();
+    }
+
+    public class PledgeUpdateAttributesDto
+    {
+        public long AmountCents { get; set; }
+        public string AmountCurrency { get; set; } = "USD";
+        public string? Status { get; set; }
+        public long? JointGiverAmountCents { get; set; }
+    }
+
+    // RecurringDonation Create/Update DTOs
+    public class RecurringDonationCreateDto
+    {
+        public string Type { get; set; } = "RecurringDonation";
+        public RecurringDonationCreateAttributesDto Attributes { get; set; } = new();
+        public RecurringDonationCreateRelationshipsDto? Relationships { get; set; }
+    }
+
+    public class RecurringDonationCreateAttributesDto
+    {
+        public long AmountCents { get; set; }
+        public string AmountCurrency { get; set; } = "USD";
+        public string? Schedule { get; set; }
+        public DateTime? NextOccurrence { get; set; }
+    }
+
+    public class RecurringDonationCreateRelationshipsDto
+    {
+        public RelationshipData? Person { get; set; }
+        public RelationshipData? PaymentSource { get; set; }
+    }
+
+    public class RecurringDonationUpdateDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Type { get; set; } = "RecurringDonation";
+        public RecurringDonationUpdateAttributesDto Attributes { get; set; } = new();
+    }
+
+    public class RecurringDonationUpdateAttributesDto
+    {
+        public long AmountCents { get; set; }
+        public string AmountCurrency { get; set; } = "USD";
+        public string? Schedule { get; set; }
+        public DateTime? NextOccurrence { get; set; }
+        public string? Status { get; set; }
+    }
+
+    // Refund Create DTOs
+    public class RefundCreateDto
+    {
+        public string Type { get; set; } = "Refund";
+        public RefundCreateAttributesDto Attributes { get; set; } = new();
+        public RefundCreateRelationshipsDto? Relationships { get; set; }
+    }
+
+    public class RefundCreateAttributesDto
+    {
+        public long AmountCents { get; set; }
+        public string AmountCurrency { get; set; } = "USD";
+        public long? FeeCents { get; set; }
+        public string? Reason { get; set; }
+    }
+
+    public class RefundCreateRelationshipsDto
+    {
+        public RelationshipData? Donation { get; set; }
     }
 
     #endregion

@@ -123,7 +123,7 @@ public class RegistrationsService : IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<SignupCreateDto>, JsonApiSingleResponse<SignupDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<SignupDto>>(
                 $"{BaseEndpoint}/signups", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -157,7 +157,7 @@ public class RegistrationsService : IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<SignupUpdateDto>, JsonApiSingleResponse<SignupDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<SignupDto>>(
                 $"{BaseEndpoint}/signups/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -300,7 +300,7 @@ public class RegistrationsService : IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<RegistrationCreateDto>, JsonApiSingleResponse<RegistrationDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<RegistrationDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/registrations", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -421,7 +421,7 @@ public class RegistrationsService : IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<AttendeeCreateDto>, JsonApiSingleResponse<AttendeeDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/attendees", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -455,7 +455,7 @@ public class RegistrationsService : IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<AttendeeUpdateDto>, JsonApiSingleResponse<AttendeeDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/attendees/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -515,7 +515,7 @@ public class RegistrationsService : IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<AttendeeCreateDto>, JsonApiSingleResponse<AttendeeDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/waitlist", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -546,7 +546,7 @@ public class RegistrationsService : IRegistrationsService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<AttendeeDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/remove_from_waitlist", null, cancellationToken);
 
             if (response?.Data == null)
@@ -577,7 +577,7 @@ public class RegistrationsService : IRegistrationsService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<AttendeeDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/promote_from_waitlist", null, cancellationToken);
 
             if (response?.Data == null)
@@ -715,7 +715,7 @@ public class RegistrationsService : IRegistrationsService
 
         var allSignups = new List<Signup>();
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxPages = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
 
         try
@@ -765,7 +765,7 @@ public class RegistrationsService : IRegistrationsService
         _logger.LogDebug("Streaming signups with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxPages = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
 
         var currentParameters = parameters ?? new QueryParameters();
@@ -1018,7 +1018,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1099,7 +1099,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1251,7 +1251,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/signup_times", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1331,7 +1331,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signup_times/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1493,7 +1493,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1574,7 +1574,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1736,7 +1736,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/categories", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1793,7 +1793,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/categories/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1822,7 +1822,7 @@ public class RegistrationsService : IRegistrationsService
         }
     }
 
-    public async Task<Campus?> GetCampusAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<Models.Registrations.Campus?> GetCampusAsync(string id, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Campus ID cannot be null or empty", nameof(id));
@@ -1840,7 +1840,7 @@ public class RegistrationsService : IRegistrationsService
                 return null;
             }
 
-            var campus = new Campus
+            var campus = new Models.Registrations.Campus
             {
                 Id = id,
                 Name = response.Data.attributes?.name?.ToString() ?? "Unknown Campus",
@@ -1874,7 +1874,7 @@ public class RegistrationsService : IRegistrationsService
         }
     }
 
-    public async Task<IPagedResponse<Campus>> ListCampusesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
+    public async Task<IPagedResponse<Models.Registrations.Campus>> ListCampusesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Listing campuses with parameters: {@Parameters}", parameters);
 
@@ -1887,15 +1887,15 @@ public class RegistrationsService : IRegistrationsService
             if (response?.Data == null)
             {
                 _logger.LogWarning("No campuses returned from API");
-                return new PagedResponse<Campus>
+                return new PagedResponse<Models.Registrations.Campus>
                 {
-                    Data = new List<Campus>(),
+                    Data = new List<Models.Registrations.Campus>(),
                     Meta = new PagedResponseMeta { TotalCount = 0 },
                     Links = new PagedResponseLinks()
                 };
             }
 
-            var campuses = response.Data.Select(dto => new Campus
+            var campuses = response.Data.Select(dto => new Models.Registrations.Campus
             {
                 Id = dto.id?.ToString() ?? string.Empty,
                 Name = dto.attributes?.name?.ToString() ?? "Unknown Campus",
@@ -1914,7 +1914,7 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             }).ToList();
             
-            var pagedResponse = new PagedResponse<Campus>
+            var pagedResponse = new PagedResponse<Models.Registrations.Campus>
             {
                 Data = campuses,
                 Meta = response.Meta,

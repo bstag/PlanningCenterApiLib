@@ -9,6 +9,7 @@ using PlanningCenter.Api.Client.Models.Exceptions;
 using PlanningCenter.Api.Client.Models.JsonApi.Giving;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.People;
+using PlanningCenter.Api.Client.Models.People;
 
 namespace PlanningCenter.Api.Client.Services;
 
@@ -125,7 +126,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<DonationCreateDto>, JsonApiSingleResponse<DonationDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<DonationDto>>(
                 $"{BaseEndpoint}/donations", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -159,7 +160,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<DonationUpdateDto>, JsonApiSingleResponse<DonationDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<DonationDto>>(
                 $"{BaseEndpoint}/donations/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -297,7 +298,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<FundCreateDto>, JsonApiSingleResponse<FundDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<FundDto>>(
                 $"{BaseEndpoint}/funds", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -331,7 +332,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<FundUpdateDto>, JsonApiSingleResponse<FundDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<FundDto>>(
                 $"{BaseEndpoint}/funds/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -447,7 +448,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<BatchCreateDto>, JsonApiSingleResponse<BatchDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -481,7 +482,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<BatchUpdateDto>, JsonApiSingleResponse<BatchDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -512,7 +513,7 @@ public class GivingService : IGivingService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<BatchDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches/{id}/commit", null, cancellationToken);
 
             if (response?.Data == null)
@@ -628,7 +629,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<PledgeCreateDto>, JsonApiSingleResponse<PledgeDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<PledgeDto>>(
                 $"{BaseEndpoint}/pledges", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -662,7 +663,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<PledgeUpdateDto>, JsonApiSingleResponse<PledgeDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<PledgeDto>>(
                 $"{BaseEndpoint}/pledges/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -778,7 +779,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<RecurringDonationCreateDto>, JsonApiSingleResponse<RecurringDonationDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<RecurringDonationDto>>(
                 $"{BaseEndpoint}/recurring_donations", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -812,7 +813,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<RecurringDonationUpdateDto>, JsonApiSingleResponse<RecurringDonationDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<RecurringDonationDto>>(
                 $"{BaseEndpoint}/recurring_donations/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -930,7 +931,7 @@ public class GivingService : IGivingService
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<RefundCreateDto>, JsonApiSingleResponse<RefundDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<RefundDto>>(
                 $"{BaseEndpoint}/donations/{donationId}/refund", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1271,7 +1272,7 @@ public class GivingService : IGivingService
 
         var allDonations = new List<Donation>();
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxItems = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
 
         try
@@ -1286,7 +1287,7 @@ public class GivingService : IGivingService
                 allDonations.AddRange(response.Data);
                 
                 currentPage++;
-                if (currentPage >= maxPages)
+                if (allDonations.Count >= maxItems)
                     break;
 
                 // Update parameters for next page
@@ -1322,8 +1323,9 @@ public class GivingService : IGivingService
         _logger.LogDebug("Streaming donations with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxItems = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
+        var totalReturned = 0;
 
         var currentParameters = parameters ?? new QueryParameters();
         currentParameters.PerPage = pageSize;
@@ -1336,10 +1338,11 @@ public class GivingService : IGivingService
             foreach (var donation in response.Data)
             {
                 yield return donation;
+                totalReturned++;
             }
             
             currentPage++;
-            if (currentPage >= maxPages)
+            if (totalReturned >= maxItems)
                 break;
 
             // Update parameters for next page

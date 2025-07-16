@@ -121,13 +121,12 @@ public static class PublishingMapper
     /// <summary>
     /// Maps a SeriesDto to a Series domain model.
     /// </summary>
-    public static Series MapToDomain(dynamic dto)
+    public static Series MapToDomain(SeriesDto dto)
     {
-        // This would be implemented with proper SeriesDto in a complete implementation
         return new Series
         {
-            Id = dto.Id?.ToString() ?? string.Empty,
-            Title = dto.Attributes?.Title?.ToString() ?? "Unknown Series",
+            Id = dto.Id,
+            Title = dto.Attributes.Title,
             DataSource = "Publishing"
         };
     }
@@ -139,14 +138,13 @@ public static class PublishingMapper
     /// <summary>
     /// Maps a SpeakerDto to a Speaker domain model.
     /// </summary>
-    public static Speaker MapToDomain(dynamic dto)
+    public static Speaker MapToDomain(SpeakerDto dto)
     {
-        // This would be implemented with proper SpeakerDto in a complete implementation
         return new Speaker
         {
-            Id = dto.Id?.ToString() ?? string.Empty,
-            FirstName = dto.Attributes?.FirstName?.ToString() ?? "Unknown",
-            LastName = dto.Attributes?.LastName?.ToString() ?? "Speaker",
+            Id = dto.Id,
+            FirstName = dto.Attributes.FirstName,
+            LastName = dto.Attributes.LastName,
             DataSource = "Publishing"
         };
     }
@@ -158,16 +156,15 @@ public static class PublishingMapper
     /// <summary>
     /// Maps a MediaDto to a Media domain model.
     /// </summary>
-    public static Media MapToDomain(dynamic dto)
+    public static Media MapToDomain(MediaDto dto)
     {
-        // This would be implemented with proper MediaDto in a complete implementation
         return new Media
         {
-            Id = dto.Id?.ToString() ?? string.Empty,
-            FileName = dto.Attributes?.FileName?.ToString() ?? "Unknown File",
-            FileUrl = dto.Attributes?.FileUrl?.ToString() ?? string.Empty,
-            ContentType = dto.Attributes?.ContentType?.ToString() ?? "application/octet-stream",
-            MediaType = dto.Attributes?.MediaType?.ToString() ?? "unknown",
+            Id = dto.Id,
+            FileName = dto.Attributes.FileName,
+            FileUrl = dto.Attributes.Url ?? string.Empty,
+            ContentType = dto.Attributes.ContentType ?? "application/octet-stream",
+            MediaType = dto.Attributes.MediaType ?? "unknown",
             DataSource = "Publishing"
         };
     }

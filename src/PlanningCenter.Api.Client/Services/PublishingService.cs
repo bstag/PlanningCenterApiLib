@@ -124,7 +124,7 @@ public class PublishingService : IPublishingService
         try
         {
             var jsonApiRequest = PublishingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiRequest<EpisodeCreateDto>, JsonApiSingleResponse<EpisodeDto>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<EpisodeDto>>(
                 $"{BaseEndpoint}/episodes", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -159,7 +159,7 @@ public class PublishingService : IPublishingService
         try
         {
             var jsonApiRequest = PublishingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<EpisodeUpdateDto>, JsonApiSingleResponse<EpisodeDto>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<EpisodeDto>>(
                 $"{BaseEndpoint}/episodes/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -217,7 +217,7 @@ public class PublishingService : IPublishingService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/episodes/{id}/publish", null, cancellationToken);
 
             if (response?.Data == null)
@@ -256,7 +256,7 @@ public class PublishingService : IPublishingService
 
         try
         {
-            var response = await _apiConnection.PostAsync<object, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/episodes/{id}/unpublish", null, cancellationToken);
 
             if (response?.Data == null)
@@ -300,7 +300,7 @@ public class PublishingService : IPublishingService
 
         var allEpisodes = new List<Episode>();
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxPages = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
 
         try
@@ -350,7 +350,7 @@ public class PublishingService : IPublishingService
         _logger.LogDebug("Streaming episodes with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxPages ?? int.MaxValue;
+        var maxPages = options?.MaxItems ?? int.MaxValue;
         var currentPage = 0;
 
         var currentParameters = parameters ?? new QueryParameters();
@@ -446,7 +446,7 @@ public class PublishingService : IPublishingService
                 };
             }
 
-            var series = response.Data.Select(PublishingMapper.MapToDomain).ToList();
+            var series = response.Data.Select<dynamic, Series>(dto => PublishingMapper.MapToDomain((SeriesDto)dto)).ToList();
             
             var pagedResponse = new PagedResponse<Series>
             {
@@ -535,7 +535,7 @@ public class PublishingService : IPublishingService
                 };
             }
 
-            var speakers = response.Data.Select(PublishingMapper.MapToDomain).ToList();
+            var speakers = response.Data.Select<dynamic, Speaker>(dto => PublishingMapper.MapToDomain((SpeakerDto)dto)).ToList();
             
             var pagedResponse = new PagedResponse<Speaker>
             {
@@ -587,7 +587,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/speakers", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -595,7 +595,7 @@ public class PublishingService : IPublishingService
                 throw new PlanningCenterApiGeneralException("Failed to create speaker - no data returned");
             }
 
-            var speaker = PublishingMapper.MapToDomain(response.Data);
+            var speaker = PublishingMapper.MapToDomain((SpeakerDto)response.Data);
             _logger.LogInformation("Successfully created speaker: {SpeakerId}", speaker.Id);
             return speaker;
         }
@@ -642,7 +642,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/speakers/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -758,7 +758,7 @@ public class PublishingService : IPublishingService
                 };
             }
 
-            var media = response.Data.Select(PublishingMapper.MapToDomain).ToList();
+            var media = response.Data.Select<dynamic, Media>(dto => PublishingMapper.MapToDomain((MediaDto)dto)).ToList();
             
             var pagedResponse = new PagedResponse<Media>
             {
@@ -812,7 +812,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/episodes/{episodeId}/media", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -820,7 +820,7 @@ public class PublishingService : IPublishingService
                 throw new PlanningCenterApiGeneralException($"Failed to upload media to episode {episodeId} - no data returned");
             }
 
-            var media = PublishingMapper.MapToDomain(response.Data);
+            var media = PublishingMapper.MapToDomain((MediaDto)response.Data);
             _logger.LogInformation("Successfully uploaded media: {MediaId} to episode: {EpisodeId}", media.Id, episodeId);
             return media;
         }
@@ -857,7 +857,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiRequest<dynamic>, JsonApiSingleResponse<dynamic>>(
+            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/media/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
