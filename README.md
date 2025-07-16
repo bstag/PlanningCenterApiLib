@@ -1,15 +1,16 @@
 # Planning Center API SDK for .NET
 
-A comprehensive, production-ready .NET SDK for the [Planning Center API](https://developer.planning.center/docs/#/overview/). Built with modern .NET practices, this SDK provides a clean, intuitive interface for interacting with Planning Center's services.
+A comprehensive, production-ready .NET SDK for the [Planning Center API](https://developer.planning.center/docs/#/overview/). Built with modern .NET practices, this SDK provides a clean, intuitive interface for interacting with all of Planning Center's services.
 
 ## Features
 
+- **Complete API Coverage**: Full implementation of all 9 Planning Center modules
 - **Multiple Authentication Methods**: Personal Access Tokens (PAT), OAuth 2.0, and Access Tokens
 - **Automatic Pagination**: Built-in pagination helpers eliminate manual pagination logic
 - **Memory-Efficient Streaming**: Stream large datasets without loading everything into memory
+- **Fluent API**: LINQ-like interface for intuitive query building
 - **Comprehensive Error Handling**: Detailed exceptions with proper error context
 - **Built-in Caching**: Configurable response caching for improved performance
-- **Retry Logic**: Automatic retry with exponential backoff for transient failures
 - **Dependency Injection**: Full support for .NET dependency injection
 - **Async/Await**: Modern async patterns throughout
 - **Strongly Typed**: Rich type system with comprehensive models
@@ -23,6 +24,7 @@ A comprehensive, production-ready .NET SDK for the [Planning Center API](https:/
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PlanningCenter.Api.Client;
+using PlanningCenter.Api.Client.Models;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -31,14 +33,24 @@ builder.Services.AddPlanningCenterApiClientWithPAT("your-app-id:your-secret");
 
 var host = builder.Build();
 
-// Use the People service
+// Use any of the 9 available services
 var peopleService = host.Services.GetRequiredService<IPeopleService>();
-var people = await peopleService.ListAsync();
+var givingService = host.Services.GetRequiredService<IGivingService>();
+var calendarService = host.Services.GetRequiredService<ICalendarService>();
 
+// List people with automatic pagination
+var people = await peopleService.ListAsync();
 foreach (var person in people.Data)
 {
     Console.WriteLine($"{person.FullName} - {person.Status}");
 }
+
+// Use the fluent API for LINQ-like queries
+var client = host.Services.GetRequiredService<IPlanningCenterClient>();
+var johnSmiths = await client.Fluent().People
+    .Where(p => p.FirstName == "John")
+    .Where(p => p.LastName.Contains("Smith"))
+    .GetAllAsync();
 ```
 
 ### OAuth 2.0 (For User-Facing Apps)
@@ -65,17 +77,18 @@ See the [Authentication Guide](docs/AUTHENTICATION.md) for detailed information 
 
 ## Documentation
 
-- **[Authentication Guide](docs/AUTHENTICATION.md)** - Complete guide to all authentication methods
+- **[Fluent API Guide](docs/FLUENT_API.md)** - Complete guide to the LINQ-like fluent interface
+- **[Authentication Guide](planning-center-sdk-plan/architecture/AUTHENTICATION.md)** - Complete guide to all authentication methods
 - **[Examples](examples/)** - Working examples for different scenarios
-- **[API Reference](planning-center-sdk-v2/api-reference/)** - Detailed API documentation
-- **[Architecture](planning-center-sdk-v2/architecture/)** - SDK architecture and design decisions
+- **[API Reference](planning-center-sdk-plan/api-reference/)** - Detailed API documentation
+- **[Architecture](planning-center-sdk-plan/architecture/)** - SDK architecture and design decisions
 
 ## Examples
 
 See the `examples/` directory for complete working examples:
 
-- `PlanningCenter.Api.Client.Console/` - General usage with OAuth and PAT options
-- `PlanningCenter.Api.Client.PAT.Console/` - Dedicated Personal Access Token example
+- `PlanningCenter.Api.Client.Console/` - General usage with standard API
+- `PlanningCenter.Api.Client.Fluent.Console/` - Fluent API usage examples
 - `PlanningCenter.Api.Client.Worker/` - Background service implementation
 
 ### Automatic Pagination
@@ -113,6 +126,40 @@ if (page.HasNextPage)
 }
 ```
 
+### Multiple Service Examples
+
+```csharp
+// People management
+var person = await peopleService.CreateAsync(new PersonCreateRequest
+{
+    FirstName = "John",
+    LastName = "Smith",
+    Birthdate = DateTime.Parse("1990-01-01")
+});
+
+// Giving management
+var donations = await givingService.ListDonationsAsync();
+var totalGiving = await givingService.GetTotalGivingAsync(
+    DateTime.Now.AddYears(-1), DateTime.Now);
+
+// Calendar management
+var events = await calendarService.ListEventsAsync();
+var newEvent = await calendarService.CreateEventAsync(new EventCreateRequest
+{
+    Name = "Sunday Service",
+    StartsAt = DateTime.Now.AddDays(7),
+    EndsAt = DateTime.Now.AddDays(7).AddHours(2)
+});
+
+// Webhook management
+var webhooks = await webhooksService.ListSubscriptionsAsync();
+var newWebhook = await webhooksService.CreateSubscriptionAsync(new WebhookSubscriptionCreateRequest
+{
+    Url = "https://your-app.com/webhook",
+    EventTypes = new[] { "person.created", "person.updated" }
+});
+```
+
 ## Configuration
 
 ```csharp
@@ -139,14 +186,23 @@ builder.Services.Configure<PlanningCenterOptions>(options =>
 
 | Module | Status | Description |
 |--------|--------|-------------|
-| **People** | ✅ Complete | Manage people, households, and contact information |
-| **Services** | 🚧 In Progress | Worship services, plans, and scheduling |
-| **Groups** | 📋 Planned | Small groups and group management |
-| **Giving** | 📋 Planned | Donations and financial management |
-| **Check-Ins** | 📋 Planned | Event check-ins and attendance |
-| **Registrations** | 📋 Planned | Event registrations and signups |
-| **Calendar** | 📋 Planned | Calendar events and resources |
-| **Publishing** | 📋 Planned | Church website and content management |
+| **People** | ✅ Complete | Manage people, households, contact information, workflows, and forms |
+| **Giving** | ✅ Complete | Donations, pledges, funds, batches, and payment management |
+| **Calendar** | ✅ Complete | Calendar events, resources, and scheduling |
+| **Check-Ins** | ✅ Complete | Event check-ins, locations, and attendance tracking |
+| **Groups** | ✅ Complete | Small groups, memberships, and group management |
+| **Registrations** | ✅ Complete | Event registrations, attendees, and signups |
+| **Services** | ✅ Complete | Worship services, plans, items, and scheduling |
+| **Publishing** | ✅ Complete | Media content, episodes, series, and speakers |
+| **Webhooks** | ✅ Complete | Webhook subscriptions, events, and delivery management |
+
+All modules support:
+- **Full CRUD operations** with comprehensive validation
+- **Automatic pagination** with helpers for large datasets
+- **Memory-efficient streaming** for processing large amounts of data
+- **Fluent API** for LINQ-like querying (People module complete, others in progress)
+- **Robust error handling** with detailed exception types
+- **Comprehensive logging** with structured data
 
 ## License
 

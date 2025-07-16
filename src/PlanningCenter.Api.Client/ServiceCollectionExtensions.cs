@@ -79,6 +79,14 @@ public static class ServiceCollectionExtensions
         
         // Register module services
         services.AddScoped<IPeopleService, PeopleService>();
+        services.AddScoped<IGivingService, GivingService>();
+        services.AddScoped<ICalendarService, CalendarService>();
+        services.AddScoped<ICheckInsService, CheckInsService>();
+        services.AddScoped<IGroupsService, GroupsService>();
+        services.AddScoped<IRegistrationsService, RegistrationsService>();
+        services.AddScoped<IServicesService, ServicesService>();
+        services.AddScoped<IPublishingService, PublishingService>();
+        services.AddScoped<IWebhooksService, WebhooksService>();
         
         // Register main client
         services.AddScoped<IPlanningCenterClient, PlanningCenterClient>();
