@@ -11,6 +11,7 @@ The fluent API provides:
 - **Built-in pagination** handling for large datasets
 - **Memory-efficient streaming** for processing large amounts of data
 - **Fluent creation** of entities with related data
+- **Performance monitoring** and query optimization insights
 
 ## Getting Started
 
@@ -23,13 +24,15 @@ using PlanningCenter.Api.Client.Extensions;
 var fluentClient = client.Fluent();
 
 // Access module-specific fluent contexts
-var people = fluentClient.People;      // ✅ Full implementation
-var giving = fluentClient.Giving;      // ✅ Full implementation  
-var calendar = fluentClient.Calendar;  // ✅ Full implementation
-var groups = fluentClient.Groups;      // ✅ Full implementation
-var services = fluentClient.Services;  // ✅ Full implementation
-var checkIns = fluentClient.CheckIns;  // ✅ Full implementation
-// Other modules coming soon...
+var people = fluentClient.People;          // ✅ Full implementation
+var giving = fluentClient.Giving;          // ✅ Full implementation  
+var calendar = fluentClient.Calendar;      // ✅ Full implementation
+var groups = fluentClient.Groups;          // ✅ Full implementation
+var services = fluentClient.Services;      // ✅ Full implementation
+var checkIns = fluentClient.CheckIns;      // ✅ Full implementation
+var registrations = fluentClient.Registrations; // ✅ Full implementation
+var publishing = fluentClient.Publishing;  // ✅ Full implementation
+var webhooks = fluentClient.Webhooks;      // ✅ Full implementation
 ```
 
 ### Simple Queries
@@ -359,11 +362,122 @@ var results = await client.Fluent().People
 - ✅ **Groups Module**: Complete fluent API with membership and type filtering
 - ✅ **Services Module**: Complete fluent API with service planning operations
 - ✅ **Check-Ins Module**: Complete fluent API with check-in status and filtering
+- ✅ **Registrations Module**: Complete fluent API with event registration filtering
+- ✅ **Publishing Module**: Complete fluent API with episode and media management
+- ✅ **Webhooks Module**: Complete fluent API with subscription monitoring
 
-### Coming Soon 🚧
-- 🚧 **Registrations Module**: Planned for next phase
-- 🚧 **Publishing Module**: Planned for next phase
-- 🚧 **Webhooks Module**: Planned for next phase
+## Performance Monitoring
+
+The fluent API includes comprehensive performance monitoring capabilities to help optimize your queries and identify potential bottlenecks:
+
+### Query Performance Tracking
+
+All fluent operations are automatically tracked for performance metrics:
+
+```csharp
+// All fluent operations are monitored automatically
+var people = await client.Fluent().People
+    .Where(p => p.FirstName == "John")
+    .OrderBy(p => p.LastName)
+    .GetPagedAsync(25);
+```
+
+### Getting Performance Metrics
+
+```csharp
+using PlanningCenter.Api.Client.Fluent.Performance;
+
+// Get metrics for a specific operation
+var metrics = FluentPerformanceExtensions.GetPerformanceMetrics("People.GetPaged[25]");
+Console.WriteLine($"Average execution time: {metrics?.AverageExecutionTimeMs}ms");
+Console.WriteLine($"Total executions: {metrics?.TotalExecutions}");
+Console.WriteLine($"Success rate: {metrics?.SuccessRate:P}");
+
+// Get all performance metrics
+var allMetrics = FluentPerformanceExtensions.GetAllFluentMetrics();
+foreach (var (operationName, metric) in allMetrics)
+{
+    Console.WriteLine($"{operationName}: {metric.AverageExecutionTimeMs}ms avg");
+}
+```
+
+### Performance Optimization Recommendations
+
+The system provides automated recommendations for query optimization:
+
+```csharp
+// Get optimization recommendations
+var recommendations = FluentPerformanceExtensions.GetFluentOptimizationRecommendations();
+
+foreach (var recommendation in recommendations)
+{
+    Console.WriteLine($"Query: {recommendation.QueryName}");
+    Console.WriteLine($"Priority: {recommendation.Priority}");
+    
+    foreach (var issue in recommendation.Issues)
+    {
+        Console.WriteLine($"  Issue: {issue}");
+    }
+    
+    foreach (var rec in recommendation.Recommendations)
+    {
+        Console.WriteLine($"  Recommendation: {rec}");
+    }
+}
+```
+
+### Performance Reports
+
+Generate comprehensive performance reports:
+
+```csharp
+// Generate a full performance report
+var report = FluentPerformanceExtensions.GenerateFluentPerformanceReport();
+
+Console.WriteLine($"Generated: {report.GeneratedAt}");
+Console.WriteLine($"Total queries: {report.TotalQueries}");
+Console.WriteLine($"Total executions: {report.TotalExecutions}");
+Console.WriteLine($"Overall success rate: {report.OverallSuccessRate:P}");
+Console.WriteLine($"Average execution time: {report.AverageExecutionTime}ms");
+
+// Show slowest queries
+Console.WriteLine("\nSlowest queries:");
+foreach (var query in report.SlowestQueries.Take(5))
+{
+    Console.WriteLine($"  {query.QueryName}: {query.AverageExecutionTimeMs}ms");
+}
+
+// Show most frequent queries
+Console.WriteLine("\nMost frequent queries:");
+foreach (var query in report.MostFrequentQueries.Take(5))
+{
+    Console.WriteLine($"  {query.QueryName}: {query.TotalExecutions} executions");
+}
+```
+
+### Performance Thresholds
+
+The monitoring system automatically identifies performance issues based on configurable thresholds:
+
+- **Slow queries**: Average execution time > 2 seconds (Medium priority) or > 5 seconds (High priority)
+- **High failure rates**: Error rate > 10% (High priority)
+- **Execution variance**: Max time > 5x Min time (Medium priority)
+- **Frequently executed slow queries**: > 1000 executions with > 1 second average (Medium priority)
+
+### Best Practices for Performance
+
+1. **Monitor regularly**: Check performance metrics periodically
+2. **Optimize slow queries**: Address high-priority recommendations first
+3. **Use appropriate page sizes**: Balance between API calls and memory usage
+4. **Consider caching**: For frequently accessed data
+5. **Use streaming**: For large datasets to reduce memory pressure
+
+### Clearing Performance Data
+
+```csharp
+// Clear all performance metrics (useful for testing)
+FluentPerformanceExtensions.ClearFluentPerformanceMetrics();
+```
 
 ## Expression Parsing (Future Enhancement)
 
@@ -604,6 +718,139 @@ Each module provides specialized operations that make common tasks easier:
 - `WithMedicalNotes()` - Filter by medical notes presence
 - `ByNameContains(text)` - Search by name
 - `ByKind(kind)` - Filter by check-in kind/type
+
+### Publishing Module
+
+```csharp
+// Get recent published episodes
+var recentEpisodes = await client.Fluent().Publishing
+    .Published()
+    .OrderByDescending(e => e.PublishedAt)
+    .GetPagedAsync(25);
+
+// Find episodes by title
+var christmasEpisodes = await client.Fluent().Publishing
+    .ByTitleContains("Christmas")
+    .Published()
+    .OrderByDescending(e => e.PublishedAt)
+    .GetAllAsync();
+
+// Get episodes from a specific speaker
+var speakerEpisodes = await client.Fluent().Publishing
+    .BySpeaker("john-doe")
+    .Published()
+    .OrderByDescending(e => e.PublishedAt)
+    .GetAllAsync();
+
+// Calculate total views for published episodes
+var totalViews = await client.Fluent().Publishing
+    .Published()
+    .TotalViewsAsync();
+
+// Find popular episodes (high view count)
+var popularEpisodes = await client.Fluent().Publishing
+    .WithMinimumViews(1000)
+    .Published()
+    .OrderByDescending(e => e.ViewCount)
+    .GetPagedAsync(10);
+```
+
+### Webhooks Module
+
+```csharp
+// Get all active webhook subscriptions
+var activeWebhooks = await client.Fluent().Webhooks
+    .Active()
+    .OrderBy(w => w.Url)
+    .GetAllAsync();
+
+// Find webhooks with poor success rates
+var problematicWebhooks = await client.Fluent().Webhooks
+    .WithPoorSuccessRate(80.0) // Below 80% success rate
+    .Active()
+    .OrderBy(w => w.SuccessRate)
+    .GetAllAsync();
+
+// Get webhooks that are responding slowly
+var slowWebhooks = await client.Fluent().Webhooks
+    .SlowResponding(5000) // Over 5 seconds
+    .Active()
+    .GetAllAsync();
+
+// Find webhooks by URL pattern
+var apiWebhooks = await client.Fluent().Webhooks
+    .ByUrlContains("api.example.com")
+    .Active()
+    .GetAllAsync();
+
+// Calculate overall webhook success rate
+var overallSuccessRate = await client.Fluent().Webhooks
+    .Active()
+    .OverallSuccessRateAsync();
+
+// Get webhook delivery statistics
+var totalDeliveries = await client.Fluent().Webhooks
+    .Active()
+    .TotalDeliveriesAsync();
+
+var successfulDeliveries = await client.Fluent().Webhooks
+    .Active()
+    .TotalSuccessfulDeliveriesAsync();
+```
+
+### Registrations Module
+
+```csharp
+// Get recent registrations
+var recentRegistrations = await client.Fluent().Registrations
+    .OrderByDescending(r => r.CreatedAt)
+    .GetPagedAsync(25);
+
+// Find registrations by person
+var personRegistrations = await client.Fluent().Registrations
+    .ByPerson("12345")
+    .OrderByDescending(r => r.CreatedAt)
+    .GetAllAsync();
+
+// Get registrations for a specific event
+var eventRegistrations = await client.Fluent().Registrations
+    .ByEvent("event-123")
+    .OrderBy(r => r.CreatedAt)
+    .GetAllAsync();
+
+// Find registrations by campus
+var campusRegistrations = await client.Fluent().Registrations
+    .ByCampus("main-campus")
+    .OrderByDescending(r => r.CreatedAt)
+    .GetAllAsync();
+```
+
+### Specialized Operations Summary
+
+Each module provides specialized operations for common use cases:
+
+#### Publishing Specialized Methods
+- `Published()` / `Draft()` - Filter by publication status
+- `ByTitleContains(text)` - Search by episode title
+- `BySpeaker(speakerId)` - Filter by speaker
+- `WithMinimumViews(count)` - Filter by view count
+- `TotalViewsAsync()` - Calculate total views across episodes
+
+#### Webhooks Specialized Methods
+- `Active()` / `Inactive()` - Filter by subscription status
+- `ByUrlContains(fragment)` - Filter by URL pattern
+- `WithSuccessfulLastDelivery()` - Filter by delivery success
+- `WithPoorSuccessRate(threshold)` - Filter by success rate
+- `SlowResponding(thresholdMs)` - Filter by response time
+- `WithMinimumDeliveries(count)` - Filter by delivery volume
+- `OverallSuccessRateAsync()` - Calculate success rate across subscriptions
+- `TotalDeliveriesAsync()` - Calculate total deliveries
+
+#### Registrations Specialized Methods
+- `ByPerson(personId)` - Filter by registered person
+- `ByEvent(eventId)` - Filter by event
+- `ByCampus(campusId)` - Filter by campus
+- `ByCategory(categoryId)` - Filter by registration category
 
 ## Examples Repository
 

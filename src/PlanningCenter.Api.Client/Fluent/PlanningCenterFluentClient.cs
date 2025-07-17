@@ -117,28 +117,4 @@ public interface IPlanningCenterFluentClient
 // These will be implemented as we expand the fluent API
 
 
-// RegistrationsFluentContext is now implemented as a separate class file
-
-internal class PublishingFluentContext : IPublishingFluentContext
-{
-    private readonly IPublishingService _publishingService;
-
-    public PublishingFluentContext(IPublishingService publishingService)
-    {
-        _publishingService = publishingService ?? throw new ArgumentNullException(nameof(publishingService));
-    }
-
-    // TODO: Implement fluent API for Publishing module
-}
-
-internal class WebhooksFluentContext : IWebhooksFluentContext
-{
-    private readonly IWebhooksService _webhooksService;
-
-    public WebhooksFluentContext(IWebhooksService webhooksService)
-    {
-        _webhooksService = webhooksService ?? throw new ArgumentNullException(nameof(webhooksService));
-    }
-
-    // TODO: Implement fluent API for Webhooks module
-}
+// RegistrationsFluentContext, PublishingFluentContext, and WebhooksFluentContext are now implemented as separate class files

@@ -1257,10 +1257,396 @@ public interface IRegistrationsFluentContext
 
 /// <summary>
 /// Fluent API context for the Publishing module.
+/// Provides LINQ-like syntax for querying and manipulating episode data with built-in pagination support.
 /// </summary>
 public interface IPublishingFluentContext
 {
-    // Will be implemented in Phase 5-7
+    // Query building methods
+    
+    /// <summary>
+    /// Adds a where condition to filter episodes.
+    /// Multiple where clauses are combined with AND logic.
+    /// </summary>
+    /// <param name="predicate">The filter condition</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext Where(Expression<Func<Publishing.Episode, bool>> predicate);
+    
+    /// <summary>
+    /// Specifies related data to include in the response.
+    /// </summary>
+    /// <param name="include">The related data to include</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext Include(Expression<Func<Publishing.Episode, object>> include);
+    
+    /// <summary>
+    /// Specifies the primary sort order.
+    /// </summary>
+    /// <param name="orderBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext OrderBy(Expression<Func<Publishing.Episode, object>> orderBy);
+    
+    /// <summary>
+    /// Specifies the primary sort order in descending order.
+    /// </summary>
+    /// <param name="orderBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext OrderByDescending(Expression<Func<Publishing.Episode, object>> orderBy);
+    
+    /// <summary>
+    /// Specifies a secondary sort order.
+    /// </summary>
+    /// <param name="thenBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext ThenBy(Expression<Func<Publishing.Episode, object>> thenBy);
+    
+    /// <summary>
+    /// Specifies a secondary sort order in descending order.
+    /// </summary>
+    /// <param name="thenBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext ThenByDescending(Expression<Func<Publishing.Episode, object>> thenBy);
+    
+    // Execution methods with built-in pagination support
+    
+    /// <summary>
+    /// Gets a single episode by ID.
+    /// </summary>
+    /// <param name="id">The episode's unique identifier</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The episode, or null if not found</returns>
+    Task<Publishing.Episode?> GetAsync(string id, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets a paginated response with the specified page size.
+    /// Returns the first page with built-in navigation helpers.
+    /// </summary>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A paginated response with built-in navigation helpers</returns>
+    Task<IPagedResponse<Publishing.Episode>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets a specific page of results.
+    /// </summary>
+    /// <param name="page">The page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A paginated response with built-in navigation helpers</returns>
+    Task<IPagedResponse<Publishing.Episode>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets all episodes matching the query criteria.
+    /// This method automatically handles pagination behind the scenes.
+    /// Use with caution for large datasets - consider using AsAsyncEnumerable for memory efficiency.
+    /// </summary>
+    /// <param name="options">Pagination options for performance tuning</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>All episodes matching the criteria</returns>
+    Task<IReadOnlyList<Publishing.Episode>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Streams episodes matching the query criteria for memory-efficient processing.
+    /// This method automatically handles pagination while using minimal memory.
+    /// </summary>
+    /// <param name="options">Pagination options for performance tuning</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>An async enumerable that yields episodes from all pages</returns>
+    IAsyncEnumerable<Publishing.Episode> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    
+    // LINQ-like terminal operations
+    
+    /// <summary>
+    /// Gets the first episode matching the query criteria.
+    /// Throws an exception if no episodes are found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first episode matching the criteria</returns>
+    Task<Publishing.Episode> FirstAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first episode matching the query criteria, or null if none found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first episode matching the criteria, or null</returns>
+    Task<Publishing.Episode?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first episode matching the additional predicate.
+    /// Throws an exception if no episodes are found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first episode matching all criteria</returns>
+    Task<Publishing.Episode> FirstAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first episode matching the additional predicate, or null if none found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first episode matching all criteria, or null</returns>
+    Task<Publishing.Episode?> FirstOrDefaultAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single episode matching the query criteria.
+    /// Throws an exception if no episodes are found or more than one is found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single episode matching the criteria</returns>
+    Task<Publishing.Episode> SingleAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single episode matching the query criteria, or null if none found.
+    /// Throws an exception if more than one episode is found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single episode matching the criteria, or null</returns>
+    Task<Publishing.Episode?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Counts all episodes matching the query criteria across all pages.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total count of episodes matching the criteria</returns>
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Checks if any episodes exist matching the query criteria.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>True if any episodes match the criteria, false otherwise</returns>
+    Task<bool> AnyAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Checks if any episodes exist matching the additional predicate.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>True if any episodes match all criteria, false otherwise</returns>
+    Task<bool> AnyAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    // Specialized publishing operations
+    
+    /// <summary>
+    /// Filters episodes to only include published episodes.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext Published();
+    
+    /// <summary>
+    /// Filters episodes to only include unpublished/draft episodes.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext Unpublished();
+    
+    /// <summary>
+    /// Filters episodes by status.
+    /// </summary>
+    /// <param name="status">The episode status to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext ByStatus(string status);
+    
+    /// <summary>
+    /// Filters episodes published after the specified date.
+    /// </summary>
+    /// <param name="date">The date to filter after</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext PublishedAfter(DateTime date);
+    
+    /// <summary>
+    /// Filters episodes published before the specified date.
+    /// </summary>
+    /// <param name="date">The date to filter before</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext PublishedBefore(DateTime date);
+    
+    /// <summary>
+    /// Filters episodes published within the specified date range.
+    /// </summary>
+    /// <param name="startDate">The start date</param>
+    /// <param name="endDate">The end date</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext PublishedBetween(DateTime startDate, DateTime endDate);
+    
+    /// <summary>
+    /// Filters episodes published today.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext PublishedToday();
+    
+    /// <summary>
+    /// Filters episodes published this week.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext PublishedThisWeek();
+    
+    /// <summary>
+    /// Filters episodes published this month.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext PublishedThisMonth();
+    
+    /// <summary>
+    /// Filters episodes that have video content.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithVideo();
+    
+    /// <summary>
+    /// Filters episodes that have audio content.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithAudio();
+    
+    /// <summary>
+    /// Filters episodes that have artwork.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithArtwork();
+    
+    /// <summary>
+    /// Filters episodes that have downloadable video.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithVideoDownload();
+    
+    /// <summary>
+    /// Filters episodes that have downloadable audio.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithAudioDownload();
+    
+    /// <summary>
+    /// Filters episodes by minimum duration in seconds.
+    /// </summary>
+    /// <param name="durationInSeconds">The minimum duration in seconds</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithMinimumDuration(int durationInSeconds);
+    
+    /// <summary>
+    /// Filters episodes by maximum duration in seconds.
+    /// </summary>
+    /// <param name="durationInSeconds">The maximum duration in seconds</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithMaximumDuration(int durationInSeconds);
+    
+    /// <summary>
+    /// Filters episodes by series ID.
+    /// </summary>
+    /// <param name="seriesId">The series identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext BySeries(string seriesId);
+    
+    /// <summary>
+    /// Filters episodes by episode number.
+    /// </summary>
+    /// <param name="episodeNumber">The episode number</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext ByEpisodeNumber(int episodeNumber);
+    
+    /// <summary>
+    /// Filters episodes by season number.
+    /// </summary>
+    /// <param name="seasonNumber">The season number</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext BySeason(int seasonNumber);
+    
+    /// <summary>
+    /// Filters episodes containing the specified text in the title.
+    /// </summary>
+    /// <param name="titleFragment">The text to search for in titles</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext ByTitleContains(string titleFragment);
+    
+    /// <summary>
+    /// Filters episodes containing the specified text in the description.
+    /// </summary>
+    /// <param name="descriptionFragment">The text to search for in descriptions</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext ByDescriptionContains(string descriptionFragment);
+    
+    /// <summary>
+    /// Filters episodes that have any of the specified tags.
+    /// </summary>
+    /// <param name="tags">The tags to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithTags(params string[] tags);
+    
+    /// <summary>
+    /// Filters episodes that have all of the specified tags.
+    /// </summary>
+    /// <param name="tags">The tags that must all be present</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithAllTags(params string[] tags);
+    
+    /// <summary>
+    /// Filters episodes that belong to any of the specified categories.
+    /// </summary>
+    /// <param name="categories">The categories to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext InCategories(params string[] categories);
+    
+    /// <summary>
+    /// Filters episodes with minimum view count.
+    /// </summary>
+    /// <param name="minimumViews">The minimum number of views</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithMinimumViews(long minimumViews);
+    
+    /// <summary>
+    /// Filters episodes with minimum download count.
+    /// </summary>
+    /// <param name="minimumDownloads">The minimum number of downloads</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithMinimumDownloads(long minimumDownloads);
+    
+    /// <summary>
+    /// Filters episodes with minimum like count.
+    /// </summary>
+    /// <param name="minimumLikes">The minimum number of likes</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithMinimumLikes(long minimumLikes);
+    
+    /// <summary>
+    /// Filters episodes that have any engagement (views, downloads, or likes).
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithEngagement();
+    
+    /// <summary>
+    /// Gets the total view count across all episodes in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total view count</returns>
+    Task<long> TotalViewsAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total download count across all episodes in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total download count</returns>
+    Task<long> TotalDownloadsAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total like count across all episodes in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total like count</returns>
+    Task<long> TotalLikesAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the average duration in seconds across all episodes in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The average duration in seconds</returns>
+    Task<double> AverageDurationAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total duration in seconds across all episodes in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total duration in seconds</returns>
+    Task<long> TotalDurationAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -1502,8 +1888,402 @@ public interface IServicesFluentContext
 
 /// <summary>
 /// Fluent API context for the Webhooks module.
+/// Provides LINQ-like syntax for querying and managing webhook subscriptions with built-in pagination support.
 /// </summary>
 public interface IWebhooksFluentContext
 {
-    // Will be implemented in Phase 8
+    // Query building methods
+    
+    /// <summary>
+    /// Adds a where condition to filter webhook subscriptions.
+    /// Multiple where clauses are combined with AND logic.
+    /// </summary>
+    /// <param name="predicate">The filter condition</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext Where(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate);
+    
+    /// <summary>
+    /// Specifies related data to include in the response.
+    /// </summary>
+    /// <param name="include">The related data to include</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext Include(Expression<Func<Webhooks.WebhookSubscription, object>> include);
+    
+    /// <summary>
+    /// Specifies the primary sort order.
+    /// </summary>
+    /// <param name="orderBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext OrderBy(Expression<Func<Webhooks.WebhookSubscription, object>> orderBy);
+    
+    /// <summary>
+    /// Specifies the primary sort order in descending order.
+    /// </summary>
+    /// <param name="orderBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext OrderByDescending(Expression<Func<Webhooks.WebhookSubscription, object>> orderBy);
+    
+    /// <summary>
+    /// Specifies a secondary sort order.
+    /// </summary>
+    /// <param name="thenBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ThenBy(Expression<Func<Webhooks.WebhookSubscription, object>> thenBy);
+    
+    /// <summary>
+    /// Specifies a secondary sort order in descending order.
+    /// </summary>
+    /// <param name="thenBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ThenByDescending(Expression<Func<Webhooks.WebhookSubscription, object>> thenBy);
+    
+    // Execution methods with built-in pagination support
+    
+    /// <summary>
+    /// Gets a single webhook subscription by ID.
+    /// </summary>
+    /// <param name="id">The subscription's unique identifier</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The webhook subscription, or null if not found</returns>
+    Task<Webhooks.WebhookSubscription?> GetAsync(string id, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets a paginated response with the specified page size.
+    /// Returns the first page with built-in navigation helpers.
+    /// </summary>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A paginated response with built-in navigation helpers</returns>
+    Task<IPagedResponse<Webhooks.WebhookSubscription>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets a specific page of results.
+    /// </summary>
+    /// <param name="page">The page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A paginated response with built-in navigation helpers</returns>
+    Task<IPagedResponse<Webhooks.WebhookSubscription>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets all webhook subscriptions matching the query criteria.
+    /// This method automatically handles pagination behind the scenes.
+    /// Use with caution for large datasets - consider using AsAsyncEnumerable for memory efficiency.
+    /// </summary>
+    /// <param name="options">Pagination options for performance tuning</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>All webhook subscriptions matching the criteria</returns>
+    Task<IReadOnlyList<Webhooks.WebhookSubscription>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Streams webhook subscriptions matching the query criteria for memory-efficient processing.
+    /// This method automatically handles pagination while using minimal memory.
+    /// </summary>
+    /// <param name="options">Pagination options for performance tuning</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>An async enumerable that yields webhook subscriptions from all pages</returns>
+    IAsyncEnumerable<Webhooks.WebhookSubscription> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    
+    // LINQ-like terminal operations
+    
+    /// <summary>
+    /// Gets the first webhook subscription matching the query criteria.
+    /// Throws an exception if no subscriptions are found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first webhook subscription matching the criteria</returns>
+    Task<Webhooks.WebhookSubscription> FirstAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first webhook subscription matching the query criteria, or null if none found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first webhook subscription matching the criteria, or null</returns>
+    Task<Webhooks.WebhookSubscription?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first webhook subscription matching the additional predicate.
+    /// Throws an exception if no subscriptions are found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first webhook subscription matching all criteria</returns>
+    Task<Webhooks.WebhookSubscription> FirstAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first webhook subscription matching the additional predicate, or null if none found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first webhook subscription matching all criteria, or null</returns>
+    Task<Webhooks.WebhookSubscription?> FirstOrDefaultAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single webhook subscription matching the query criteria.
+    /// Throws an exception if no subscriptions are found or more than one is found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single webhook subscription matching the criteria</returns>
+    Task<Webhooks.WebhookSubscription> SingleAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single webhook subscription matching the query criteria, or null if none found.
+    /// Throws an exception if more than one subscription is found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single webhook subscription matching the criteria, or null</returns>
+    Task<Webhooks.WebhookSubscription?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Counts all webhook subscriptions matching the query criteria across all pages.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total count of webhook subscriptions matching the criteria</returns>
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Checks if any webhook subscriptions exist matching the query criteria.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>True if any webhook subscriptions match the criteria, false otherwise</returns>
+    Task<bool> AnyAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Checks if any webhook subscriptions exist matching the additional predicate.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>True if any webhook subscriptions match all criteria, false otherwise</returns>
+    Task<bool> AnyAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    // Specialized webhook operations
+    
+    /// <summary>
+    /// Filters webhook subscriptions to only include active subscriptions.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext Active();
+    
+    /// <summary>
+    /// Filters webhook subscriptions to only include inactive subscriptions.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext Inactive();
+    
+    /// <summary>
+    /// Filters webhook subscriptions by URL pattern.
+    /// </summary>
+    /// <param name="urlFragment">The URL fragment to search for</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByUrlContains(string urlFragment);
+    
+    /// <summary>
+    /// Filters webhook subscriptions by exact URL.
+    /// </summary>
+    /// <param name="url">The exact URL to match</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByExactUrl(string url);
+    
+    /// <summary>
+    /// Filters webhook subscriptions by URL starting with the specified prefix.
+    /// </summary>
+    /// <param name="urlPrefix">The URL prefix to match</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByUrlStartsWith(string urlPrefix);
+    
+    /// <summary>
+    /// Filters webhook subscriptions by available event ID.
+    /// </summary>
+    /// <param name="availableEventId">The available event ID</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByEventType(string availableEventId);
+    
+    /// <summary>
+    /// Filters webhook subscriptions by organization ID.
+    /// </summary>
+    /// <param name="organizationId">The organization ID</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByOrganization(string organizationId);
+    
+    /// <summary>
+    /// Filters webhook subscriptions that have had recent delivery attempts.
+    /// </summary>
+    /// <param name="timeSpan">The time span to check for recent deliveries</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithRecentDelivery(TimeSpan timeSpan);
+    
+    /// <summary>
+    /// Filters webhook subscriptions by last delivery status.
+    /// </summary>
+    /// <param name="status">The delivery status to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByLastDeliveryStatus(string status);
+    
+    /// <summary>
+    /// Filters webhook subscriptions that had successful last delivery.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithSuccessfulLastDelivery();
+    
+    /// <summary>
+    /// Filters webhook subscriptions that had failed last delivery.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithFailedLastDelivery();
+    
+    /// <summary>
+    /// Filters webhook subscriptions by minimum success rate percentage.
+    /// </summary>
+    /// <param name="minimumSuccessRate">The minimum success rate (0-100)</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithMinimumSuccessRate(double minimumSuccessRate);
+    
+    /// <summary>
+    /// Filters webhook subscriptions with poor delivery success rate (below threshold).
+    /// </summary>
+    /// <param name="threshold">The success rate threshold (default: 50.0)</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithPoorSuccessRate(double threshold = 50.0);
+    
+    /// <summary>
+    /// Filters webhook subscriptions by maximum response time.
+    /// </summary>
+    /// <param name="maxResponseTimeMs">The maximum response time in milliseconds</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithMaxResponseTime(double maxResponseTimeMs);
+    
+    /// <summary>
+    /// Filters webhook subscriptions that are responding slowly.
+    /// </summary>
+    /// <param name="thresholdMs">The response time threshold in milliseconds (default: 5000)</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext SlowResponding(double thresholdMs = 5000);
+    
+    /// <summary>
+    /// Filters webhook subscriptions that are responding quickly.
+    /// </summary>
+    /// <param name="thresholdMs">The response time threshold in milliseconds (default: 1000)</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext FastResponding(double thresholdMs = 1000);
+    
+    /// <summary>
+    /// Filters webhook subscriptions with minimum total deliveries.
+    /// </summary>
+    /// <param name="minimumDeliveries">The minimum number of deliveries</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithMinimumDeliveries(long minimumDeliveries);
+    
+    /// <summary>
+    /// Filters webhook subscriptions with minimum failed deliveries.
+    /// </summary>
+    /// <param name="minimumFailures">The minimum number of failures</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithMinimumFailures(long minimumFailures);
+    
+    /// <summary>
+    /// Filters webhook subscriptions that have had no deliveries.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithoutDeliveries();
+    
+    /// <summary>
+    /// Filters webhook subscriptions that have had deliveries.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithDeliveries();
+    
+    /// <summary>
+    /// Filters webhook subscriptions by maximum retry attempts.
+    /// </summary>
+    /// <param name="maxRetries">The maximum number of retry attempts</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithMaxRetries(int maxRetries);
+    
+    /// <summary>
+    /// Filters webhook subscriptions by timeout setting.
+    /// </summary>
+    /// <param name="timeoutSeconds">The timeout in seconds</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithTimeout(int timeoutSeconds);
+    
+    /// <summary>
+    /// Filters webhook subscriptions that have custom headers configured.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithCustomHeaders();
+    
+    /// <summary>
+    /// Filters webhook subscriptions that have a secret configured.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithSecret();
+    
+    /// <summary>
+    /// Filters webhook subscriptions that do not have a secret configured.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext WithoutSecret();
+    
+    /// <summary>
+    /// Filters webhook subscriptions containing the specified text in the name.
+    /// </summary>
+    /// <param name="nameFragment">The text to search for in names</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByNameContains(string nameFragment);
+    
+    /// <summary>
+    /// Filters webhook subscriptions containing the specified text in the description.
+    /// </summary>
+    /// <param name="descriptionFragment">The text to search for in descriptions</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IWebhooksFluentContext ByDescriptionContains(string descriptionFragment);
+    
+    /// <summary>
+    /// Gets the total number of deliveries across all webhook subscriptions in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total number of deliveries</returns>
+    Task<long> TotalDeliveriesAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total number of successful deliveries across all webhook subscriptions in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total number of successful deliveries</returns>
+    Task<long> TotalSuccessfulDeliveriesAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total number of failed deliveries across all webhook subscriptions in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total number of failed deliveries</returns>
+    Task<long> TotalFailedDeliveriesAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the overall success rate across all webhook subscriptions in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The overall success rate as a percentage</returns>
+    Task<double> OverallSuccessRateAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the average response time across all webhook subscriptions in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The average response time in milliseconds</returns>
+    Task<double> AverageResponseTimeAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the count of active webhook subscriptions in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of active subscriptions</returns>
+    Task<int> ActiveCountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the count of inactive webhook subscriptions in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of inactive subscriptions</returns>
+    Task<int> InactiveCountAsync(CancellationToken cancellationToken = default);
 }
