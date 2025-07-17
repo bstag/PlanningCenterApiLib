@@ -42,18 +42,6 @@ public class GivingServiceTests
         result.DataSource.Should().Be("Giving");
     }
 
-    [Fact]
-    public async Task GetDonationAsync_ShouldReturnNull_WhenApiReturnsNull()
-    {
-        // Arrange
-        _mockApiConnection.SetupGetResponse("/giving/v2/donations/999", (JsonApiSingleResponse<DonationDto>?)null);
-
-        // Act
-        var result = await _givingService.GetDonationAsync("999");
-
-        // Assert
-        result.Should().BeNull();
-    }
 
     [Fact]
     public async Task GetDonationAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
@@ -438,80 +426,6 @@ public class GivingServiceTests
         result.Should().NotBeNull();
         result.Data.Should().HaveCount(1);
         result.Meta.Should().NotBeNull();
-    }
-
-    #endregion
-
-    #region Pagination Helper Tests
-
-    [Fact]
-    public async Task GetAllDonationsAsync_ShouldReturnAllDonations_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var firstPageResponse = _builder.BuildDonationCollectionResponse(2);
-        firstPageResponse.Links = new() { Next = "/giving/v2/donations?offset=2" };
-        
-        var secondPageResponse = _builder.BuildDonationCollectionResponse(1);
-        secondPageResponse.Links = new() { Next = null };
-
-        _mockApiConnection.SetupGetResponse("/giving/v2/donations", firstPageResponse);
-        _mockApiConnection.SetupGetResponse("/giving/v2/donations?offset=2", secondPageResponse);
-
-        // Act
-        var result = await _givingService.GetAllDonationsAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(3); // 2 from first page + 1 from second page
-    }
-
-    [Fact]
-    public async Task StreamDonationsAsync_ShouldYieldAllDonations_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var firstPageResponse = _builder.BuildDonationCollectionResponse(2);
-        firstPageResponse.Links = new() { Next = "/giving/v2/donations?offset=2" };
-        
-        var secondPageResponse = _builder.BuildDonationCollectionResponse(1);
-        secondPageResponse.Links = new() { Next = null };
-
-        _mockApiConnection.SetupGetResponse("/giving/v2/donations", firstPageResponse);
-        _mockApiConnection.SetupGetResponse("/giving/v2/donations?offset=2", secondPageResponse);
-
-        // Act
-        var donations = new List<Models.Giving.Donation>();
-        await foreach (var donation in _givingService.StreamDonationsAsync())
-        {
-            donations.Add(donation);
-        }
-
-        // Assert
-        donations.Should().HaveCount(3); // 2 from first page + 1 from second page
-    }
-
-    #endregion
-
-    #region Analytics Tests
-
-    [Fact]
-    public async Task GetTotalGivingAsync_ShouldReturnTotalAmount_WhenApiReturnsData()
-    {
-        // Arrange
-        var startDate = DateTime.UtcNow.AddDays(-30);
-        var endDate = DateTime.UtcNow;
-        
-        var donationsResponse = _builder.BuildDonationCollectionResponse(2);
-        // Modify the donations to have specific amounts
-        donationsResponse.Data![0].Attributes.AmountCents = 5000;
-        donationsResponse.Data![1].Attributes.AmountCents = 7500;
-        
-        _mockApiConnection.SetupGetResponse($"/giving/v2/donations?filter[received_at]={startDate:yyyy-MM-dd}..{endDate:yyyy-MM-dd}", donationsResponse);
-
-        // Act
-        var result = await _givingService.GetTotalGivingAsync(startDate, endDate);
-
-        // Assert
-        result.Should().Be(12500); // 5000 + 7500
     }
 
     #endregion

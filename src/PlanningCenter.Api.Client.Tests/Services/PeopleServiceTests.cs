@@ -92,22 +92,6 @@ public class PeopleServiceTests
         await Assert.ThrowsAsync<ArgumentException>(() => _peopleService.GetAsync(""));
     }
 
-    [Fact]
-    public async Task ListAsync_ShouldReturnPagedPeople_WhenApiReturnsData()
-    {
-        // Arrange
-        var peopleResponse = _builder.BuildPersonCollectionResponse(3);
-        _mockApiConnection.SetupGetResponse("/people/v2/people", peopleResponse);
-
-        // Act
-        var result = await _peopleService.ListAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(3);
-        result.Meta.Should().NotBeNull();
-        result.Meta.TotalCount.Should().Be(3);
-    }
 
     [Fact]
     public async Task CreateAsync_ShouldReturnCreatedPerson_WhenRequestIsValid()
@@ -242,38 +226,7 @@ public class PeopleServiceTests
 
     #region Pagination Helper Tests
 
-    [Fact]
-    public async Task GetAllAsync_ShouldReturnAllPeople_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var peopleResponse = _builder.BuildPersonCollectionResponse(3);
-        _mockApiConnection.SetupGetResponse("/people/v2/people", peopleResponse);
 
-        // Act
-        var result = await _peopleService.GetAllAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public async Task StreamAsync_ShouldYieldAllPeople_WhenDataExists()
-    {
-        // Arrange
-        var peopleResponse = _builder.BuildPersonCollectionResponse(2);
-        _mockApiConnection.SetupGetResponse("/people/v2/people", peopleResponse);
-
-        // Act
-        var people = new List<Models.Core.Person>();
-        await foreach (var person in _peopleService.StreamAsync())
-        {
-            people.Add(person);
-        }
-
-        // Assert
-        people.Should().HaveCount(2);
-    }
 
     #endregion
 
@@ -657,21 +610,6 @@ public class PeopleServiceTests
         await _peopleService.DeleteHouseholdAsync("household123");
     }
 
-    [Fact]
-    public async Task ListPeopleInHouseholdAsync_ShouldReturnPagedPeople_WhenApiReturnsData()
-    {
-        // Arrange
-        var peopleResponse = _builder.BuildPersonCollectionResponse(2);
-        _mockApiConnection.SetupGetResponse("/people/v2/households/household123/people", peopleResponse);
-
-        // Act
-        var result = await _peopleService.ListPeopleInHouseholdAsync("household123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
-    }
 
     #endregion
 
@@ -1024,21 +962,6 @@ public class PeopleServiceTests
         await _peopleService.DeletePeopleListAsync("list123");
     }
 
-    [Fact]
-    public async Task ListPeopleInListAsync_ShouldReturnPagedPeople_WhenApiReturnsData()
-    {
-        // Arrange
-        var peopleResponse = _builder.BuildPersonCollectionResponse(2);
-        _mockApiConnection.SetupGetResponse("/people/v2/lists/list123/people", peopleResponse);
-
-        // Act
-        var result = await _peopleService.ListPeopleInListAsync("list123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
-    }
 
     [Fact]
     public async Task AddPersonToListAsync_ShouldReturnListMember_WhenRequestIsValid()

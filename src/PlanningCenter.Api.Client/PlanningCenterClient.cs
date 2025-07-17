@@ -62,7 +62,7 @@ public class PlanningCenterClient : IPlanningCenterClient
     {
         if (_givingService == null)
             throw new InvalidOperationException("Giving service is not registered. Please add the appropriate service to your DI container.");
-        return new GivingFluentContext(_givingService);
+        return new Fluent.GivingFluentContext(_givingService);
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public class PlanningCenterClient : IPlanningCenterClient
     {
         if (_calendarService == null)
             throw new InvalidOperationException("Calendar service is not registered. Please add the appropriate service to your DI container.");
-        return new CalendarFluentContext(_calendarService);
+        return new Fluent.CalendarFluentContext(_calendarService);
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ public class PlanningCenterClient : IPlanningCenterClient
     {
         if (_groupsService == null)
             throw new InvalidOperationException("Groups service is not registered. Please add the appropriate service to your DI container.");
-        return new GroupsFluentContext(_groupsService);
+        return new Fluent.GroupsFluentContext(_groupsService);
     }
 
     /// <summary>
@@ -122,7 +122,7 @@ public class PlanningCenterClient : IPlanningCenterClient
     {
         if (_servicesService == null)
             throw new InvalidOperationException("Services service is not registered. Please add the appropriate service to your DI container.");
-        return new ServicesFluentContext(_servicesService);
+        return new Fluent.ServicesFluentContext(_servicesService);
     }
 
     /// <summary>

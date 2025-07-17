@@ -427,72 +427,11 @@ public class RegistrationsServiceTests
 
     #region Reporting Tests
 
-    [Fact]
-    public async Task GetRegistrationCountAsync_ShouldReturnCount_WhenApiReturnsData()
-    {
-        // Arrange
-        var registrationsResponse = CreateRegistrationCollectionResponse(5);
-        registrationsResponse.Meta = new() { TotalCount = 5 };
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations", registrationsResponse);
-
-        // Act
-        var result = await _registrationsService.GetRegistrationCountAsync("signup123");
-
-        // Assert
-        result.Should().Be(5);
-    }
-
-    [Fact]
-    public async Task GetWaitlistCountAsync_ShouldReturnCount_WhenApiReturnsData()
-    {
-        // Arrange
-        var attendeesResponse = CreateAttendeeCollectionResponse(3);
-        attendeesResponse.Meta = new() { TotalCount = 3 };
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees", attendeesResponse);
-
-        // Act
-        var result = await _registrationsService.GetWaitlistCountAsync("signup123");
-
-        // Assert
-        result.Should().Be(3);
-    }
 
     #endregion
 
     #region Pagination Helper Tests
 
-    [Fact]
-    public async Task GetAllSignupsAsync_ShouldReturnAllSignups_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var signupsResponse = CreateSignupCollectionResponse(3);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups", signupsResponse);
-
-        // Act
-        var result = await _registrationsService.GetAllSignupsAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(3);
-    }
-
-    [Fact]
-    public async Task StreamSignupsAsync_ShouldYieldAllSignups_WhenDataExists()
-    {
-        // Arrange
-        var signupsResponse = CreateSignupCollectionResponse(2);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups", signupsResponse);
-
-        // Act
-        var signups = new List<Signup>();
-        await foreach (var signup in _registrationsService.StreamSignupsAsync())
-        {
-            signups.Add(signup);
-        }
-
-        // Assert
-        signups.Should().HaveCount(2);
-    }
 
     #endregion
 

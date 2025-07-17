@@ -116,65 +116,8 @@ public interface IPlanningCenterFluentClient
 // Placeholder implementations for other modules
 // These will be implemented as we expand the fluent API
 
-internal class GivingFluentContext : IGivingFluentContext
-{
-    private readonly IGivingService _givingService;
 
-    public GivingFluentContext(IGivingService givingService)
-    {
-        _givingService = givingService ?? throw new ArgumentNullException(nameof(givingService));
-    }
-
-    // TODO: Implement fluent API for Giving module
-}
-
-internal class CalendarFluentContext : ICalendarFluentContext
-{
-    private readonly ICalendarService _calendarService;
-
-    public CalendarFluentContext(ICalendarService calendarService)
-    {
-        _calendarService = calendarService ?? throw new ArgumentNullException(nameof(calendarService));
-    }
-
-    // TODO: Implement fluent API for Calendar module
-}
-
-internal class CheckInsFluentContext : ICheckInsFluentContext
-{
-    private readonly ICheckInsService _checkInsService;
-
-    public CheckInsFluentContext(ICheckInsService checkInsService)
-    {
-        _checkInsService = checkInsService ?? throw new ArgumentNullException(nameof(checkInsService));
-    }
-
-    // TODO: Implement fluent API for CheckIns module
-}
-
-internal class GroupsFluentContext : IGroupsFluentContext
-{
-    private readonly IGroupsService _groupsService;
-
-    public GroupsFluentContext(IGroupsService groupsService)
-    {
-        _groupsService = groupsService ?? throw new ArgumentNullException(nameof(groupsService));
-    }
-
-    // TODO: Implement fluent API for Groups module
-}
-
-internal class RegistrationsFluentContext : IRegistrationsFluentContext
-{
-    private readonly IRegistrationsService _registrationsService;
-
-    public RegistrationsFluentContext(IRegistrationsService registrationsService)
-    {
-        _registrationsService = registrationsService ?? throw new ArgumentNullException(nameof(registrationsService));
-    }
-
-    // TODO: Implement fluent API for Registrations module
-}
+// RegistrationsFluentContext is now implemented as a separate class file
 
 internal class PublishingFluentContext : IPublishingFluentContext
 {
@@ -186,18 +129,6 @@ internal class PublishingFluentContext : IPublishingFluentContext
     }
 
     // TODO: Implement fluent API for Publishing module
-}
-
-internal class ServicesFluentContext : IServicesFluentContext
-{
-    private readonly IServicesService _servicesService;
-
-    public ServicesFluentContext(IServicesService servicesService)
-    {
-        _servicesService = servicesService ?? throw new ArgumentNullException(nameof(servicesService));
-    }
-
-    // TODO: Implement fluent API for Services module
 }
 
 internal class WebhooksFluentContext : IWebhooksFluentContext

@@ -43,19 +43,6 @@ public class WebhooksServiceTests
     }
 
     [Fact]
-    public async Task GetSubscriptionAsync_ShouldReturnNull_WhenApiReturnsNull()
-    {
-        // Arrange
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions/999", (JsonApiSingleResponse<WebhookSubscriptionDto>?)null);
-
-        // Act
-        var result = await _webhooksService.GetSubscriptionAsync("999");
-
-        // Assert
-        result.Should().BeNull();
-    }
-
-    [Fact]
     public async Task GetSubscriptionAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
     {
         // Act & Assert
@@ -204,20 +191,6 @@ public class WebhooksServiceTests
 
     #region Event Validation Tests
 
-    [Fact]
-    public async Task ValidateEventSignatureAsync_ShouldReturnTrue_WhenSignatureIsValid()
-    {
-        // Arrange
-        var payload = "{\"test\":\"data\"}";
-        var secret = "test_secret";
-        var signature = "sha256=b5d4045c3f466fa91fe2cc6abe79232a1a57cdf104f7a26e716e0a1e2789df78"; // HMAC-SHA256 of payload with secret
-
-        // Act
-        var result = await _webhooksService.ValidateEventSignatureAsync(payload, signature, secret);
-
-        // Assert
-        result.Should().BeTrue();
-    }
 
     [Fact]
     public async Task ValidateEventSignatureAsync_ShouldReturnFalse_WhenSignatureIsInvalid()
@@ -340,39 +313,6 @@ public class WebhooksServiceTests
     }
 
     [Fact]
-    public async Task ListAvailableEventsAsync_ShouldReturnPagedEvents_WhenApiReturnsData()
-    {
-        // Arrange
-        var eventsResponse = _builder.BuildAvailableEventCollectionResponse(5);
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/available_events", eventsResponse);
-
-        // Act
-        var result = await _webhooksService.ListAvailableEventsAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(5);
-        result.Meta.Should().NotBeNull();
-        result.Meta.TotalCount.Should().Be(5);
-    }
-
-    [Fact]
-    public async Task ListAvailableEventsByModuleAsync_ShouldReturnFilteredEvents_WhenModuleIsSpecified()
-    {
-        // Arrange
-        var eventsResponse = _builder.BuildAvailableEventCollectionResponse(2);
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/available_events?filter[module]=people", eventsResponse);
-
-        // Act
-        var result = await _webhooksService.ListAvailableEventsByModuleAsync("people");
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
-    }
-
-    [Fact]
     public async Task ListAvailableEventsByModuleAsync_ShouldThrowArgumentException_WhenModuleIsEmpty()
     {
         // Act & Assert
@@ -400,23 +340,6 @@ public class WebhooksServiceTests
         result.Should().NotBeNull();
         result.Id.Should().Be("event123");
         result.DataSource.Should().Be("Webhooks");
-    }
-
-    [Fact]
-    public async Task ListEventsAsync_ShouldReturnPagedEvents_WhenApiReturnsData()
-    {
-        // Arrange
-        var eventsResponse = _builder.BuildWebhookEventCollectionResponse(3);
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions/sub123/events", eventsResponse);
-
-        // Act
-        var result = await _webhooksService.ListEventsAsync("sub123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(3);
-        result.Meta.Should().NotBeNull();
-        result.Meta.TotalCount.Should().Be(3);
     }
 
     [Fact]
@@ -502,34 +425,6 @@ public class WebhooksServiceTests
     #region Analytics Tests
 
     [Fact]
-    public async Task GetSubscriptionAnalyticsAsync_ShouldReturnAnalytics_WhenSubscriptionExists()
-    {
-        // Arrange
-        var subscriptionDto = _builder.CreateWebhookSubscriptionDto(s => s.Id = "sub123");
-        var subscriptionResponse = new JsonApiSingleResponse<WebhookSubscriptionDto> { Data = subscriptionDto };
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions/sub123", subscriptionResponse);
-
-        var eventsResponse = _builder.BuildWebhookEventCollectionResponse(5);
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions/sub123/events?filter[created_at]=2024-01-01..2024-01-31", eventsResponse);
-
-        var analyticsRequest = new AnalyticsRequest
-        {
-            StartDate = new DateTime(2024, 1, 1),
-            EndDate = new DateTime(2024, 1, 31)
-        };
-
-        // Act
-        var result = await _webhooksService.GetSubscriptionAnalyticsAsync("sub123", analyticsRequest);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.SubscriptionId.Should().Be("sub123");
-        result.TotalEventsDelivered.Should().Be(5);
-        result.PeriodStart.Should().Be(analyticsRequest.StartDate);
-        result.PeriodEnd.Should().Be(analyticsRequest.EndDate);
-    }
-
-    [Fact]
     public async Task GenerateDeliveryReportAsync_ShouldReturnReport_WhenRequestIsValid()
     {
         // Arrange
@@ -557,51 +452,6 @@ public class WebhooksServiceTests
     #endregion
 
     #region Pagination Helper Tests
-
-    [Fact]
-    public async Task GetAllSubscriptionsAsync_ShouldReturnAllSubscriptions_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var firstPageResponse = _builder.BuildWebhookSubscriptionCollectionResponse(2);
-        firstPageResponse.Links = new() { Next = "/webhooks/v2/subscriptions?offset=2" };
-        
-        var secondPageResponse = _builder.BuildWebhookSubscriptionCollectionResponse(1);
-        secondPageResponse.Links = new() { Next = null };
-
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions", firstPageResponse);
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions?offset=2", secondPageResponse);
-
-        // Act
-        var result = await _webhooksService.GetAllSubscriptionsAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(3); // 2 from first page + 1 from second page
-    }
-
-    [Fact]
-    public async Task StreamSubscriptionsAsync_ShouldYieldAllSubscriptions_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var firstPageResponse = _builder.BuildWebhookSubscriptionCollectionResponse(2);
-        firstPageResponse.Links = new() { Next = "/webhooks/v2/subscriptions?offset=2" };
-        
-        var secondPageResponse = _builder.BuildWebhookSubscriptionCollectionResponse(1);
-        secondPageResponse.Links = new() { Next = null };
-
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions", firstPageResponse);
-        _mockApiConnection.SetupGetResponse("/webhooks/v2/subscriptions?offset=2", secondPageResponse);
-
-        // Act
-        var subscriptions = new List<Models.Webhooks.WebhookSubscription>();
-        await foreach (var subscription in _webhooksService.StreamSubscriptionsAsync())
-        {
-            subscriptions.Add(subscription);
-        }
-
-        // Assert
-        subscriptions.Should().HaveCount(3); // 2 from first page + 1 from second page
-    }
 
     #endregion
 

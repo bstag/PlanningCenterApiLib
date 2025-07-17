@@ -27,7 +27,49 @@ public class MockApiConnection : IApiConnection
     {
         if (_getResponses.TryGetValue(endpoint, out var obj) && obj is T typed)
             return Task.FromResult(typed);
+        
+        // Try base endpoint without query parameters
+        var baseEndpoint = endpoint.Split('?')[0];
+        if (_getResponses.TryGetValue(baseEndpoint, out var baseObj) && baseObj is T baseTyped)
+            return Task.FromResult(baseTyped);
+        
+        // Handle PagedResponse type conversions (including dynamic)
+        if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(PagedResponse<>))
+        {
+            // Try exact match for any PagedResponse type and cast
+            if (_getResponses.TryGetValue(endpoint, out var pagedObj) && IsPagedResponse(pagedObj))
+            {
+                try 
+                {
+                    return Task.FromResult((T)pagedObj);
+                }
+                catch (InvalidCastException)
+                {
+                    // If direct cast fails, handle it below
+                }
+            }
+                
+            // Try base endpoint for any PagedResponse type and cast
+            if (_getResponses.TryGetValue(baseEndpoint, out var basePaged) && IsPagedResponse(basePaged))
+            {
+                try 
+                {
+                    return Task.FromResult((T)basePaged);
+                }
+                catch (InvalidCastException)
+                {
+                    // If direct cast fails, handle it below
+                }
+            }
+        }
+            
         throw new InvalidOperationException($"No GET stub configured for {endpoint}");
+    }
+    
+    private static bool IsPagedResponse(object? obj)
+    {
+        return obj?.GetType().IsGenericType == true && 
+               obj.GetType().GetGenericTypeDefinition() == typeof(PagedResponse<>);
     }
 
     public Task<T> PostAsync<T>(string endpoint, object data, CancellationToken cancellationToken = default) =>
@@ -47,13 +89,38 @@ public class MockApiConnection : IApiConnection
 
     public Task<IPagedResponse<T>> GetPagedAsync<T>(string endpoint, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
+        // Try exact match first
         if (_getResponses.TryGetValue(endpoint, out var obj) && obj is IPagedResponse<T> pagedResponse)
             return Task.FromResult(pagedResponse);
+        
+        // Try base endpoint without query parameters
+        var baseEndpoint = endpoint.Split('?')[0];
+        if (_getResponses.TryGetValue(baseEndpoint, out var baseObj) && baseObj is IPagedResponse<T> basePagedResponse)
+            return Task.FromResult(basePagedResponse);
         
         // If no paged response is configured, try to create one from a regular response
         if (_getResponses.TryGetValue(endpoint, out var regularObj) && regularObj is IEnumerable<T> items)
         {
             var itemsList = items.ToList();
+            var pagedResult = new PagedResponse<T>
+            {
+                Data = itemsList,
+                Meta = new PagedResponseMeta 
+                { 
+                    TotalCount = itemsList.Count, 
+                    Count = itemsList.Count,
+                    PerPage = parameters?.PerPage ?? 25,
+                    Offset = parameters?.Offset ?? 0
+                },
+                Links = new PagedResponseLinks()
+            };
+            return Task.FromResult<IPagedResponse<T>>(pagedResult);
+        }
+        
+        // Try base endpoint for regular response
+        if (_getResponses.TryGetValue(baseEndpoint, out var baseRegularObj) && baseRegularObj is IEnumerable<T> baseItems)
+        {
+            var itemsList = baseItems.ToList();
             var pagedResult = new PagedResponse<T>
             {
                 Data = itemsList,

@@ -23,10 +23,13 @@ using PlanningCenter.Api.Client.Extensions;
 var fluentClient = client.Fluent();
 
 // Access module-specific fluent contexts
-var people = fluentClient.People;
-var giving = fluentClient.Giving;
-var calendar = fluentClient.Calendar;
-// ... etc
+var people = fluentClient.People;      // ✅ Full implementation
+var giving = fluentClient.Giving;      // ✅ Full implementation  
+var calendar = fluentClient.Calendar;  // ✅ Full implementation
+var groups = fluentClient.Groups;      // ✅ Full implementation
+var services = fluentClient.Services;  // ✅ Full implementation
+var checkIns = fluentClient.CheckIns;  // ✅ Full implementation
+// Other modules coming soon...
 ```
 
 ### Simple Queries
@@ -349,18 +352,18 @@ var results = await client.Fluent().People
 
 ## Module Support
 
-### Currently Implemented
-- ✅ **People Module**: Full fluent API implementation
+### Fully Implemented ✅
+- ✅ **People Module**: Complete fluent API with creation contexts
+- ✅ **Giving Module**: Complete fluent API with specialized operations
+- ✅ **Calendar Module**: Complete fluent API with date-based filtering
+- ✅ **Groups Module**: Complete fluent API with membership and type filtering
+- ✅ **Services Module**: Complete fluent API with service planning operations
+- ✅ **Check-Ins Module**: Complete fluent API with check-in status and filtering
 
-### Planned Implementation
-- 🚧 **Giving Module**: Coming soon
-- 🚧 **Calendar Module**: Coming soon
-- 🚧 **Check-Ins Module**: Coming soon
-- 🚧 **Groups Module**: Coming soon
-- 🚧 **Registrations Module**: Coming soon
-- 🚧 **Publishing Module**: Coming soon
-- 🚧 **Services Module**: Coming soon
-- 🚧 **Webhooks Module**: Coming soon
+### Coming Soon 🚧
+- 🚧 **Registrations Module**: Planned for next phase
+- 🚧 **Publishing Module**: Planned for next phase
+- 🚧 **Webhooks Module**: Planned for next phase
 
 ## Expression Parsing (Future Enhancement)
 
@@ -404,6 +407,204 @@ var person = await client.Fluent().People.GetAsync("123");
 5. **Handle exceptions** appropriately for your use case
 6. **Choose the right method** based on your data size and processing needs
 
+## Module-Specific Examples
+
+### Giving Module
+
+```csharp
+// Find donations by person for the last 3 months
+var personDonations = await client.Fluent().Giving
+    .ByPerson("12345")
+    .ByDateRange(DateTime.Now.AddMonths(-3), DateTime.Now)
+    .OrderByDescending(d => d.ReceivedAt)
+    .GetPagedAsync(25);
+
+// Calculate total donations to a specific fund
+var totalAmount = await client.Fluent().Giving
+    .ByFund("general-fund")
+    .ByDateRange(DateTime.Now.AddYears(-1), DateTime.Now)
+    .TotalAmountAsync();
+
+// Find large donations (over $100)
+var largeDonations = await client.Fluent().Giving
+    .WithMinimumAmount(10000) // $100.00 in cents
+    .GetAllAsync();
+```
+
+### Calendar Module
+
+```csharp
+// Get today's events
+var todayEvents = await client.Fluent().Calendar
+    .Today()
+    .OrderBy(e => e.StartsAt)
+    .GetAllAsync();
+
+// Find upcoming events this month
+var upcomingEvents = await client.Fluent().Calendar
+    .Upcoming()
+    .ThisMonth()
+    .OrderBy(e => e.StartsAt)
+    .GetPagedAsync(50);
+
+// Get events in a specific date range
+var weekendEvents = await client.Fluent().Calendar
+    .ByDateRange(DateTime.Today.AddDays(5), DateTime.Today.AddDays(7))
+    .OrderBy(e => e.StartsAt)
+    .GetAllAsync();
+```
+
+### Groups Module
+
+```csharp
+// Find active groups with minimum members
+var activeGroups = await client.Fluent().Groups
+    .Active()
+    .WithMinimumMembers(5)
+    .OrderBy(g => g.Name)
+    .GetPagedAsync(25);
+
+// Search for youth groups with chat enabled
+var youthGroups = await client.Fluent().Groups
+    .ByNameContains("Youth")
+    .WithChatEnabled()
+    .Active()
+    .GetAllAsync();
+
+// Find groups by type and location
+var smallGroups = await client.Fluent().Groups
+    .ByGroupType("small-group")
+    .ByLocation("main-campus")
+    .WithMinimumMembers(3)
+    .WithMaximumMembers(12)
+    .GetAllAsync();
+```
+
+### Services Module
+
+```csharp
+// Get upcoming service plans
+var upcomingServices = await client.Fluent().Services
+    .Upcoming()
+    .OrderBy(p => p.SortDate)
+    .GetPagedAsync(25);
+
+// Find Sunday services this month
+var sundayServices = await client.Fluent().Services
+    .ByServiceType("sunday-morning")
+    .ThisMonth()
+    .Public()
+    .GetAllAsync();
+
+// Search for Christmas services
+var christmasServices = await client.Fluent().Services
+    .ByTitleContains("Christmas")
+    .ByDateRange(DateTime.Now.AddMonths(-1), DateTime.Now.AddMonths(1))
+    .GetAllAsync();
+
+// Find longer services (90+ minutes)
+var longServices = await client.Fluent().Services
+    .WithMinimumLength(90)
+    .Upcoming()
+    .GetAllAsync();
+```
+
+### Check-Ins Module
+
+```csharp
+// Get today's check-ins
+var todayCheckIns = await client.Fluent().CheckIns
+    .Today()
+    .OrderBy(c => c.CreatedAt)
+    .GetPagedAsync(25);
+
+// Find check-ins for a specific person
+var personCheckIns = await client.Fluent().CheckIns
+    .ByPerson("12345")
+    .OrderByDescending(c => c.CreatedAt)
+    .GetPagedAsync(10);
+
+// Get currently checked in people for an event
+var currentlyCheckedIn = await client.Fluent().CheckIns
+    .ByEvent("event-123")
+    .CheckedIn()
+    .OrderBy(c => c.FirstName)
+    .GetAllAsync();
+
+// Find guests vs members today
+var guestsToday = await client.Fluent().CheckIns
+    .Today()
+    .Guests()
+    .CountAsync();
+
+var membersToday = await client.Fluent().CheckIns
+    .Today()
+    .Members()
+    .CountAsync();
+
+// Get check-ins with medical notes this week
+var medicalCheckIns = await client.Fluent().CheckIns
+    .WithMedicalNotes()
+    .ThisWeek()
+    .GetAllAsync();
+
+// Find check-ins by location and kind
+var volunteerCheckIns = await client.Fluent().CheckIns
+    .ByLocation("main-room")
+    .ByKind("volunteer")
+    .Confirmed()
+    .GetAllAsync();
+```
+
+## Specialized Operations
+
+Each module provides specialized operations that make common tasks easier:
+
+### Giving Specialized Methods
+- `ByFund(fundId)` - Filter by fund
+- `ByPerson(personId)` - Filter by donor
+- `ByDateRange(start, end)` - Filter by date range
+- `WithMinimumAmount(amount)` - Filter by minimum amount
+- `TotalAmountAsync()` - Calculate total donation amount
+
+### Calendar Specialized Methods
+- `Today()` - Events occurring today
+- `ThisWeek()` - Events this week
+- `ThisMonth()` - Events this month
+- `Upcoming()` - Future events
+- `ByDateRange(start, end)` - Events in date range
+
+### Groups Specialized Methods
+- `Active()` / `Archived()` - Filter by status
+- `ByGroupType(typeId)` - Filter by group type
+- `ByLocation(locationId)` - Filter by location
+- `WithMinimumMembers(count)` - Filter by member count
+- `WithChatEnabled()` - Groups with chat
+- `WithVirtualMeeting()` - Groups with virtual capabilities
+- `ByNameContains(text)` - Search by name
+
+### Services Specialized Methods
+- `Upcoming()` / `Past()` - Filter by time
+- `ThisWeek()` / `ThisMonth()` - Filter by period
+- `ByServiceType(typeId)` - Filter by service type
+- `Public()` / `Private()` - Filter by visibility
+- `WithMinimumLength(minutes)` - Filter by duration
+- `ByTitleContains(text)` - Search by title
+
+### Check-Ins Specialized Methods
+- `ByPerson(personId)` - Filter by person
+- `ByEvent(eventId)` - Filter by event
+- `ByEventTime(eventTimeId)` - Filter by event time
+- `ByLocation(locationId)` - Filter by location
+- `Today()` / `ThisWeek()` - Filter by time period
+- `ByDateRange(start, end)` - Filter by date range
+- `CheckedIn()` / `CheckedOut()` - Filter by check-in status
+- `Confirmed()` / `Unconfirmed()` - Filter by confirmation status
+- `Guests()` / `Members()` - Filter by guest status
+- `WithMedicalNotes()` - Filter by medical notes presence
+- `ByNameContains(text)` - Search by name
+- `ByKind(kind)` - Filter by check-in kind/type
+
 ## Examples Repository
 
-See the `examples/PlanningCenter.Api.Client.Fluent.Console` project for comprehensive examples of fluent API usage.
+See the `examples/PlanningCenter.Api.Client.Fluent.Console` project for comprehensive examples of fluent API usage across all implemented modules.

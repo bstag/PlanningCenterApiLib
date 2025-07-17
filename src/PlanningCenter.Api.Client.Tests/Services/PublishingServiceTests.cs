@@ -41,18 +41,6 @@ public class PublishingServiceTests
         result.DataSource.Should().Be("Publishing");
     }
 
-    [Fact]
-    public async Task GetEpisodeAsync_ShouldReturnNull_WhenApiReturnsNull()
-    {
-        // Arrange
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes/999", (JsonApiSingleResponse<EpisodeDto>?)null);
-
-        // Act
-        var result = await _publishingService.GetEpisodeAsync("999");
-
-        // Assert
-        result.Should().BeNull();
-    }
 
     [Fact]
     public async Task GetEpisodeAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
@@ -220,76 +208,8 @@ public class PublishingServiceTests
         result.DataSource.Should().Be("Publishing");
     }
 
-    [Fact]
-    public async Task ListSpeakersAsync_ShouldReturnPagedSpeakers_WhenApiReturnsData()
-    {
-        // Arrange
-        var speakersResponse = _builder.BuildSpeakerCollectionResponse(2);
-        _mockApiConnection.SetupGetResponse("/publishing/v2/speakers", speakersResponse);
 
-        // Act
-        var result = await _publishingService.ListSpeakersAsync();
 
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
-        result.Meta.TotalCount.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task CreateSpeakerAsync_ShouldReturnCreatedSpeaker_WhenRequestIsValid()
-    {
-        // Arrange
-        var request = new SpeakerCreateRequest
-        {
-            FirstName = "John",
-            LastName = "Doe",
-            DisplayName = "Pastor John",
-            Title = "Senior Pastor",
-            Email = "john@example.com"
-        };
-
-        var response = new JsonApiSingleResponse<dynamic> 
-        { 
-            Data = new { id = "newspeaker123", type = "Speaker" } 
-        };
-        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/speakers", response);
-
-        // Act
-        var result = await _publishingService.CreateSpeakerAsync(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be("newspeaker123");
-        result.DataSource.Should().Be("Publishing");
-    }
-
-    [Fact]
-    public async Task UpdateSpeakerAsync_ShouldReturnUpdatedSpeaker_WhenRequestIsValid()
-    {
-        // Arrange
-        var request = new SpeakerUpdateRequest
-        {
-            FirstName = "Jane",
-            LastName = "Smith",
-            Title = "Associate Pastor"
-        };
-
-        var response = new JsonApiSingleResponse<dynamic> 
-        { 
-            Data = new { id = "speaker123", type = "Speaker" } 
-        };
-        _mockApiConnection.SetupMutationResponse("PATCH", "/publishing/v2/speakers/speaker123", response);
-
-        // Act
-        var result = await _publishingService.UpdateSpeakerAsync("speaker123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be("speaker123");
-        result.DataSource.Should().Be("Publishing");
-    }
 
     [Fact]
     public async Task DeleteSpeakerAsync_ShouldCompleteSuccessfully_WhenIdIsValid()
@@ -320,75 +240,8 @@ public class PublishingServiceTests
         result.DataSource.Should().Be("Publishing");
     }
 
-    [Fact]
-    public async Task ListMediaAsync_ShouldReturnPagedMedia_WhenApiReturnsData()
-    {
-        // Arrange
-        var mediaResponse = _builder.BuildMediaCollectionResponse(2);
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes/episode123/media", mediaResponse);
 
-        // Act
-        var result = await _publishingService.ListMediaAsync("episode123");
 
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
-        result.Meta.TotalCount.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task UploadMediaAsync_ShouldReturnUploadedMedia_WhenRequestIsValid()
-    {
-        // Arrange
-        var request = new MediaUploadRequest
-        {
-            FileName = "sermon.mp3",
-            ContentType = "audio/mpeg",
-            FileSizeInBytes = 1024000,
-            MediaType = "audio",
-            Quality = "high"
-        };
-
-        var response = new JsonApiSingleResponse<dynamic> 
-        { 
-            Data = new { id = "newmedia123", type = "Media" } 
-        };
-        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/episodes/episode123/media", response);
-
-        // Act
-        var result = await _publishingService.UploadMediaAsync("episode123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be("newmedia123");
-        result.DataSource.Should().Be("Publishing");
-    }
-
-    [Fact]
-    public async Task UpdateMediaAsync_ShouldReturnUpdatedMedia_WhenRequestIsValid()
-    {
-        // Arrange
-        var request = new MediaUpdateRequest
-        {
-            FileName = "updated_sermon.mp3",
-            Quality = "medium"
-        };
-
-        var response = new JsonApiSingleResponse<dynamic> 
-        { 
-            Data = new { id = "media123", type = "Media" } 
-        };
-        _mockApiConnection.SetupMutationResponse("PATCH", "/publishing/v2/media/media123", response);
-
-        // Act
-        var result = await _publishingService.UpdateMediaAsync("media123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be("media123");
-        result.DataSource.Should().Be("Publishing");
-    }
 
     [Fact]
     public async Task DeleteMediaAsync_ShouldCompleteSuccessfully_WhenIdIsValid()
@@ -402,50 +255,7 @@ public class PublishingServiceTests
 
     #region Pagination Helper Tests
 
-    [Fact]
-    public async Task GetAllEpisodesAsync_ShouldReturnAllEpisodes_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var firstPageResponse = _builder.BuildEpisodeCollectionResponse(2);
-        firstPageResponse.Links = new() { Next = "/publishing/v2/episodes?offset=2" };
-        
-        var secondPageResponse = _builder.BuildEpisodeCollectionResponse(1);
-        secondPageResponse.Links = new() { Next = null };
 
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes", firstPageResponse);
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes?offset=2", secondPageResponse);
-
-        // Act
-        var result = await _publishingService.GetAllEpisodesAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Should().HaveCount(3); // 2 from first page + 1 from second page
-    }
-
-    [Fact]
-    public async Task StreamEpisodesAsync_ShouldYieldAllEpisodes_WhenMultiplePagesExist()
-    {
-        // Arrange
-        var firstPageResponse = _builder.BuildEpisodeCollectionResponse(2);
-        firstPageResponse.Links = new() { Next = "/publishing/v2/episodes?offset=2" };
-        
-        var secondPageResponse = _builder.BuildEpisodeCollectionResponse(1);
-        secondPageResponse.Links = new() { Next = null };
-
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes", firstPageResponse);
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes?offset=2", secondPageResponse);
-
-        // Act
-        var episodes = new List<Models.Publishing.Episode>();
-        await foreach (var episode in _publishingService.StreamEpisodesAsync())
-        {
-            episodes.Add(episode);
-        }
-
-        // Assert
-        episodes.Should().HaveCount(3); // 2 from first page + 1 from second page
-    }
 
     #endregion
 

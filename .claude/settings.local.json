@@ -6,7 +6,9 @@
       "Bash(find:*)",
       "Bash(dotnet clean:*)",
       "Bash(grep:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(ls:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
