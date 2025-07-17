@@ -14,18 +14,15 @@ namespace PlanningCenter.Api.Client.Services;
 /// Service implementation for the Planning Center Registrations module.
 /// Provides comprehensive event registration and attendee management with built-in pagination support.
 /// </summary>
-public class RegistrationsService : IRegistrationsService
+public class RegistrationsService : ServiceBase, IRegistrationsService
 {
-    private readonly IApiConnection _apiConnection;
-    private readonly ILogger<RegistrationsService> _logger;
     private const string BaseEndpoint = "/registrations/v2";
 
     public RegistrationsService(
         IApiConnection apiConnection,
         ILogger<RegistrationsService> logger)
+        : base(logger, apiConnection)
     {
-        _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     #region Signup Management
@@ -38,31 +35,31 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting signup with ID: {SignupId}", id);
+        Logger.LogDebug("Getting signup with ID: {SignupId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<SignupDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SignupDto>>(
                 $"{BaseEndpoint}/signups/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Signup not found: {SignupId}", id);
+                Logger.LogWarning("Signup not found: {SignupId}", id);
                 return null;
             }
 
             var signup = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved signup: {SignupId}", id);
+            Logger.LogInformation("Successfully retrieved signup: {SignupId}", id);
             return signup;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Signup not found: {SignupId}", id);
+            Logger.LogWarning("Signup not found: {SignupId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving signup: {SignupId}", id);
+            Logger.LogError(ex, "Error retrieving signup: {SignupId}", id);
             throw;
         }
     }
@@ -72,17 +69,17 @@ public class RegistrationsService : IRegistrationsService
     /// </summary>
     public async Task<IPagedResponse<Signup>> ListSignupsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing signups with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing signups with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<SignupDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<SignupDto>>(
                 $"{BaseEndpoint}/signups{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No signups returned from API");
+                Logger.LogWarning("No signups returned from API");
                 return new PagedResponse<Signup>
                 {
                     Data = new List<Signup>(),
@@ -100,12 +97,12 @@ public class RegistrationsService : IRegistrationsService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} signups", signups.Count);
+            Logger.LogInformation("Successfully retrieved {Count} signups", signups.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing signups");
+            Logger.LogError(ex, "Error listing signups");
             throw;
         }
     }
@@ -118,12 +115,12 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating signup with name: {Name}", request.Name);
+        Logger.LogDebug("Creating signup with name: {Name}", request.Name);
 
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<SignupDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SignupDto>>(
                 $"{BaseEndpoint}/signups", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -132,12 +129,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var signup = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created signup: {SignupId}", signup.Id);
+            Logger.LogInformation("Successfully created signup: {SignupId}", signup.Id);
             return signup;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating signup");
+            Logger.LogError(ex, "Error creating signup");
             throw;
         }
     }
@@ -152,12 +149,12 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating signup: {SignupId}", id);
+        Logger.LogDebug("Updating signup: {SignupId}", id);
 
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<SignupDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SignupDto>>(
                 $"{BaseEndpoint}/signups/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -166,12 +163,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var signup = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated signup: {SignupId}", id);
+            Logger.LogInformation("Successfully updated signup: {SignupId}", id);
             return signup;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating signup: {SignupId}", id);
+            Logger.LogError(ex, "Error updating signup: {SignupId}", id);
             throw;
         }
     }
@@ -184,16 +181,16 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting signup: {SignupId}", id);
+        Logger.LogDebug("Deleting signup: {SignupId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/signups/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted signup: {SignupId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/signups/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted signup: {SignupId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting signup: {SignupId}", id);
+            Logger.LogError(ex, "Error deleting signup: {SignupId}", id);
             throw;
         }
     }
@@ -210,31 +207,31 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Registration ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting registration with ID: {RegistrationId}", id);
+        Logger.LogDebug("Getting registration with ID: {RegistrationId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<RegistrationDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<RegistrationDto>>(
                 $"{BaseEndpoint}/registrations/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Registration not found: {RegistrationId}", id);
+                Logger.LogWarning("Registration not found: {RegistrationId}", id);
                 return null;
             }
 
             var registration = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved registration: {RegistrationId}", id);
+            Logger.LogInformation("Successfully retrieved registration: {RegistrationId}", id);
             return registration;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Registration not found: {RegistrationId}", id);
+            Logger.LogWarning("Registration not found: {RegistrationId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving registration: {RegistrationId}", id);
+            Logger.LogError(ex, "Error retrieving registration: {RegistrationId}", id);
             throw;
         }
     }
@@ -247,17 +244,17 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(signupId))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(signupId));
 
-        _logger.LogDebug("Listing registrations for signup: {SignupId}", signupId);
+        Logger.LogDebug("Listing registrations for signup: {SignupId}", signupId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<RegistrationDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<RegistrationDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/registrations{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No registrations returned for signup: {SignupId}", signupId);
+                Logger.LogWarning("No registrations returned for signup: {SignupId}", signupId);
                 return new PagedResponse<Registration>
                 {
                     Data = new List<Registration>(),
@@ -275,12 +272,12 @@ public class RegistrationsService : IRegistrationsService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} registrations for signup: {SignupId}", registrations.Count, signupId);
+            Logger.LogInformation("Successfully retrieved {Count} registrations for signup: {SignupId}", registrations.Count, signupId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing registrations for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error listing registrations for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -295,12 +292,12 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Submitting registration for signup: {SignupId}", signupId);
+        Logger.LogDebug("Submitting registration for signup: {SignupId}", signupId);
 
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<RegistrationDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<RegistrationDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/registrations", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -309,12 +306,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var registration = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully submitted registration: {RegistrationId} for signup: {SignupId}", registration.Id, signupId);
+            Logger.LogInformation("Successfully submitted registration: {RegistrationId} for signup: {SignupId}", registration.Id, signupId);
             return registration;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting registration for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error submitting registration for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -331,31 +328,31 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Attendee ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting attendee with ID: {AttendeeId}", id);
+        Logger.LogDebug("Getting attendee with ID: {AttendeeId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<AttendeeDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/attendees/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Attendee not found: {AttendeeId}", id);
+                Logger.LogWarning("Attendee not found: {AttendeeId}", id);
                 return null;
             }
 
             var attendee = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved attendee: {AttendeeId}", id);
+            Logger.LogInformation("Successfully retrieved attendee: {AttendeeId}", id);
             return attendee;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Attendee not found: {AttendeeId}", id);
+            Logger.LogWarning("Attendee not found: {AttendeeId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving attendee: {AttendeeId}", id);
+            Logger.LogError(ex, "Error retrieving attendee: {AttendeeId}", id);
             throw;
         }
     }
@@ -368,17 +365,17 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(signupId))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(signupId));
 
-        _logger.LogDebug("Listing attendees for signup: {SignupId}", signupId);
+        Logger.LogDebug("Listing attendees for signup: {SignupId}", signupId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<AttendeeDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/attendees{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No attendees returned for signup: {SignupId}", signupId);
+                Logger.LogWarning("No attendees returned for signup: {SignupId}", signupId);
                 return new PagedResponse<Attendee>
                 {
                     Data = new List<Attendee>(),
@@ -396,12 +393,12 @@ public class RegistrationsService : IRegistrationsService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} attendees for signup: {SignupId}", attendees.Count, signupId);
+            Logger.LogInformation("Successfully retrieved {Count} attendees for signup: {SignupId}", attendees.Count, signupId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing attendees for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error listing attendees for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -416,12 +413,12 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Adding attendee to signup: {SignupId}", signupId);
+        Logger.LogDebug("Adding attendee to signup: {SignupId}", signupId);
 
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/attendees", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -430,12 +427,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var attendee = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully added attendee: {AttendeeId} to signup: {SignupId}", attendee.Id, signupId);
+            Logger.LogInformation("Successfully added attendee: {AttendeeId} to signup: {SignupId}", attendee.Id, signupId);
             return attendee;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding attendee to signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error adding attendee to signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -450,12 +447,12 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating attendee: {AttendeeId}", id);
+        Logger.LogDebug("Updating attendee: {AttendeeId}", id);
 
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<AttendeeDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/attendees/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -464,12 +461,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var attendee = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated attendee: {AttendeeId}", id);
+            Logger.LogInformation("Successfully updated attendee: {AttendeeId}", id);
             return attendee;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating attendee: {AttendeeId}", id);
+            Logger.LogError(ex, "Error updating attendee: {AttendeeId}", id);
             throw;
         }
     }
@@ -482,16 +479,16 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Attendee ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting attendee: {AttendeeId}", id);
+        Logger.LogDebug("Deleting attendee: {AttendeeId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/attendees/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted attendee: {AttendeeId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/attendees/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted attendee: {AttendeeId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting attendee: {AttendeeId}", id);
+            Logger.LogError(ex, "Error deleting attendee: {AttendeeId}", id);
             throw;
         }
     }
@@ -510,12 +507,12 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Adding attendee to waitlist for signup: {SignupId}", signupId);
+        Logger.LogDebug("Adding attendee to waitlist for signup: {SignupId}", signupId);
 
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/waitlist", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -524,12 +521,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var attendee = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully added attendee: {AttendeeId} to waitlist for signup: {SignupId}", attendee.Id, signupId);
+            Logger.LogInformation("Successfully added attendee: {AttendeeId} to waitlist for signup: {SignupId}", attendee.Id, signupId);
             return attendee;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding attendee to waitlist for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error adding attendee to waitlist for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -542,11 +539,11 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(attendeeId))
             throw new ArgumentException("Attendee ID cannot be null or empty", nameof(attendeeId));
 
-        _logger.LogDebug("Removing attendee from waitlist: {AttendeeId}", attendeeId);
+        Logger.LogDebug("Removing attendee from waitlist: {AttendeeId}", attendeeId);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/remove_from_waitlist", null, cancellationToken);
 
             if (response?.Data == null)
@@ -555,12 +552,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var attendee = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully removed attendee from waitlist: {AttendeeId}", attendeeId);
+            Logger.LogInformation("Successfully removed attendee from waitlist: {AttendeeId}", attendeeId);
             return attendee;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing attendee from waitlist: {AttendeeId}", attendeeId);
+            Logger.LogError(ex, "Error removing attendee from waitlist: {AttendeeId}", attendeeId);
             throw;
         }
     }
@@ -573,11 +570,11 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(attendeeId))
             throw new ArgumentException("Attendee ID cannot be null or empty", nameof(attendeeId));
 
-        _logger.LogDebug("Promoting attendee from waitlist: {AttendeeId}", attendeeId);
+        Logger.LogDebug("Promoting attendee from waitlist: {AttendeeId}", attendeeId);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/promote_from_waitlist", null, cancellationToken);
 
             if (response?.Data == null)
@@ -586,12 +583,12 @@ public class RegistrationsService : IRegistrationsService
             }
 
             var attendee = RegistrationsMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully promoted attendee from waitlist: {AttendeeId}", attendeeId);
+            Logger.LogInformation("Successfully promoted attendee from waitlist: {AttendeeId}", attendeeId);
             return attendee;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error promoting attendee from waitlist: {AttendeeId}", attendeeId);
+            Logger.LogError(ex, "Error promoting attendee from waitlist: {AttendeeId}", attendeeId);
             throw;
         }
     }
@@ -608,7 +605,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Generating registration report for signup: {SignupId}", request.SignupId);
+        Logger.LogDebug("Generating registration report for signup: {SignupId}", request.SignupId);
 
         try
         {
@@ -632,12 +629,12 @@ public class RegistrationsService : IRegistrationsService
                 GeneratedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Successfully generated registration report for signup: {SignupId}", request.SignupId);
+            Logger.LogInformation("Successfully generated registration report for signup: {SignupId}", request.SignupId);
             return report;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating registration report for signup: {SignupId}", request.SignupId);
+            Logger.LogError(ex, "Error generating registration report for signup: {SignupId}", request.SignupId);
             throw;
         }
     }
@@ -650,7 +647,7 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(signupId))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(signupId));
 
-        _logger.LogDebug("Getting registration count for signup: {SignupId}", signupId);
+        Logger.LogDebug("Getting registration count for signup: {SignupId}", signupId);
 
         try
         {
@@ -660,12 +657,12 @@ public class RegistrationsService : IRegistrationsService
             var response = await ListRegistrationsAsync(signupId, parameters, cancellationToken);
             var count = response.Meta?.TotalCount ?? response.Data.Count;
 
-            _logger.LogInformation("Registration count for signup {SignupId}: {Count}", signupId, count);
+            Logger.LogInformation("Registration count for signup {SignupId}: {Count}", signupId, count);
             return count;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting registration count for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error getting registration count for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -678,7 +675,7 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(signupId))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(signupId));
 
-        _logger.LogDebug("Getting waitlist count for signup: {SignupId}", signupId);
+        Logger.LogDebug("Getting waitlist count for signup: {SignupId}", signupId);
 
         try
         {
@@ -688,12 +685,12 @@ public class RegistrationsService : IRegistrationsService
             var response = await ListAttendeesAsync(signupId, parameters, cancellationToken);
             var count = response.Meta?.TotalCount ?? response.Data.Count;
 
-            _logger.LogInformation("Waitlist count for signup {SignupId}: {Count}", signupId, count);
+            Logger.LogInformation("Waitlist count for signup {SignupId}: {Count}", signupId, count);
             return count;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting waitlist count for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error getting waitlist count for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -711,7 +708,7 @@ public class RegistrationsService : IRegistrationsService
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting all signups with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Getting all signups with parameters: {@Parameters}", parameters);
 
         var allSignups = new List<Signup>();
         var pageSize = options?.PageSize ?? 100;
@@ -744,12 +741,12 @@ public class RegistrationsService : IRegistrationsService
                 }
             } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-            _logger.LogInformation("Retrieved {Count} total signups across {Pages} pages", allSignups.Count, currentPage);
+            Logger.LogInformation("Retrieved {Count} total signups across {Pages} pages", allSignups.Count, currentPage);
             return allSignups.AsReadOnly();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all signups");
+            Logger.LogError(ex, "Error getting all signups");
             throw;
         }
     }
@@ -762,7 +759,7 @@ public class RegistrationsService : IRegistrationsService
         PaginationOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Streaming signups with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Streaming signups with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
         var maxPages = options?.MaxItems ?? int.MaxValue;
@@ -796,7 +793,7 @@ public class RegistrationsService : IRegistrationsService
             }
         } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-        _logger.LogInformation("Completed streaming signups across {Pages} pages", currentPage);
+        Logger.LogInformation("Completed streaming signups across {Pages} pages", currentPage);
     }
 
     #endregion
@@ -811,17 +808,17 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Selection type ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting selection type with ID: {SelectionTypeId}", id);
+        Logger.LogDebug("Getting selection type with ID: {SelectionTypeId}", id);
 
         try
         {
             // Note: This would use actual SelectionTypeDto in a complete implementation
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/selection_types/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Selection type not found: {SelectionTypeId}", id);
+                Logger.LogWarning("Selection type not found: {SelectionTypeId}", id);
                 return null;
             }
 
@@ -834,17 +831,17 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully retrieved selection type: {SelectionTypeId}", id);
+            Logger.LogInformation("Successfully retrieved selection type: {SelectionTypeId}", id);
             return selectionType;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Selection type not found: {SelectionTypeId}", id);
+            Logger.LogWarning("Selection type not found: {SelectionTypeId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving selection type: {SelectionTypeId}", id);
+            Logger.LogError(ex, "Error retrieving selection type: {SelectionTypeId}", id);
             throw;
         }
     }
@@ -854,17 +851,17 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(signupId))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(signupId));
 
-        _logger.LogDebug("Listing selection types for signup: {SignupId}", signupId);
+        Logger.LogDebug("Listing selection types for signup: {SignupId}", signupId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/selection_types{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No selection types returned for signup: {SignupId}", signupId);
+                Logger.LogWarning("No selection types returned for signup: {SignupId}", signupId);
                 return new PagedResponse<SelectionType>
                 {
                     Data = new List<SelectionType>(),
@@ -889,12 +886,12 @@ public class RegistrationsService : IRegistrationsService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} selection types for signup: {SignupId}", selectionTypes.Count, signupId);
+            Logger.LogInformation("Successfully retrieved {Count} selection types for signup: {SignupId}", selectionTypes.Count, signupId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing selection types for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error listing selection types for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -919,16 +916,16 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(signupId))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(signupId));
 
-        _logger.LogDebug("Getting signup location for signup: {SignupId}", signupId);
+        Logger.LogDebug("Getting signup location for signup: {SignupId}", signupId);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Signup location not found for signup: {SignupId}", signupId);
+                Logger.LogWarning("Signup location not found for signup: {SignupId}", signupId);
                 return null;
             }
 
@@ -957,17 +954,17 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully retrieved signup location for signup: {SignupId}", signupId);
+            Logger.LogInformation("Successfully retrieved signup location for signup: {SignupId}", signupId);
             return signupLocation;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Signup location not found for signup: {SignupId}", signupId);
+            Logger.LogWarning("Signup location not found for signup: {SignupId}", signupId);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving signup location for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error retrieving signup location for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -979,7 +976,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Setting signup location for signup: {SignupId}", signupId);
+        Logger.LogDebug("Setting signup location for signup: {SignupId}", signupId);
 
         try
         {
@@ -1018,7 +1015,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1050,12 +1047,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully set signup location: {LocationId} for signup: {SignupId}", signupLocation.Id, signupId);
+            Logger.LogInformation("Successfully set signup location: {LocationId} for signup: {SignupId}", signupLocation.Id, signupId);
             return signupLocation;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting signup location for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error setting signup location for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -1067,7 +1064,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating signup location for signup: {SignupId}", signupId);
+        Logger.LogDebug("Updating signup location for signup: {SignupId}", signupId);
 
         try
         {
@@ -1099,7 +1096,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1131,12 +1128,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully updated signup location for signup: {SignupId}", signupId);
+            Logger.LogInformation("Successfully updated signup location for signup: {SignupId}", signupId);
             return signupLocation;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating signup location for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error updating signup location for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -1146,17 +1143,17 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(signupId))
             throw new ArgumentException("Signup ID cannot be null or empty", nameof(signupId));
 
-        _logger.LogDebug("Listing signup times for signup: {SignupId}", signupId);
+        Logger.LogDebug("Listing signup times for signup: {SignupId}", signupId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/signup_times{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No signup times returned for signup: {SignupId}", signupId);
+                Logger.LogWarning("No signup times returned for signup: {SignupId}", signupId);
                 return new PagedResponse<SignupTime>
                 {
                     Data = new List<SignupTime>(),
@@ -1196,12 +1193,12 @@ public class RegistrationsService : IRegistrationsService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} signup times for signup: {SignupId}", signupTimes.Count, signupId);
+            Logger.LogInformation("Successfully retrieved {Count} signup times for signup: {SignupId}", signupTimes.Count, signupId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing signup times for signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error listing signup times for signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -1213,7 +1210,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Adding signup time to signup: {SignupId}", signupId);
+        Logger.LogDebug("Adding signup time to signup: {SignupId}", signupId);
 
         try
         {
@@ -1251,7 +1248,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signups/{signupId}/signup_times", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1282,12 +1279,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully added signup time: {TimeId} to signup: {SignupId}", signupTime.Id, signupId);
+            Logger.LogInformation("Successfully added signup time: {TimeId} to signup: {SignupId}", signupTime.Id, signupId);
             return signupTime;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding signup time to signup: {SignupId}", signupId);
+            Logger.LogError(ex, "Error adding signup time to signup: {SignupId}", signupId);
             throw;
         }
     }
@@ -1299,7 +1296,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating signup time: {TimeId}", id);
+        Logger.LogDebug("Updating signup time: {TimeId}", id);
 
         try
         {
@@ -1331,7 +1328,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/signup_times/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1361,12 +1358,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully updated signup time: {TimeId}", id);
+            Logger.LogInformation("Successfully updated signup time: {TimeId}", id);
             return signupTime;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating signup time: {TimeId}", id);
+            Logger.LogError(ex, "Error updating signup time: {TimeId}", id);
             throw;
         }
     }
@@ -1376,16 +1373,16 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Signup time ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting signup time: {TimeId}", id);
+        Logger.LogDebug("Deleting signup time: {TimeId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/signup_times/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted signup time: {TimeId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/signup_times/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted signup time: {TimeId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting signup time: {TimeId}", id);
+            Logger.LogError(ex, "Error deleting signup time: {TimeId}", id);
             throw;
         }
     }
@@ -1395,16 +1392,16 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(attendeeId))
             throw new ArgumentException("Attendee ID cannot be null or empty", nameof(attendeeId));
 
-        _logger.LogDebug("Getting emergency contact for attendee: {AttendeeId}", attendeeId);
+        Logger.LogDebug("Getting emergency contact for attendee: {AttendeeId}", attendeeId);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Emergency contact not found for attendee: {AttendeeId}", attendeeId);
+                Logger.LogWarning("Emergency contact not found for attendee: {AttendeeId}", attendeeId);
                 return null;
             }
 
@@ -1432,17 +1429,17 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully retrieved emergency contact for attendee: {AttendeeId}", attendeeId);
+            Logger.LogInformation("Successfully retrieved emergency contact for attendee: {AttendeeId}", attendeeId);
             return emergencyContact;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Emergency contact not found for attendee: {AttendeeId}", attendeeId);
+            Logger.LogWarning("Emergency contact not found for attendee: {AttendeeId}", attendeeId);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving emergency contact for attendee: {AttendeeId}", attendeeId);
+            Logger.LogError(ex, "Error retrieving emergency contact for attendee: {AttendeeId}", attendeeId);
             throw;
         }
     }
@@ -1454,7 +1451,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Setting emergency contact for attendee: {AttendeeId}", attendeeId);
+        Logger.LogDebug("Setting emergency contact for attendee: {AttendeeId}", attendeeId);
 
         try
         {
@@ -1493,7 +1490,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1525,12 +1522,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully set emergency contact: {ContactId} for attendee: {AttendeeId}", emergencyContact.Id, attendeeId);
+            Logger.LogInformation("Successfully set emergency contact: {ContactId} for attendee: {AttendeeId}", emergencyContact.Id, attendeeId);
             return emergencyContact;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting emergency contact for attendee: {AttendeeId}", attendeeId);
+            Logger.LogError(ex, "Error setting emergency contact for attendee: {AttendeeId}", attendeeId);
             throw;
         }
     }
@@ -1542,7 +1539,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating emergency contact for attendee: {AttendeeId}", attendeeId);
+        Logger.LogDebug("Updating emergency contact for attendee: {AttendeeId}", attendeeId);
 
         try
         {
@@ -1574,7 +1571,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1606,12 +1603,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully updated emergency contact for attendee: {AttendeeId}", attendeeId);
+            Logger.LogInformation("Successfully updated emergency contact for attendee: {AttendeeId}", attendeeId);
             return emergencyContact;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating emergency contact for attendee: {AttendeeId}", attendeeId);
+            Logger.LogError(ex, "Error updating emergency contact for attendee: {AttendeeId}", attendeeId);
             throw;
         }
     }
@@ -1621,16 +1618,16 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Category ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting category with ID: {CategoryId}", id);
+        Logger.LogDebug("Getting category with ID: {CategoryId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/categories/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Category not found: {CategoryId}", id);
+                Logger.LogWarning("Category not found: {CategoryId}", id);
                 return null;
             }
 
@@ -1646,34 +1643,34 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully retrieved category: {CategoryId}", id);
+            Logger.LogInformation("Successfully retrieved category: {CategoryId}", id);
             return category;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Category not found: {CategoryId}", id);
+            Logger.LogWarning("Category not found: {CategoryId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving category: {CategoryId}", id);
+            Logger.LogError(ex, "Error retrieving category: {CategoryId}", id);
             throw;
         }
     }
 
     public async Task<IPagedResponse<Category>> ListCategoriesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing categories with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing categories with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/categories{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No categories returned from API");
+                Logger.LogWarning("No categories returned from API");
                 return new PagedResponse<Category>
                 {
                     Data = new List<Category>(),
@@ -1701,12 +1698,12 @@ public class RegistrationsService : IRegistrationsService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} categories", categories.Count);
+            Logger.LogInformation("Successfully retrieved {Count} categories", categories.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing categories");
+            Logger.LogError(ex, "Error listing categories");
             throw;
         }
     }
@@ -1716,7 +1713,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating category with name: {Name}", request.Name);
+        Logger.LogDebug("Creating category with name: {Name}", request.Name);
 
         try
         {
@@ -1736,7 +1733,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/categories", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1755,12 +1752,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully created category: {CategoryId}", category.Id);
+            Logger.LogInformation("Successfully created category: {CategoryId}", category.Id);
             return category;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating category");
+            Logger.LogError(ex, "Error creating category");
             throw;
         }
     }
@@ -1772,7 +1769,7 @@ public class RegistrationsService : IRegistrationsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating category: {CategoryId}", id);
+        Logger.LogDebug("Updating category: {CategoryId}", id);
 
         try
         {
@@ -1793,7 +1790,7 @@ public class RegistrationsService : IRegistrationsService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/categories/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1812,12 +1809,12 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully updated category: {CategoryId}", id);
+            Logger.LogInformation("Successfully updated category: {CategoryId}", id);
             return category;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating category: {CategoryId}", id);
+            Logger.LogError(ex, "Error updating category: {CategoryId}", id);
             throw;
         }
     }
@@ -1827,16 +1824,16 @@ public class RegistrationsService : IRegistrationsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Campus ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting campus with ID: {CampusId}", id);
+        Logger.LogDebug("Getting campus with ID: {CampusId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/campuses/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Campus not found: {CampusId}", id);
+                Logger.LogWarning("Campus not found: {CampusId}", id);
                 return null;
             }
 
@@ -1859,34 +1856,34 @@ public class RegistrationsService : IRegistrationsService
                 DataSource = "Registrations"
             };
 
-            _logger.LogInformation("Successfully retrieved campus: {CampusId}", id);
+            Logger.LogInformation("Successfully retrieved campus: {CampusId}", id);
             return campus;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Campus not found: {CampusId}", id);
+            Logger.LogWarning("Campus not found: {CampusId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving campus: {CampusId}", id);
+            Logger.LogError(ex, "Error retrieving campus: {CampusId}", id);
             throw;
         }
     }
 
     public async Task<IPagedResponse<Models.Registrations.Campus>> ListCampusesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing campuses with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing campuses with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/campuses{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No campuses returned from API");
+                Logger.LogWarning("No campuses returned from API");
                 return new PagedResponse<Models.Registrations.Campus>
                 {
                     Data = new List<Models.Registrations.Campus>(),
@@ -1921,12 +1918,12 @@ public class RegistrationsService : IRegistrationsService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} campuses", campuses.Count);
+            Logger.LogInformation("Successfully retrieved {Count} campuses", campuses.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing campuses");
+            Logger.LogError(ex, "Error listing campuses");
             throw;
         }
     }

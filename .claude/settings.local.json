@@ -8,7 +8,8 @@
       "Bash(grep:*)",
       "Bash(git add:*)",
       "Bash(ls:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

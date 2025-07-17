@@ -15,18 +15,15 @@ namespace PlanningCenter.Api.Client.Services;
 /// Service implementation for the Planning Center People module.
 /// Provides comprehensive people management with built-in pagination support.
 /// </summary>
-public class PeopleService : IPeopleService
+public class PeopleService : ServiceBase, IPeopleService
 {
-    private readonly IApiConnection _apiConnection;
-    private readonly ILogger<PeopleService> _logger;
     private const string BaseEndpoint = "/people/v2";
 
     public PeopleService(
         IApiConnection apiConnection,
         ILogger<PeopleService> logger)
+        : base(logger, apiConnection)
     {
-        _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -35,21 +32,21 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<Person> GetMeAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting current user's person record");
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
+                    $"{BaseEndpoint}/me", cancellationToken);
 
-        var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
-            $"{BaseEndpoint}/me", cancellationToken);
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiGeneralException("Failed to get current user - no data returned");
+                }
 
-        if (response?.Data == null)
-        {
-            throw new PlanningCenterApiGeneralException("Failed to get current user - no data returned");
-        }
-
-        var person = PersonMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully retrieved current user: {PersonId} - {FullName}",
-            person.Id, person.FullName);
-
-        return person;
+                return PersonMapper.MapToDomain(response.Data);
+            },
+            "GetMe",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -57,32 +54,24 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<Person?> GetAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Person ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        _logger.LogDebug("Getting person with ID: {PersonId}", id);
-
-        try
-        {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
-                $"{BaseEndpoint}/people/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                _logger.LogWarning("Person not found: {PersonId}", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
+                    $"{BaseEndpoint}/people/{id}", cancellationToken);
 
-            var person = PersonMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved person: {PersonId}", id);
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Person with ID {id} not found");
+                }
 
-            return person;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            _logger.LogWarning("Person not found: {PersonId}", id);
-            return null;
-        }
+                return PersonMapper.MapToDomain(response.Data);
+            },
+            "GetPerson",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -91,34 +80,35 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<IPagedResponse<Person>> ListAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing people with parameters: {@Parameters}", parameters);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await ApiConnection.GetPagedAsync<PersonDto>(
+                    $"{BaseEndpoint}/people", parameters, cancellationToken);
 
-        var response = await _apiConnection.GetPagedAsync<PersonDto>(
-            $"{BaseEndpoint}/people", parameters, cancellationToken);
+                // Map DTOs to domain models
+                var people = response.Data.Select(PersonMapper.MapToDomain).ToList();
 
-        // Map DTOs to domain models
-        var people = response.Data.Select(PersonMapper.MapToDomain).ToList();
+                // Create a new paged response with mapped data
+                var mappedResponse = new PagedResponse<Person>
+                {
+                    Data = people,
+                    Meta = response.Meta,
+                    Links = response.Links
+                };
 
-        // Create a new paged response with mapped data
-        var mappedResponse = new PagedResponse<Person>
-        {
-            Data = people,
-            Meta = response.Meta,
-            Links = response.Links
-        };
+                // Copy navigation properties if the response is a concrete PagedResponse
+                if (response is PagedResponse<PersonDto> concreteResponse)
+                {
+                    mappedResponse.ApiConnection = concreteResponse.ApiConnection;
+                    mappedResponse.OriginalParameters = concreteResponse.OriginalParameters;
+                    mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
+                }
 
-        // Copy navigation properties if the response is a concrete PagedResponse
-        if (response is PagedResponse<PersonDto> concreteResponse)
-        {
-            mappedResponse.ApiConnection = concreteResponse.ApiConnection;
-            mappedResponse.OriginalParameters = concreteResponse.OriginalParameters;
-            mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
-        }
-
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} people", 
-            response.Meta.CurrentPage, people.Count);
-
-        return mappedResponse;
+                return mappedResponse;
+            },
+            "ListPeople",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -126,39 +116,35 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<Person> CreateAsync(PersonCreateRequest request, CancellationToken cancellationToken = default)
     {
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        ValidateNotNull(request, nameof(request));
+        ValidateNotNullOrEmpty(request.FirstName, nameof(request.FirstName));
+        ValidateNotNullOrEmpty(request.LastName, nameof(request.LastName));
 
-        if (string.IsNullOrWhiteSpace(request.FirstName))
-            throw new ArgumentException("FirstName is required", nameof(request));
-
-        if (string.IsNullOrWhiteSpace(request.LastName))
-            throw new ArgumentException("LastName is required", nameof(request));
-
-        _logger.LogDebug("Creating person: {FirstName} {LastName}", request.FirstName, request.LastName);
-
-        // Convert request to JSON:API format
-        var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.PersonCreateDto>
-        {
-            Data = new Models.JsonApi.People.PersonCreateDto
+        return await ExecuteAsync(
+            async () =>
             {
-                Type = "Person",
-                Attributes = PersonMapper.MapToCreateAttributes(request)
-            }
-        };
+                // Convert request to JSON:API format
+                var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.PersonCreateDto>
+                {
+                    Data = new Models.JsonApi.People.PersonCreateDto
+                    {
+                        Type = "Person",
+                        Attributes = PersonMapper.MapToCreateAttributes(request)
+                    }
+                };
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<PersonDto>>(
-            $"{BaseEndpoint}/people", jsonApiRequest, cancellationToken);
+                var response = await ApiConnection.PostAsync<JsonApiSingleResponse<PersonDto>>(
+                    $"{BaseEndpoint}/people", jsonApiRequest, cancellationToken);
 
-        if (response?.Data == null)
-        {
-            throw new PlanningCenterApiGeneralException("Failed to create person - no data returned");
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiGeneralException("Failed to create person - no data returned");
+                }
 
-        var person = PersonMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully created person: {PersonId}", person.Id);
-
-        return person;
+                return PersonMapper.MapToDomain(response.Data);
+            },
+            "CreatePerson",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -166,37 +152,36 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<Person> UpdateAsync(string id, PersonUpdateRequest request, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Person ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
+        ValidateNotNull(request, nameof(request));
 
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
-
-        _logger.LogDebug("Updating person: {PersonId}", id);
-
-        // Convert request to JSON:API format
-        var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.PersonUpdateDto>
-        {
-            Data = new Models.JsonApi.People.PersonUpdateDto
+        return await ExecuteAsync(
+            async () =>
             {
-                Type = "Person",
-                Id = id,
-                Attributes = PersonMapper.MapToUpdateAttributes(request)
-            }
-        };
+                // Convert request to JSON:API format
+                var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.PersonUpdateDto>
+                {
+                    Data = new Models.JsonApi.People.PersonUpdateDto
+                    {
+                        Type = "Person",
+                        Id = id,
+                        Attributes = PersonMapper.MapToUpdateAttributes(request)
+                    }
+                };
 
-        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<PersonDto>>(
-            $"{BaseEndpoint}/people/{id}", jsonApiRequest, cancellationToken);
+                var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<PersonDto>>(
+                    $"{BaseEndpoint}/people/{id}", jsonApiRequest, cancellationToken);
 
-        if (response?.Data == null)
-        {
-            throw new PlanningCenterApiGeneralException("Failed to update person - no data returned");
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiGeneralException("Failed to update person - no data returned");
+                }
 
-        var person = PersonMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully updated person: {PersonId}", id);
-
-        return person;
+                return PersonMapper.MapToDomain(response.Data);
+            },
+            "UpdatePerson",
+            id,
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -204,14 +189,17 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Person ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        _logger.LogDebug("Deleting person: {PersonId}", id);
-
-        await _apiConnection.DeleteAsync($"{BaseEndpoint}/people/{id}", cancellationToken);
-
-        _logger.LogInformation("Successfully deleted person: {PersonId}", id);
+        await ExecuteAsync(
+            async () =>
+            {
+                await ApiConnection.DeleteAsync($"{BaseEndpoint}/people/{id}", cancellationToken);
+                return true; // ExecuteAsync requires a return value
+            },
+            "DeletePerson",
+            id,
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -223,16 +211,20 @@ public class PeopleService : IPeopleService
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Getting all people with options: {@Options}", options);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var firstPage = await ListAsync(parameters, cancellationToken);
 
-        var firstPage = await ListAsync(parameters, cancellationToken);
+                if (!firstPage.HasNextPage)
+                {
+                    return (IReadOnlyList<Person>)firstPage.Data;
+                }
 
-        if (!firstPage.HasNextPage)
-        {
-            return firstPage.Data;
-        }
-
-        return await firstPage.GetAllRemainingAsync(cancellationToken);
+                return (IReadOnlyList<Person>)await firstPage.GetAllRemainingAsync(cancellationToken);
+            },
+            "GetAllPeople",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -244,8 +236,6 @@ public class PeopleService : IPeopleService
         PaginationOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Streaming people with options: {@Options}", options);
-
         var firstPage = await ListAsync(parameters, cancellationToken);
 
         await foreach (var person in firstPage.GetAllRemainingAsyncEnumerable(cancellationToken))
@@ -261,48 +251,39 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<Address> AddAddressAsync(string personId, AddressCreateRequest request, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(personId))
-            throw new ArgumentException("Person ID cannot be null or empty", nameof(personId));
+        ValidateNotNullOrEmpty(personId, nameof(personId));
+        ValidateNotNull(request, nameof(request));
+        ValidateNotNullOrEmpty(request.Street, nameof(request.Street));
+        ValidateNotNullOrEmpty(request.City, nameof(request.City));
+        ValidateNotNullOrEmpty(request.State, nameof(request.State));
+        ValidateNotNullOrEmpty(request.Zip, nameof(request.Zip));
 
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
-
-        if (string.IsNullOrWhiteSpace(request.Street))
-            throw new ArgumentException("Street is required", nameof(request));
-
-        if (string.IsNullOrWhiteSpace(request.City))
-            throw new ArgumentException("City is required", nameof(request));
-
-        if (string.IsNullOrWhiteSpace(request.State))
-            throw new ArgumentException("State is required", nameof(request));
-
-        if (string.IsNullOrWhiteSpace(request.Zip))
-            throw new ArgumentException("Zip is required", nameof(request));
-
-        _logger.LogDebug("Adding address to person: {PersonId}", personId);
-
-        // Convert request to JSON:API format
-        var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.AddressCreateDto>
-        {
-            Data = new Models.JsonApi.People.AddressCreateDto
+        return await ExecuteAsync(
+            async () =>
             {
-                Type = "Address",
-                Attributes = AddressMapper.MapToCreateAttributes(request)
-            }
-        };
+                // Convert request to JSON:API format
+                var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.AddressCreateDto>
+                {
+                    Data = new Models.JsonApi.People.AddressCreateDto
+                    {
+                        Type = "Address",
+                        Attributes = AddressMapper.MapToCreateAttributes(request)
+                    }
+                };
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<AddressDto>>(
-            $"{BaseEndpoint}/people/{personId}/addresses", jsonApiRequest, cancellationToken);
+                var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AddressDto>>(
+                    $"{BaseEndpoint}/people/{personId}/addresses", jsonApiRequest, cancellationToken);
 
-        if (response?.Data == null)
-        {
-            throw new PlanningCenterApiGeneralException("Failed to create address - no data returned");
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiGeneralException("Failed to create address - no data returned");
+                }
 
-        var address = AddressMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully added address: {AddressId} to person: {PersonId}", address.Id, personId);
-
-        return address;
+                return AddressMapper.MapToDomain(response.Data);
+            },
+            "AddAddress",
+            personId,
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -319,7 +300,7 @@ public class PeopleService : IPeopleService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating address: {AddressId} for person: {PersonId}", addressId, personId);
+        Logger.LogDebug("Updating address: {AddressId} for person: {PersonId}", addressId, personId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.AddressUpdateDto>
@@ -332,7 +313,7 @@ public class PeopleService : IPeopleService
             }
         };
 
-        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<AddressDto>>(
+        var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<AddressDto>>(
             $"{BaseEndpoint}/people/{personId}/addresses/{addressId}", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -341,7 +322,7 @@ public class PeopleService : IPeopleService
         }
 
         var address = AddressMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully updated address: {AddressId} for person: {PersonId}", addressId, personId);
+        Logger.LogInformation("Successfully updated address: {AddressId} for person: {PersonId}", addressId, personId);
 
         return address;
     }
@@ -357,11 +338,11 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(addressId))
             throw new ArgumentException("Address ID cannot be null or empty", nameof(addressId));
 
-        _logger.LogDebug("Deleting address: {AddressId} from person: {PersonId}", addressId, personId);
+        Logger.LogDebug("Deleting address: {AddressId} from person: {PersonId}", addressId, personId);
 
-        await _apiConnection.DeleteAsync($"{BaseEndpoint}/people/{personId}/addresses/{addressId}", cancellationToken);
+        await ApiConnection.DeleteAsync($"{BaseEndpoint}/people/{personId}/addresses/{addressId}", cancellationToken);
 
-        _logger.LogInformation("Successfully deleted address: {AddressId} from person: {PersonId}", addressId, personId);
+        Logger.LogInformation("Successfully deleted address: {AddressId} from person: {PersonId}", addressId, personId);
     }
 
     #endregion
@@ -382,7 +363,7 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(request.Address))
             throw new ArgumentException("Email address is required", nameof(request));
 
-        _logger.LogDebug("Adding email to person: {PersonId}", personId);
+        Logger.LogDebug("Adding email to person: {PersonId}", personId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.EmailCreateDto>
@@ -394,7 +375,7 @@ public class PeopleService : IPeopleService
             }
         };
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<EmailDto>>(
+        var response = await ApiConnection.PostAsync<JsonApiSingleResponse<EmailDto>>(
             $"{BaseEndpoint}/people/{personId}/emails", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -403,7 +384,7 @@ public class PeopleService : IPeopleService
         }
 
         var email = EmailMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully added email: {EmailId} to person: {PersonId}", email.Id, personId);
+        Logger.LogInformation("Successfully added email: {EmailId} to person: {PersonId}", email.Id, personId);
 
         return email;
     }
@@ -422,7 +403,7 @@ public class PeopleService : IPeopleService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating email: {EmailId} for person: {PersonId}", emailId, personId);
+        Logger.LogDebug("Updating email: {EmailId} for person: {PersonId}", emailId, personId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.EmailUpdateDto>
@@ -435,7 +416,7 @@ public class PeopleService : IPeopleService
             }
         };
 
-        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<EmailDto>>(
+        var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<EmailDto>>(
             $"{BaseEndpoint}/people/{personId}/emails/{emailId}", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -444,7 +425,7 @@ public class PeopleService : IPeopleService
         }
 
         var email = EmailMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully updated email: {EmailId} for person: {PersonId}", emailId, personId);
+        Logger.LogInformation("Successfully updated email: {EmailId} for person: {PersonId}", emailId, personId);
 
         return email;
     }
@@ -460,11 +441,11 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(emailId))
             throw new ArgumentException("Email ID cannot be null or empty", nameof(emailId));
 
-        _logger.LogDebug("Deleting email: {EmailId} from person: {PersonId}", emailId, personId);
+        Logger.LogDebug("Deleting email: {EmailId} from person: {PersonId}", emailId, personId);
 
-        await _apiConnection.DeleteAsync($"{BaseEndpoint}/people/{personId}/emails/{emailId}", cancellationToken);
+        await ApiConnection.DeleteAsync($"{BaseEndpoint}/people/{personId}/emails/{emailId}", cancellationToken);
 
-        _logger.LogInformation("Successfully deleted email: {EmailId} from person: {PersonId}", emailId, personId);
+        Logger.LogInformation("Successfully deleted email: {EmailId} from person: {PersonId}", emailId, personId);
     }
 
     #endregion
@@ -485,7 +466,7 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(request.Number))
             throw new ArgumentException("Phone number is required", nameof(request));
 
-        _logger.LogDebug("Adding phone number to person: {PersonId}", personId);
+        Logger.LogDebug("Adding phone number to person: {PersonId}", personId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.PhoneNumberCreateDto>
@@ -497,7 +478,7 @@ public class PeopleService : IPeopleService
             }
         };
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<PhoneNumberDto>>(
+        var response = await ApiConnection.PostAsync<JsonApiSingleResponse<PhoneNumberDto>>(
             $"{BaseEndpoint}/people/{personId}/phone_numbers", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -506,7 +487,7 @@ public class PeopleService : IPeopleService
         }
 
         var phoneNumber = PhoneNumberMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully added phone number: {PhoneNumberId} to person: {PersonId}", phoneNumber.Id, personId);
+        Logger.LogInformation("Successfully added phone number: {PhoneNumberId} to person: {PersonId}", phoneNumber.Id, personId);
 
         return phoneNumber;
     }
@@ -525,7 +506,7 @@ public class PeopleService : IPeopleService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating phone number: {PhoneNumberId} for person: {PersonId}", phoneId, personId);
+        Logger.LogDebug("Updating phone number: {PhoneNumberId} for person: {PersonId}", phoneId, personId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<Models.JsonApi.People.PhoneNumberUpdateDto>
@@ -538,7 +519,7 @@ public class PeopleService : IPeopleService
             }
         };
 
-        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<PhoneNumberDto>>(
+        var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<PhoneNumberDto>>(
             $"{BaseEndpoint}/people/{personId}/phone_numbers/{phoneId}", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -547,7 +528,7 @@ public class PeopleService : IPeopleService
         }
 
         var phoneNumber = PhoneNumberMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully updated phone number: {PhoneNumberId} for person: {PersonId}", phoneId, personId);
+        Logger.LogInformation("Successfully updated phone number: {PhoneNumberId} for person: {PersonId}", phoneId, personId);
 
         return phoneNumber;
     }
@@ -563,11 +544,11 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(phoneId))
             throw new ArgumentException("Phone number ID cannot be null or empty", nameof(phoneId));
 
-        _logger.LogDebug("Deleting phone number: {PhoneNumberId} from person: {PersonId}", phoneId, personId);
+        Logger.LogDebug("Deleting phone number: {PhoneNumberId} from person: {PersonId}", phoneId, personId);
 
-        await _apiConnection.DeleteAsync($"{BaseEndpoint}/people/{personId}/phone_numbers/{phoneId}", cancellationToken);
+        await ApiConnection.DeleteAsync($"{BaseEndpoint}/people/{personId}/phone_numbers/{phoneId}", cancellationToken);
 
-        _logger.LogInformation("Successfully deleted phone number: {PhoneNumberId} from person: {PersonId}", phoneId, personId);
+        Logger.LogInformation("Successfully deleted phone number: {PhoneNumberId} from person: {PersonId}", phoneId, personId);
     }
 
     #endregion
@@ -582,27 +563,27 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Household ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting household with ID: {HouseholdId}", id);
+        Logger.LogDebug("Getting household with ID: {HouseholdId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<HouseholdDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<HouseholdDto>>(
                 $"{BaseEndpoint}/households/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Household not found: {HouseholdId}", id);
+                Logger.LogWarning("Household not found: {HouseholdId}", id);
                 return null;
             }
 
             var household = HouseholdMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved household: {HouseholdId}", id);
+            Logger.LogInformation("Successfully retrieved household: {HouseholdId}", id);
 
             return household;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Household not found: {HouseholdId}", id);
+            Logger.LogWarning("Household not found: {HouseholdId}", id);
             return null;
         }
     }
@@ -612,9 +593,9 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<IPagedResponse<Household>> ListHouseholdsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing households with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing households with parameters: {@Parameters}", parameters);
 
-        var response = await _apiConnection.GetPagedAsync<HouseholdDto>(
+        var response = await ApiConnection.GetPagedAsync<HouseholdDto>(
             $"{BaseEndpoint}/households", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -636,7 +617,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} households",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} households",
             response.Meta.CurrentPage, households.Count);
 
         return mappedResponse;
@@ -659,7 +640,7 @@ public class PeopleService : IPeopleService
         if (request.PersonIds == null || !request.PersonIds.Any())
             throw new ArgumentException("At least one person must be added to the household", nameof(request));
 
-        _logger.LogDebug("Creating household: {Name}", request.Name);
+        Logger.LogDebug("Creating household: {Name}", request.Name);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<HouseholdCreateDto>
@@ -667,7 +648,7 @@ public class PeopleService : IPeopleService
             Data = HouseholdMapper.MapToCreateDto(request)
         };
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<HouseholdDto>>(
+        var response = await ApiConnection.PostAsync<JsonApiSingleResponse<HouseholdDto>>(
             $"{BaseEndpoint}/households", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -676,7 +657,7 @@ public class PeopleService : IPeopleService
         }
 
         var household = HouseholdMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully created household: {HouseholdId} - {Name}",
+        Logger.LogInformation("Successfully created household: {HouseholdId} - {Name}",
             household.Id, household.Name);
 
         return household;
@@ -693,7 +674,7 @@ public class PeopleService : IPeopleService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating household: {HouseholdId}", id);
+        Logger.LogDebug("Updating household: {HouseholdId}", id);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<HouseholdUpdateDto>
@@ -701,7 +682,7 @@ public class PeopleService : IPeopleService
             Data = HouseholdMapper.MapToUpdateDto(id, request)
         };
 
-        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<HouseholdDto>>(
+        var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<HouseholdDto>>(
             $"{BaseEndpoint}/households/{id}", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -710,7 +691,7 @@ public class PeopleService : IPeopleService
         }
 
         var household = HouseholdMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully updated household: {HouseholdId}", household.Id);
+        Logger.LogInformation("Successfully updated household: {HouseholdId}", household.Id);
 
         return household;
     }
@@ -727,27 +708,27 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Workflow ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting workflow with ID: {WorkflowId}", id);
+        Logger.LogDebug("Getting workflow with ID: {WorkflowId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<WorkflowDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WorkflowDto>>(
                 $"{BaseEndpoint}/workflows/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Workflow not found: {WorkflowId}", id);
+                Logger.LogWarning("Workflow not found: {WorkflowId}", id);
                 return null;
             }
 
             var workflow = WorkflowMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved workflow: {WorkflowId}", id);
+            Logger.LogInformation("Successfully retrieved workflow: {WorkflowId}", id);
 
             return workflow;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Workflow not found: {WorkflowId}", id);
+            Logger.LogWarning("Workflow not found: {WorkflowId}", id);
             return null;
         }
     }
@@ -757,9 +738,9 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<IPagedResponse<Workflow>> ListWorkflowsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing workflows with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing workflows with parameters: {@Parameters}", parameters);
 
-        var response = await _apiConnection.GetPagedAsync<WorkflowDto>(
+        var response = await ApiConnection.GetPagedAsync<WorkflowDto>(
             $"{BaseEndpoint}/workflows", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -781,7 +762,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} workflows",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} workflows",
             response.Meta.CurrentPage, workflows.Count);
 
         return mappedResponse;
@@ -795,9 +776,9 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(workflowId))
             throw new ArgumentException("Workflow ID cannot be null or empty", nameof(workflowId));
 
-        _logger.LogDebug("Listing workflow cards for workflow {WorkflowId} with parameters: {@Parameters}", workflowId, parameters);
+        Logger.LogDebug("Listing workflow cards for workflow {WorkflowId} with parameters: {@Parameters}", workflowId, parameters);
 
-        var response = await _apiConnection.GetPagedAsync<WorkflowCardDto>(
+        var response = await ApiConnection.GetPagedAsync<WorkflowCardDto>(
             $"{BaseEndpoint}/workflows/{workflowId}/cards", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -819,7 +800,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} workflow cards for workflow {WorkflowId}",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} workflow cards for workflow {WorkflowId}",
             response.Meta.CurrentPage, cards.Count, workflowId);
 
         return mappedResponse;
@@ -839,7 +820,7 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(request.PersonId))
             throw new ArgumentException("PersonId is required", nameof(request));
 
-        _logger.LogDebug("Creating workflow card for workflow {WorkflowId} and person {PersonId}", workflowId, request.PersonId);
+        Logger.LogDebug("Creating workflow card for workflow {WorkflowId} and person {PersonId}", workflowId, request.PersonId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<WorkflowCardCreateDto>
@@ -847,7 +828,7 @@ public class PeopleService : IPeopleService
             Data = WorkflowCardMapper.MapToCreateDto(request, workflowId)
         };
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<WorkflowCardDto>>(
+        var response = await ApiConnection.PostAsync<JsonApiSingleResponse<WorkflowCardDto>>(
             $"{BaseEndpoint}/workflows/{workflowId}/cards", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -856,7 +837,7 @@ public class PeopleService : IPeopleService
         }
 
         var card = WorkflowCardMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully created workflow card: {CardId} for workflow {WorkflowId}",
+        Logger.LogInformation("Successfully created workflow card: {CardId} for workflow {WorkflowId}",
             card.Id, workflowId);
 
         return card;
@@ -876,7 +857,7 @@ public class PeopleService : IPeopleService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating workflow card {CardId} for workflow {WorkflowId}", cardId, workflowId);
+        Logger.LogDebug("Updating workflow card {CardId} for workflow {WorkflowId}", cardId, workflowId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = new JsonApiRequest<WorkflowCardUpdateDto>
@@ -884,7 +865,7 @@ public class PeopleService : IPeopleService
             Data = WorkflowCardMapper.MapToUpdateDto(cardId, request)
         };
 
-        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<WorkflowCardDto>>(
+        var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<WorkflowCardDto>>(
             $"{BaseEndpoint}/workflows/{workflowId}/cards/{cardId}", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -893,7 +874,7 @@ public class PeopleService : IPeopleService
         }
 
         var card = WorkflowCardMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully updated workflow card: {CardId} for workflow {WorkflowId}",
+        Logger.LogInformation("Successfully updated workflow card: {CardId} for workflow {WorkflowId}",
             card.Id, workflowId);
 
         return card;
@@ -910,12 +891,12 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(cardId))
             throw new ArgumentException("Card ID cannot be null or empty", nameof(cardId));
 
-        _logger.LogDebug("Deleting workflow card {CardId} from workflow {WorkflowId}", cardId, workflowId);
+        Logger.LogDebug("Deleting workflow card {CardId} from workflow {WorkflowId}", cardId, workflowId);
 
-        await _apiConnection.DeleteAsync(
+        await ApiConnection.DeleteAsync(
             $"{BaseEndpoint}/workflows/{workflowId}/cards/{cardId}", cancellationToken);
 
-        _logger.LogInformation("Successfully deleted workflow card {CardId} from workflow {WorkflowId}",
+        Logger.LogInformation("Successfully deleted workflow card {CardId} from workflow {WorkflowId}",
             cardId, workflowId);
     }
 
@@ -931,27 +912,27 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Form ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting form with ID: {FormId}", id);
+        Logger.LogDebug("Getting form with ID: {FormId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<FormDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<FormDto>>(
                 $"{BaseEndpoint}/forms/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Form not found: {FormId}", id);
+                Logger.LogWarning("Form not found: {FormId}", id);
                 return null;
             }
 
             var form = FormMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved form: {FormId}", id);
+            Logger.LogInformation("Successfully retrieved form: {FormId}", id);
 
             return form;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Form not found: {FormId}", id);
+            Logger.LogWarning("Form not found: {FormId}", id);
             return null;
         }
     }
@@ -961,9 +942,9 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<IPagedResponse<Form>> ListFormsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing forms with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing forms with parameters: {@Parameters}", parameters);
 
-        var response = await _apiConnection.GetPagedAsync<FormDto>(
+        var response = await ApiConnection.GetPagedAsync<FormDto>(
             $"{BaseEndpoint}/forms", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -985,7 +966,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} forms",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} forms",
             response.Meta.CurrentPage, forms.Count);
 
         return mappedResponse;
@@ -999,9 +980,9 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(formId))
             throw new ArgumentException("Form ID cannot be null or empty", nameof(formId));
 
-        _logger.LogDebug("Listing form submissions for form {FormId} with parameters: {@Parameters}", formId, parameters);
+        Logger.LogDebug("Listing form submissions for form {FormId} with parameters: {@Parameters}", formId, parameters);
 
-        var response = await _apiConnection.GetPagedAsync<FormSubmissionDto>(
+        var response = await ApiConnection.GetPagedAsync<FormSubmissionDto>(
             $"{BaseEndpoint}/forms/{formId}/form_submissions", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -1023,7 +1004,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} form submissions for form {FormId}",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} form submissions for form {FormId}",
             response.Meta.CurrentPage, submissions.Count, formId);
 
         return mappedResponse;
@@ -1043,12 +1024,12 @@ public class PeopleService : IPeopleService
         if (request.FieldData == null || !request.FieldData.Any())
             throw new ArgumentException("Field data is required", nameof(request));
 
-        _logger.LogDebug("Submitting form {FormId}", formId);
+        Logger.LogDebug("Submitting form {FormId}", formId);
 
         // Convert request to JSON:API format
         var jsonApiRequest = FormMapper.MapToSubmitRequest(formId, request);
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<FormSubmissionDto>>(
+        var response = await ApiConnection.PostAsync<JsonApiSingleResponse<FormSubmissionDto>>(
             $"{BaseEndpoint}/forms/{formId}/form_submissions", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -1057,7 +1038,7 @@ public class PeopleService : IPeopleService
         }
 
         var submission = FormMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully submitted form: {FormId}, submission ID: {SubmissionId}",
+        Logger.LogInformation("Successfully submitted form: {FormId}, submission ID: {SubmissionId}",
             formId, submission.Id);
 
         return submission;
@@ -1075,27 +1056,27 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("List ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting people list with ID: {ListId}", id);
+        Logger.LogDebug("Getting people list with ID: {ListId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PeopleListDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PeopleListDto>>(
                 $"{BaseEndpoint}/lists/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("People list not found: {ListId}", id);
+                Logger.LogWarning("People list not found: {ListId}", id);
                 return null;
             }
 
             var list = PeopleListMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved people list: {ListId}", id);
+            Logger.LogInformation("Successfully retrieved people list: {ListId}", id);
 
             return list;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("People list not found: {ListId}", id);
+            Logger.LogWarning("People list not found: {ListId}", id);
             return null;
         }
     }
@@ -1105,9 +1086,9 @@ public class PeopleService : IPeopleService
     /// </summary>
     public async Task<IPagedResponse<PeopleList>> ListPeopleListsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing people lists with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing people lists with parameters: {@Parameters}", parameters);
 
-        var response = await _apiConnection.GetPagedAsync<PeopleListDto>(
+        var response = await ApiConnection.GetPagedAsync<PeopleListDto>(
             $"{BaseEndpoint}/lists", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -1129,7 +1110,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} people lists",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} people lists",
             response.Meta.CurrentPage, lists.Count);
 
         return mappedResponse;
@@ -1146,12 +1127,12 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(request.Name))
             throw new ArgumentException("Name is required", nameof(request));
 
-        _logger.LogDebug("Creating people list with name: {ListName}", request.Name);
+        Logger.LogDebug("Creating people list with name: {ListName}", request.Name);
 
         // Convert request to JSON:API format
         var jsonApiRequest = PeopleListMapper.MapToCreateRequest(request);
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<PeopleListDto>>(
+        var response = await ApiConnection.PostAsync<JsonApiSingleResponse<PeopleListDto>>(
             $"{BaseEndpoint}/lists", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -1160,7 +1141,7 @@ public class PeopleService : IPeopleService
         }
 
         var list = PeopleListMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully created people list: {ListId}, name: {ListName}",
+        Logger.LogInformation("Successfully created people list: {ListId}, name: {ListName}",
             list.Id, list.Name);
 
         return list;
@@ -1174,9 +1155,9 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(listId))
             throw new ArgumentException("List ID cannot be null or empty", nameof(listId));
 
-        _logger.LogDebug("Listing members for list {ListId} with parameters: {@Parameters}", listId, parameters);
+        Logger.LogDebug("Listing members for list {ListId} with parameters: {@Parameters}", listId, parameters);
 
-        var response = await _apiConnection.GetPagedAsync<ListMemberDto>(
+        var response = await ApiConnection.GetPagedAsync<ListMemberDto>(
             $"{BaseEndpoint}/lists/{listId}/people", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -1198,7 +1179,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} list members for list {ListId}",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} list members for list {ListId}",
             response.Meta.CurrentPage, members.Count, listId);
 
         return mappedResponse;
@@ -1214,27 +1195,27 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(cardId))
             throw new ArgumentException("Card ID cannot be null or empty", nameof(cardId));
 
-        _logger.LogDebug("Getting workflow card {CardId} from workflow {WorkflowId}", cardId, workflowId);
+        Logger.LogDebug("Getting workflow card {CardId} from workflow {WorkflowId}", cardId, workflowId);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<WorkflowCardDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WorkflowCardDto>>(
                 $"{BaseEndpoint}/workflows/{workflowId}/cards/{cardId}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Workflow card {CardId} not found in workflow {WorkflowId}", cardId, workflowId);
+                Logger.LogDebug("Workflow card {CardId} not found in workflow {WorkflowId}", cardId, workflowId);
                 return null;
             }
 
             var card = WorkflowCardMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved workflow card: {CardId} from workflow {WorkflowId}", cardId, workflowId);
+            Logger.LogInformation("Successfully retrieved workflow card: {CardId} from workflow {WorkflowId}", cardId, workflowId);
 
             return card;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Workflow card {CardId} not found in workflow {WorkflowId}", cardId, workflowId);
+            Logger.LogDebug("Workflow card {CardId} not found in workflow {WorkflowId}", cardId, workflowId);
             return null;
         }
     }
@@ -1249,27 +1230,27 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(submissionId))
             throw new ArgumentException("Submission ID cannot be null or empty", nameof(submissionId));
 
-        _logger.LogDebug("Getting form submission {SubmissionId} from form {FormId}", submissionId, formId);
+        Logger.LogDebug("Getting form submission {SubmissionId} from form {FormId}", submissionId, formId);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<FormSubmissionDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<FormSubmissionDto>>(
                 $"{BaseEndpoint}/forms/{formId}/form_submissions/{submissionId}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Form submission {SubmissionId} not found in form {FormId}", submissionId, formId);
+                Logger.LogDebug("Form submission {SubmissionId} not found in form {FormId}", submissionId, formId);
                 return null;
             }
 
             var submission = FormMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved form submission: {SubmissionId} from form {FormId}", submissionId, formId);
+            Logger.LogInformation("Successfully retrieved form submission: {SubmissionId} from form {FormId}", submissionId, formId);
 
             return submission;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Form submission {SubmissionId} not found in form {FormId}", submissionId, formId);
+            Logger.LogDebug("Form submission {SubmissionId} not found in form {FormId}", submissionId, formId);
             return null;
         }
     }
@@ -1284,11 +1265,11 @@ public class PeopleService : IPeopleService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating people list {ListId} with name: {Name}", id, request.Name);
+        Logger.LogDebug("Updating people list {ListId} with name: {Name}", id, request.Name);
 
         var jsonApiRequest = PeopleListMapper.MapToUpdateRequest(id, request);
 
-        var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<PeopleListDto>>(
+        var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<PeopleListDto>>(
             $"{BaseEndpoint}/lists/{id}", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -1297,7 +1278,7 @@ public class PeopleService : IPeopleService
         }
 
         var list = PeopleListMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully updated people list: {ListId}, name: {ListName}",
+        Logger.LogInformation("Successfully updated people list: {ListId}, name: {ListName}",
             list.Id, list.Name);
 
         return list;
@@ -1311,11 +1292,11 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("List ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting people list {ListId}", id);
+        Logger.LogDebug("Deleting people list {ListId}", id);
 
-        await _apiConnection.DeleteAsync($"{BaseEndpoint}/lists/{id}", cancellationToken);
+        await ApiConnection.DeleteAsync($"{BaseEndpoint}/lists/{id}", cancellationToken);
 
-        _logger.LogInformation("Successfully deleted people list: {ListId}", id);
+        Logger.LogInformation("Successfully deleted people list: {ListId}", id);
     }
 
     /// <summary>
@@ -1326,9 +1307,9 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(listId))
             throw new ArgumentException("List ID cannot be null or empty", nameof(listId));
 
-        _logger.LogDebug("Listing people in list {ListId} with parameters: {@Parameters}", listId, parameters);
+        Logger.LogDebug("Listing people in list {ListId} with parameters: {@Parameters}", listId, parameters);
 
-        var response = await _apiConnection.GetPagedAsync<PersonDto>(
+        var response = await ApiConnection.GetPagedAsync<PersonDto>(
             $"{BaseEndpoint}/lists/{listId}/people", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -1350,7 +1331,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} people in list {ListId}",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} people in list {ListId}",
             response.Meta.CurrentPage, people.Count, listId);
 
         return mappedResponse;
@@ -1366,11 +1347,11 @@ public class PeopleService : IPeopleService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Adding person {PersonId} to list {ListId}", request.PersonId, listId);
+        Logger.LogDebug("Adding person {PersonId} to list {ListId}", request.PersonId, listId);
 
         var jsonApiRequest = PeopleListMapper.MapToListMemberCreateRequest(request);
 
-        var response = await _apiConnection.PostAsync<JsonApiSingleResponse<ListMemberDto>>(
+        var response = await ApiConnection.PostAsync<JsonApiSingleResponse<ListMemberDto>>(
             $"{BaseEndpoint}/lists/{listId}/people", jsonApiRequest, cancellationToken);
 
         if (response?.Data == null)
@@ -1379,7 +1360,7 @@ public class PeopleService : IPeopleService
         }
 
         var member = PeopleListMapper.MapToDomain(response.Data);
-        _logger.LogInformation("Successfully added person {PersonId} to list {ListId}",
+        Logger.LogInformation("Successfully added person {PersonId} to list {ListId}",
             request.PersonId, listId);
 
         return member;
@@ -1395,11 +1376,11 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(personId))
             throw new ArgumentException("Person ID cannot be null or empty", nameof(personId));
 
-        _logger.LogDebug("Removing person {PersonId} from list {ListId}", personId, listId);
+        Logger.LogDebug("Removing person {PersonId} from list {ListId}", personId, listId);
 
-        await _apiConnection.DeleteAsync($"{BaseEndpoint}/lists/{listId}/people/{personId}", cancellationToken);
+        await ApiConnection.DeleteAsync($"{BaseEndpoint}/lists/{listId}/people/{personId}", cancellationToken);
 
-        _logger.LogInformation("Successfully removed person {PersonId} from list {ListId}", personId, listId);
+        Logger.LogInformation("Successfully removed person {PersonId} from list {ListId}", personId, listId);
     }
 
     /// <summary>
@@ -1410,11 +1391,11 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Household ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting household {HouseholdId}", id);
+        Logger.LogDebug("Deleting household {HouseholdId}", id);
 
-        await _apiConnection.DeleteAsync($"{BaseEndpoint}/households/{id}", cancellationToken);
+        await ApiConnection.DeleteAsync($"{BaseEndpoint}/households/{id}", cancellationToken);
 
-        _logger.LogInformation("Successfully deleted household: {HouseholdId}", id);
+        Logger.LogInformation("Successfully deleted household: {HouseholdId}", id);
     }
 
     /// <summary>
@@ -1425,9 +1406,9 @@ public class PeopleService : IPeopleService
         if (string.IsNullOrWhiteSpace(householdId))
             throw new ArgumentException("Household ID cannot be null or empty", nameof(householdId));
 
-        _logger.LogDebug("Listing people in household {HouseholdId} with parameters: {@Parameters}", householdId, parameters);
+        Logger.LogDebug("Listing people in household {HouseholdId} with parameters: {@Parameters}", householdId, parameters);
 
-        var response = await _apiConnection.GetPagedAsync<PersonDto>(
+        var response = await ApiConnection.GetPagedAsync<PersonDto>(
             $"{BaseEndpoint}/households/{householdId}/people", parameters, cancellationToken);
 
         // Map DTOs to domain models
@@ -1449,7 +1430,7 @@ public class PeopleService : IPeopleService
             mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
         }
 
-        _logger.LogInformation("Successfully retrieved page {Page} with {Count} people in household {HouseholdId}",
+        Logger.LogInformation("Successfully retrieved page {Page} with {Count} people in household {HouseholdId}",
             response.Meta.CurrentPage, people.Count, householdId);
 
         return mappedResponse;

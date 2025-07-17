@@ -16,18 +16,15 @@ namespace PlanningCenter.Api.Client.Services;
 /// Service implementation for the Planning Center Webhooks module.
 /// Provides comprehensive webhook subscription and event management with built-in pagination support.
 /// </summary>
-public class WebhooksService : IWebhooksService
+public class WebhooksService : ServiceBase, IWebhooksService
 {
-    private readonly IApiConnection _apiConnection;
-    private readonly ILogger<WebhooksService> _logger;
     private const string BaseEndpoint = "/webhooks/v2";
 
     public WebhooksService(
         IApiConnection apiConnection,
         ILogger<WebhooksService> logger)
+        : base(logger, apiConnection)
     {
-        _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     #region Subscription Management
@@ -40,32 +37,32 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Subscription ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting webhook subscription with ID: {SubscriptionId}", id);
+        Logger.LogDebug("Getting webhook subscription with ID: {SubscriptionId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
                 $"{BaseEndpoint}/subscriptions/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
+                Logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
                 return null;
             }
 
             var subscription = WebhooksMapper.MapToDomain(response.Data);
 
-            _logger.LogInformation("Successfully retrieved webhook subscription: {SubscriptionId}", id);
+            Logger.LogInformation("Successfully retrieved webhook subscription: {SubscriptionId}", id);
             return subscription;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
+            Logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving webhook subscription: {SubscriptionId}", id);
+            Logger.LogError(ex, "Error retrieving webhook subscription: {SubscriptionId}", id);
             throw;
         }
     }
@@ -75,18 +72,18 @@ public class WebhooksService : IWebhooksService
     /// </summary>
     public async Task<IPagedResponse<WebhookSubscription>> ListSubscriptionsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing webhook subscriptions with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing webhook subscriptions with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
             
-            var response = await _apiConnection.GetAsync<PagedResponse<WebhookSubscriptionDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<WebhookSubscriptionDto>>(
                 $"{BaseEndpoint}/subscriptions{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No webhook subscriptions returned from API");
+                Logger.LogWarning("No webhook subscriptions returned from API");
                 return new PagedResponse<WebhookSubscription>
                 {
                     Data = new List<WebhookSubscription>(),
@@ -104,12 +101,12 @@ public class WebhooksService : IWebhooksService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} webhook subscriptions", subscriptions.Count);
+            Logger.LogInformation("Successfully retrieved {Count} webhook subscriptions", subscriptions.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing webhook subscriptions");
+            Logger.LogError(ex, "Error listing webhook subscriptions");
             throw;
         }
     }
@@ -122,12 +119,12 @@ public class WebhooksService : IWebhooksService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating webhook subscription for URL: {Url}", request.Url);
+        Logger.LogDebug("Creating webhook subscription for URL: {Url}", request.Url);
 
         try
         {
             var jsonApiRequest = WebhooksMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
                 $"{BaseEndpoint}/subscriptions", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -137,12 +134,12 @@ public class WebhooksService : IWebhooksService
 
             var subscription = WebhooksMapper.MapToDomain(response.Data);
 
-            _logger.LogInformation("Successfully created webhook subscription: {SubscriptionId}", subscription.Id);
+            Logger.LogInformation("Successfully created webhook subscription: {SubscriptionId}", subscription.Id);
             return subscription;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating webhook subscription");
+            Logger.LogError(ex, "Error creating webhook subscription");
             throw;
         }
     }
@@ -157,12 +154,12 @@ public class WebhooksService : IWebhooksService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating webhook subscription: {SubscriptionId}", id);
+        Logger.LogDebug("Updating webhook subscription: {SubscriptionId}", id);
 
         try
         {
             var jsonApiRequest = WebhooksMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
                 $"{BaseEndpoint}/subscriptions/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -172,12 +169,12 @@ public class WebhooksService : IWebhooksService
 
             var subscription = WebhooksMapper.MapToDomain(response.Data);
 
-            _logger.LogInformation("Successfully updated webhook subscription: {SubscriptionId}", id);
+            Logger.LogInformation("Successfully updated webhook subscription: {SubscriptionId}", id);
             return subscription;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating webhook subscription: {SubscriptionId}", id);
+            Logger.LogError(ex, "Error updating webhook subscription: {SubscriptionId}", id);
             throw;
         }
     }
@@ -190,16 +187,16 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Subscription ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting webhook subscription: {SubscriptionId}", id);
+        Logger.LogDebug("Deleting webhook subscription: {SubscriptionId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/subscriptions/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted webhook subscription: {SubscriptionId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/subscriptions/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted webhook subscription: {SubscriptionId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting webhook subscription: {SubscriptionId}", id);
+            Logger.LogError(ex, "Error deleting webhook subscription: {SubscriptionId}", id);
             throw;
         }
     }
@@ -216,11 +213,11 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Subscription ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Activating webhook subscription: {SubscriptionId}", id);
+        Logger.LogDebug("Activating webhook subscription: {SubscriptionId}", id);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/subscriptions/{id}/activate", null, cancellationToken);
 
             if (response?.Data == null)
@@ -237,12 +234,12 @@ public class WebhooksService : IWebhooksService
                 DataSource = "Webhooks"
             };
 
-            _logger.LogInformation("Successfully activated webhook subscription: {SubscriptionId}", id);
+            Logger.LogInformation("Successfully activated webhook subscription: {SubscriptionId}", id);
             return subscription;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error activating webhook subscription: {SubscriptionId}", id);
+            Logger.LogError(ex, "Error activating webhook subscription: {SubscriptionId}", id);
             throw;
         }
     }
@@ -255,11 +252,11 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Subscription ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deactivating webhook subscription: {SubscriptionId}", id);
+        Logger.LogDebug("Deactivating webhook subscription: {SubscriptionId}", id);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/subscriptions/{id}/deactivate", null, cancellationToken);
 
             if (response?.Data == null)
@@ -276,12 +273,12 @@ public class WebhooksService : IWebhooksService
                 DataSource = "Webhooks"
             };
 
-            _logger.LogInformation("Successfully deactivated webhook subscription: {SubscriptionId}", id);
+            Logger.LogInformation("Successfully deactivated webhook subscription: {SubscriptionId}", id);
             return subscription;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deactivating webhook subscription: {SubscriptionId}", id);
+            Logger.LogError(ex, "Error deactivating webhook subscription: {SubscriptionId}", id);
             throw;
         }
     }
@@ -302,7 +299,7 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(secret))
             throw new ArgumentException("Secret cannot be null or empty", nameof(secret));
 
-        _logger.LogDebug("Validating webhook event signature");
+        Logger.LogDebug("Validating webhook event signature");
 
         try
         {
@@ -316,12 +313,12 @@ public class WebhooksService : IWebhooksService
 
             var isValid = string.Equals(cleanSignature, computedSignature, StringComparison.OrdinalIgnoreCase);
 
-            _logger.LogDebug("Webhook signature validation result: {IsValid}", isValid);
+            Logger.LogDebug("Webhook signature validation result: {IsValid}", isValid);
             return await Task.FromResult(isValid);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error validating webhook signature");
+            Logger.LogError(ex, "Error validating webhook signature");
             return false;
         }
     }
@@ -334,7 +331,7 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(payload))
             throw new ArgumentException("Payload cannot be null or empty", nameof(payload));
 
-        _logger.LogDebug("Deserializing webhook event payload to type: {Type}", typeof(T).Name);
+        Logger.LogDebug("Deserializing webhook event payload to type: {Type}", typeof(T).Name);
 
         try
         {
@@ -350,17 +347,17 @@ public class WebhooksService : IWebhooksService
                 throw new PlanningCenterApiGeneralException($"Failed to deserialize payload to type {typeof(T).Name}");
             }
 
-            _logger.LogDebug("Successfully deserialized webhook event payload");
+            Logger.LogDebug("Successfully deserialized webhook event payload");
             return await Task.FromResult(result);
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "Error deserializing webhook event payload");
+            Logger.LogError(ex, "Error deserializing webhook event payload");
             throw new PlanningCenterApiGeneralException($"Invalid JSON payload: {ex.Message}", innerException: ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deserializing webhook event payload");
+            Logger.LogError(ex, "Error deserializing webhook event payload");
             throw;
         }
     }
@@ -377,11 +374,11 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Subscription ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Testing webhook subscription: {SubscriptionId}", id);
+        Logger.LogDebug("Testing webhook subscription: {SubscriptionId}", id);
 
         try
         {
-            var response = await _apiConnection.PostAsync<dynamic>(
+            var response = await ApiConnection.PostAsync<dynamic>(
                 $"{BaseEndpoint}/subscriptions/{id}/test", null, cancellationToken);
 
             // This would parse the actual response in a complete implementation
@@ -394,12 +391,12 @@ public class WebhooksService : IWebhooksService
                 TestedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Successfully tested webhook subscription: {SubscriptionId}", id);
+            Logger.LogInformation("Successfully tested webhook subscription: {SubscriptionId}", id);
             return testResult;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error testing webhook subscription: {SubscriptionId}", id);
+            Logger.LogError(ex, "Error testing webhook subscription: {SubscriptionId}", id);
             
             return new WebhookTestResult
             {
@@ -420,14 +417,14 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(secret))
             throw new ArgumentException("Secret cannot be null or empty", nameof(secret));
 
-        _logger.LogDebug("Testing webhook URL: {Url}", url);
+        Logger.LogDebug("Testing webhook URL: {Url}", url);
 
         try
         {
             var testPayload = new { test = true, timestamp = DateTime.UtcNow };
             var request = new { url = url, secret = secret, payload = testPayload };
 
-            var response = await _apiConnection.PostAsync<dynamic>(
+            var response = await ApiConnection.PostAsync<dynamic>(
                 $"{BaseEndpoint}/test", request, cancellationToken);
 
             // This would parse the actual response in a complete implementation
@@ -440,12 +437,12 @@ public class WebhooksService : IWebhooksService
                 TestedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Successfully tested webhook URL: {Url}", url);
+            Logger.LogInformation("Successfully tested webhook URL: {Url}", url);
             return testResult;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error testing webhook URL: {Url}", url);
+            Logger.LogError(ex, "Error testing webhook URL: {Url}", url);
             
             return new WebhookTestResult
             {
@@ -469,7 +466,7 @@ public class WebhooksService : IWebhooksService
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting all webhook subscriptions with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Getting all webhook subscriptions with parameters: {@Parameters}", parameters);
 
         var allSubscriptions = new List<WebhookSubscription>();
         var pageSize = options?.PageSize ?? 100;
@@ -502,12 +499,12 @@ public class WebhooksService : IWebhooksService
                 }
             } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-            _logger.LogInformation("Retrieved {Count} total webhook subscriptions across {Pages} pages", allSubscriptions.Count, currentPage);
+            Logger.LogInformation("Retrieved {Count} total webhook subscriptions across {Pages} pages", allSubscriptions.Count, currentPage);
             return allSubscriptions.AsReadOnly();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all webhook subscriptions");
+            Logger.LogError(ex, "Error getting all webhook subscriptions");
             throw;
         }
     }
@@ -520,7 +517,7 @@ public class WebhooksService : IWebhooksService
         PaginationOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Streaming webhook subscriptions with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Streaming webhook subscriptions with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
         var maxPages = options?.MaxItems ?? int.MaxValue;
@@ -554,7 +551,7 @@ public class WebhooksService : IWebhooksService
             }
         } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-        _logger.LogInformation("Completed streaming webhook subscriptions across {Pages} pages", currentPage);
+        Logger.LogInformation("Completed streaming webhook subscriptions across {Pages} pages", currentPage);
     }
 
     #endregion
@@ -569,48 +566,48 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Available event ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting available event with ID: {AvailableEventId}", id);
+        Logger.LogDebug("Getting available event with ID: {AvailableEventId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/available_events/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Available event not found: {AvailableEventId}", id);
+                Logger.LogWarning("Available event not found: {AvailableEventId}", id);
                 return null;
             }
 
             var availableEvent = WebhooksMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved available event: {AvailableEventId}", id);
+            Logger.LogInformation("Successfully retrieved available event: {AvailableEventId}", id);
             return availableEvent;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Available event not found: {AvailableEventId}", id);
+            Logger.LogWarning("Available event not found: {AvailableEventId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving available event: {AvailableEventId}", id);
+            Logger.LogError(ex, "Error retrieving available event: {AvailableEventId}", id);
             throw;
         }
     }
 
     public async Task<IPagedResponse<AvailableEvent>> ListAvailableEventsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing available events with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing available events with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/available_events{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No available events returned from API");
+                Logger.LogWarning("No available events returned from API");
                 return new PagedResponse<AvailableEvent>
                 {
                     Data = new List<AvailableEvent>(),
@@ -628,12 +625,12 @@ public class WebhooksService : IWebhooksService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} available events", availableEvents.Count);
+            Logger.LogInformation("Successfully retrieved {Count} available events", availableEvents.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing available events");
+            Logger.LogError(ex, "Error listing available events");
             throw;
         }
     }
@@ -643,19 +640,19 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(module))
             throw new ArgumentException("Module cannot be null or empty", nameof(module));
 
-        _logger.LogDebug("Listing available events for module: {Module}", module);
+        Logger.LogDebug("Listing available events for module: {Module}", module);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
             var moduleFilter = string.IsNullOrEmpty(queryString) ? $"?filter[module]={module}" : $"{queryString}&filter[module]={module}";
             
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/available_events{moduleFilter}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No available events returned for module: {Module}", module);
+                Logger.LogWarning("No available events returned for module: {Module}", module);
                 return new PagedResponse<AvailableEvent>
                 {
                     Data = new List<AvailableEvent>(),
@@ -673,12 +670,12 @@ public class WebhooksService : IWebhooksService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} available events for module: {Module}", availableEvents.Count, module);
+            Logger.LogInformation("Successfully retrieved {Count} available events for module: {Module}", availableEvents.Count, module);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing available events for module: {Module}", module);
+            Logger.LogError(ex, "Error listing available events for module: {Module}", module);
             throw;
         }
     }
@@ -688,31 +685,31 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Event ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting webhook event with ID: {EventId}", id);
+        Logger.LogDebug("Getting webhook event with ID: {EventId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/events/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Webhook event not found: {EventId}", id);
+                Logger.LogWarning("Webhook event not found: {EventId}", id);
                 return null;
             }
 
             var webhookEvent = WebhooksMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved webhook event: {EventId}", id);
+            Logger.LogInformation("Successfully retrieved webhook event: {EventId}", id);
             return webhookEvent;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Webhook event not found: {EventId}", id);
+            Logger.LogWarning("Webhook event not found: {EventId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving webhook event: {EventId}", id);
+            Logger.LogError(ex, "Error retrieving webhook event: {EventId}", id);
             throw;
         }
     }
@@ -722,17 +719,17 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(subscriptionId))
             throw new ArgumentException("Subscription ID cannot be null or empty", nameof(subscriptionId));
 
-        _logger.LogDebug("Listing webhook events for subscription: {SubscriptionId}", subscriptionId);
+        Logger.LogDebug("Listing webhook events for subscription: {SubscriptionId}", subscriptionId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/subscriptions/{subscriptionId}/events{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No webhook events returned for subscription: {SubscriptionId}", subscriptionId);
+                Logger.LogWarning("No webhook events returned for subscription: {SubscriptionId}", subscriptionId);
                 return new PagedResponse<Event>
                 {
                     Data = new List<Event>(),
@@ -750,12 +747,12 @@ public class WebhooksService : IWebhooksService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} webhook events for subscription: {SubscriptionId}", events.Count, subscriptionId);
+            Logger.LogInformation("Successfully retrieved {Count} webhook events for subscription: {SubscriptionId}", events.Count, subscriptionId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing webhook events for subscription: {SubscriptionId}", subscriptionId);
+            Logger.LogError(ex, "Error listing webhook events for subscription: {SubscriptionId}", subscriptionId);
             throw;
         }
     }
@@ -765,11 +762,11 @@ public class WebhooksService : IWebhooksService
         if (string.IsNullOrWhiteSpace(eventId))
             throw new ArgumentException("Event ID cannot be null or empty", nameof(eventId));
 
-        _logger.LogDebug("Redelivering webhook event: {EventId}", eventId);
+        Logger.LogDebug("Redelivering webhook event: {EventId}", eventId);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/events/{eventId}/redeliver", null, cancellationToken);
 
             if (response?.Data == null)
@@ -778,12 +775,12 @@ public class WebhooksService : IWebhooksService
             }
 
             var webhookEvent = WebhooksMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully redelivered webhook event: {EventId}", eventId);
+            Logger.LogInformation("Successfully redelivered webhook event: {EventId}", eventId);
             return webhookEvent;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error redelivering webhook event: {EventId}", eventId);
+            Logger.LogError(ex, "Error redelivering webhook event: {EventId}", eventId);
             throw;
         }
     }
@@ -795,7 +792,7 @@ public class WebhooksService : IWebhooksService
         if (!request.Subscriptions.Any())
             throw new ArgumentException("At least one subscription must be provided", nameof(request));
 
-        _logger.LogDebug("Creating {Count} webhook subscriptions in bulk", request.Subscriptions.Count);
+        Logger.LogDebug("Creating {Count} webhook subscriptions in bulk", request.Subscriptions.Count);
 
         var createdSubscriptions = new List<WebhookSubscription>();
         var errors = new List<string>();
@@ -820,7 +817,7 @@ public class WebhooksService : IWebhooksService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to create subscription for URL: {Url}", subscription.Url);
+                        Logger.LogWarning(ex, "Failed to create subscription for URL: {Url}", subscription.Url);
                         return new { Success = false, Subscription = (WebhookSubscription?)null, Error = ex.Message };
                     }
                 });
@@ -857,19 +854,19 @@ public class WebhooksService : IWebhooksService
                 Links = new PagedResponseLinks()
             };
 
-            _logger.LogInformation("Successfully created {SuccessCount} of {TotalCount} webhook subscriptions. {ErrorCount} errors occurred.", 
+            Logger.LogInformation("Successfully created {SuccessCount} of {TotalCount} webhook subscriptions. {ErrorCount} errors occurred.", 
                 createdSubscriptions.Count, request.Subscriptions.Count, errors.Count);
 
             if (errors.Any())
             {
-                _logger.LogWarning("Bulk creation errors: {Errors}", string.Join("; ", errors));
+                Logger.LogWarning("Bulk creation errors: {Errors}", string.Join("; ", errors));
             }
 
             return response;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during bulk webhook subscription creation");
+            Logger.LogError(ex, "Error during bulk webhook subscription creation");
             throw;
         }
     }
@@ -881,7 +878,7 @@ public class WebhooksService : IWebhooksService
         if (!request.SubscriptionIds.Any())
             throw new ArgumentException("At least one subscription ID must be provided", nameof(request));
 
-        _logger.LogDebug("Deleting {Count} webhook subscriptions in bulk", request.SubscriptionIds.Count);
+        Logger.LogDebug("Deleting {Count} webhook subscriptions in bulk", request.SubscriptionIds.Count);
 
         var errors = new List<string>();
         var successCount = 0;
@@ -906,7 +903,7 @@ public class WebhooksService : IWebhooksService
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to delete subscription: {SubscriptionId}", subscriptionId);
+                        Logger.LogWarning(ex, "Failed to delete subscription: {SubscriptionId}", subscriptionId);
                         return new { Success = false, SubscriptionId = subscriptionId, Error = ex.Message };
                     }
                 });
@@ -932,17 +929,17 @@ public class WebhooksService : IWebhooksService
                 }
             }
 
-            _logger.LogInformation("Successfully deleted {SuccessCount} of {TotalCount} webhook subscriptions. {ErrorCount} errors occurred.", 
+            Logger.LogInformation("Successfully deleted {SuccessCount} of {TotalCount} webhook subscriptions. {ErrorCount} errors occurred.", 
                 successCount, request.SubscriptionIds.Count, errors.Count);
 
             if (errors.Any())
             {
-                _logger.LogWarning("Bulk deletion errors: {Errors}", string.Join("; ", errors));
+                Logger.LogWarning("Bulk deletion errors: {Errors}", string.Join("; ", errors));
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during bulk webhook subscription deletion");
+            Logger.LogError(ex, "Error during bulk webhook subscription deletion");
             throw;
         }
     }
@@ -954,7 +951,7 @@ public class WebhooksService : IWebhooksService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Getting analytics for webhook subscription: {SubscriptionId}", subscriptionId);
+        Logger.LogDebug("Getting analytics for webhook subscription: {SubscriptionId}", subscriptionId);
 
         try
         {
@@ -1000,12 +997,12 @@ public class WebhooksService : IWebhooksService
                 }
             };
 
-            _logger.LogInformation("Successfully generated analytics for subscription: {SubscriptionId}", subscriptionId);
+            Logger.LogInformation("Successfully generated analytics for subscription: {SubscriptionId}", subscriptionId);
             return analytics;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting analytics for subscription: {SubscriptionId}", subscriptionId);
+            Logger.LogError(ex, "Error getting analytics for subscription: {SubscriptionId}", subscriptionId);
             throw;
         }
     }
@@ -1015,7 +1012,7 @@ public class WebhooksService : IWebhooksService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Generating webhook delivery report for period: {StartDate} to {EndDate}", request.StartDate, request.EndDate);
+        Logger.LogDebug("Generating webhook delivery report for period: {StartDate} to {EndDate}", request.StartDate, request.EndDate);
 
         try
         {
@@ -1056,7 +1053,7 @@ public class WebhooksService : IWebhooksService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to get analytics for subscription: {SubscriptionId}", subscription.Id);
+                    Logger.LogWarning(ex, "Failed to get analytics for subscription: {SubscriptionId}", subscription.Id);
                 }
             }
 
@@ -1085,14 +1082,14 @@ public class WebhooksService : IWebhooksService
                 }
             };
 
-            _logger.LogInformation("Successfully generated webhook delivery report with {SubscriptionCount} subscriptions and {EventCount} events", 
+            Logger.LogInformation("Successfully generated webhook delivery report with {SubscriptionCount} subscriptions and {EventCount} events", 
                 totalSubscriptions, totalEvents);
 
             return report;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating webhook delivery report");
+            Logger.LogError(ex, "Error generating webhook delivery report");
             throw;
         }
     }

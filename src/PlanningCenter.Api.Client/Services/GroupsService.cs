@@ -20,16 +20,13 @@ namespace PlanningCenter.Api.Client.Services;
 /// Follows Single Responsibility Principle - handles only Groups API operations.
 /// Follows Dependency Inversion Principle - depends on abstractions.
 /// </summary>
-public class GroupsService : IGroupsService
+public class GroupsService : ServiceBase, IGroupsService
 {
-    private readonly IApiConnection _apiConnection;
-    private readonly ILogger<GroupsService> _logger;
     private const string BaseEndpoint = "/groups/v2";
 
     public GroupsService(IApiConnection apiConnection, ILogger<GroupsService> logger)
+        : base(logger, apiConnection)
     {
-        _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     // Group management
@@ -42,31 +39,31 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Group ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Getting group with ID: {GroupId}", id);
+        Logger.LogDebug("Getting group with ID: {GroupId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<GroupDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<GroupDto>>(
                 $"{BaseEndpoint}/groups/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Group with ID {GroupId} not found", id);
+                Logger.LogDebug("Group with ID {GroupId} not found", id);
                 return null;
             }
 
             var group = GroupMapper.MapToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved group: {GroupName} (ID: {GroupId})", group.Name, group.Id);
+            Logger.LogDebug("Successfully retrieved group: {GroupName} (ID: {GroupId})", group.Name, group.Id);
             return group;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Group with ID {GroupId} not found", id);
+            Logger.LogDebug("Group with ID {GroupId} not found", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting group with ID: {GroupId}", id);
+            Logger.LogError(ex, "Error getting group with ID: {GroupId}", id);
             throw;
         }
     }
@@ -76,16 +73,16 @@ public class GroupsService : IGroupsService
     /// </summary>
     public async Task<IPagedResponse<Group>> ListGroupsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing groups with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing groups with parameters: {@Parameters}", parameters);
 
         try
         {
-            var response = await _apiConnection.GetPagedAsync<GroupDto>(
+            var response = await ApiConnection.GetPagedAsync<GroupDto>(
                 $"{BaseEndpoint}/groups", parameters, cancellationToken);
 
             var groups = response.Data.Select(GroupMapper.MapToDomain).ToList();
 
-            _logger.LogDebug("Successfully retrieved {Count} groups", groups.Count);
+            Logger.LogDebug("Successfully retrieved {Count} groups", groups.Count);
 
             return new PagedResponse<Group>
             {
@@ -96,7 +93,7 @@ public class GroupsService : IGroupsService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing groups");
+            Logger.LogError(ex, "Error listing groups");
             throw;
         }
     }
@@ -115,25 +112,25 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(request.GroupTypeId))
             throw new ArgumentException("Group type ID is required.", nameof(request));
 
-        _logger.LogDebug("Creating group: {GroupName}", request.Name);
+        Logger.LogDebug("Creating group: {GroupName}", request.Name);
 
         try
         {
             var jsonApiRequest = GroupMapper.MapCreateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<GroupDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<GroupDto>>(
                 $"{BaseEndpoint}/groups", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to create group - no data returned");
 
             var group = GroupMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created group: {GroupName} (ID: {GroupId})", group.Name, group.Id);
+            Logger.LogInformation("Successfully created group: {GroupName} (ID: {GroupId})", group.Name, group.Id);
             return group;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating group: {GroupName}", request.Name);
+            Logger.LogError(ex, "Error creating group: {GroupName}", request.Name);
             throw;
         }
     }
@@ -149,25 +146,25 @@ public class GroupsService : IGroupsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating group with ID: {GroupId}", id);
+        Logger.LogDebug("Updating group with ID: {GroupId}", id);
 
         try
         {
             var jsonApiRequest = GroupMapper.MapUpdateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<GroupDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<GroupDto>>(
                 $"{BaseEndpoint}/groups/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to update group - no data returned");
 
             var group = GroupMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated group: {GroupName} (ID: {GroupId})", group.Name, group.Id);
+            Logger.LogInformation("Successfully updated group: {GroupName} (ID: {GroupId})", group.Name, group.Id);
             return group;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating group with ID: {GroupId}", id);
+            Logger.LogError(ex, "Error updating group with ID: {GroupId}", id);
             throw;
         }
     }
@@ -180,16 +177,16 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Group ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Deleting group with ID: {GroupId}", id);
+        Logger.LogDebug("Deleting group with ID: {GroupId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/groups/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted group with ID: {GroupId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/groups/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted group with ID: {GroupId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting group with ID: {GroupId}", id);
+            Logger.LogError(ex, "Error deleting group with ID: {GroupId}", id);
             throw;
         }
     }
@@ -205,7 +202,7 @@ public class GroupsService : IGroupsService
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting all groups with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Getting all groups with parameters: {@Parameters}", parameters);
 
         var allGroups = new List<Group>();
         var currentParameters = parameters ?? new QueryParameters();
@@ -228,12 +225,12 @@ public class GroupsService : IGroupsService
             }
             while (response.Links?.Next != null && !cancellationToken.IsCancellationRequested);
 
-            _logger.LogDebug("Successfully retrieved all {Count} groups", allGroups.Count);
+            Logger.LogDebug("Successfully retrieved all {Count} groups", allGroups.Count);
             return allGroups.AsReadOnly();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all groups");
+            Logger.LogError(ex, "Error getting all groups");
             throw;
         }
     }
@@ -246,7 +243,7 @@ public class GroupsService : IGroupsService
         PaginationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Streaming groups with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Streaming groups with parameters: {@Parameters}", parameters);
 
         var currentParameters = parameters ?? new QueryParameters();
         var pageSize = options?.PageSize ?? 25;
@@ -274,7 +271,7 @@ public class GroupsService : IGroupsService
         }
         finally
         {
-            _logger.LogDebug("Finished streaming groups");
+            Logger.LogDebug("Finished streaming groups");
         }
     }
 
@@ -285,16 +282,16 @@ public class GroupsService : IGroupsService
     /// </summary>
     public async Task<IPagedResponse<GroupType>> ListGroupTypesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing group types with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing group types with parameters: {@Parameters}", parameters);
 
         try
         {
-            var response = await _apiConnection.GetPagedAsync<GroupTypeDto>(
+            var response = await ApiConnection.GetPagedAsync<GroupTypeDto>(
                 $"{BaseEndpoint}/group_types", parameters, cancellationToken);
 
             var groupTypes = response.Data.Select(GroupMapper.MapGroupTypeToDomain).ToList();
 
-            _logger.LogDebug("Successfully retrieved {Count} group types", groupTypes.Count);
+            Logger.LogDebug("Successfully retrieved {Count} group types", groupTypes.Count);
 
             return new PagedResponse<GroupType>
             {
@@ -305,7 +302,7 @@ public class GroupsService : IGroupsService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing group types");
+            Logger.LogError(ex, "Error listing group types");
             throw;
         }
     }
@@ -318,31 +315,31 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Group type ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Getting group type with ID: {GroupTypeId}", id);
+        Logger.LogDebug("Getting group type with ID: {GroupTypeId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<GroupTypeDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<GroupTypeDto>>(
                 $"{BaseEndpoint}/group_types/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Group type with ID {GroupTypeId} not found", id);
+                Logger.LogDebug("Group type with ID {GroupTypeId} not found", id);
                 return null;
             }
 
             var groupType = GroupMapper.MapGroupTypeToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved group type: {GroupTypeName} (ID: {GroupTypeId})", groupType.Name, groupType.Id);
+            Logger.LogDebug("Successfully retrieved group type: {GroupTypeName} (ID: {GroupTypeId})", groupType.Name, groupType.Id);
             return groupType;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Group type with ID {GroupTypeId} not found", id);
+            Logger.LogDebug("Group type with ID {GroupTypeId} not found", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting group type with ID: {GroupTypeId}", id);
+            Logger.LogError(ex, "Error getting group type with ID: {GroupTypeId}", id);
             throw;
         }
     }
@@ -357,16 +354,16 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(groupId))
             throw new ArgumentException("Group ID cannot be null or empty.", nameof(groupId));
 
-        _logger.LogDebug("Listing memberships for group {GroupId} with parameters: {@Parameters}", groupId, parameters);
+        Logger.LogDebug("Listing memberships for group {GroupId} with parameters: {@Parameters}", groupId, parameters);
 
         try
         {
-            var response = await _apiConnection.GetPagedAsync<MembershipDto>(
+            var response = await ApiConnection.GetPagedAsync<MembershipDto>(
                 $"{BaseEndpoint}/groups/{groupId}/memberships", parameters, cancellationToken);
 
             var memberships = response.Data.Select(GroupMapper.MapMembershipToDomain).ToList();
 
-            _logger.LogDebug("Successfully retrieved {Count} memberships for group {GroupId}", memberships.Count, groupId);
+            Logger.LogDebug("Successfully retrieved {Count} memberships for group {GroupId}", memberships.Count, groupId);
 
             return new PagedResponse<Membership>
             {
@@ -377,7 +374,7 @@ public class GroupsService : IGroupsService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing memberships for group {GroupId}", groupId);
+            Logger.LogError(ex, "Error listing memberships for group {GroupId}", groupId);
             throw;
         }
     }
@@ -393,31 +390,31 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(membershipId))
             throw new ArgumentException("Membership ID cannot be null or empty.", nameof(membershipId));
 
-        _logger.LogDebug("Getting membership {MembershipId} for group {GroupId}", membershipId, groupId);
+        Logger.LogDebug("Getting membership {MembershipId} for group {GroupId}", membershipId, groupId);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<MembershipDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<MembershipDto>>(
                 $"{BaseEndpoint}/groups/{groupId}/memberships/{membershipId}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Membership {MembershipId} for group {GroupId} not found", membershipId, groupId);
+                Logger.LogDebug("Membership {MembershipId} for group {GroupId} not found", membershipId, groupId);
                 return null;
             }
 
             var membership = GroupMapper.MapMembershipToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved membership: {MembershipRole} (ID: {MembershipId})", membership.Role, membership.Id);
+            Logger.LogDebug("Successfully retrieved membership: {MembershipRole} (ID: {MembershipId})", membership.Role, membership.Id);
             return membership;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Membership {MembershipId} for group {GroupId} not found", membershipId, groupId);
+            Logger.LogDebug("Membership {MembershipId} for group {GroupId} not found", membershipId, groupId);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting membership {MembershipId} for group {GroupId}", membershipId, groupId);
+            Logger.LogError(ex, "Error getting membership {MembershipId} for group {GroupId}", membershipId, groupId);
             throw;
         }
     }
@@ -436,25 +433,25 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(request.PersonId))
             throw new ArgumentException("Person ID is required.", nameof(request));
 
-        _logger.LogDebug("Creating membership for person {PersonId} in group {GroupId}", request.PersonId, groupId);
+        Logger.LogDebug("Creating membership for person {PersonId} in group {GroupId}", request.PersonId, groupId);
 
         try
         {
             var jsonApiRequest = GroupMapper.MapMembershipCreateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<MembershipDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<MembershipDto>>(
                 $"{BaseEndpoint}/groups/{groupId}/memberships", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to create membership - no data returned");
 
             var membership = GroupMapper.MapMembershipToDomain(response.Data);
-            _logger.LogInformation("Successfully created membership: {MembershipRole} (ID: {MembershipId})", membership.Role, membership.Id);
+            Logger.LogInformation("Successfully created membership: {MembershipRole} (ID: {MembershipId})", membership.Role, membership.Id);
             return membership;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating membership for person {PersonId} in group {GroupId}", request.PersonId, groupId);
+            Logger.LogError(ex, "Error creating membership for person {PersonId} in group {GroupId}", request.PersonId, groupId);
             throw;
         }
     }
@@ -473,25 +470,25 @@ public class GroupsService : IGroupsService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating membership {MembershipId} for group {GroupId}", membershipId, groupId);
+        Logger.LogDebug("Updating membership {MembershipId} for group {GroupId}", membershipId, groupId);
 
         try
         {
             var jsonApiRequest = GroupMapper.MapMembershipUpdateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<MembershipDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<MembershipDto>>(
                 $"{BaseEndpoint}/groups/{groupId}/memberships/{membershipId}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to update membership - no data returned");
 
             var membership = GroupMapper.MapMembershipToDomain(response.Data);
-            _logger.LogInformation("Successfully updated membership: {MembershipRole} (ID: {MembershipId})", membership.Role, membership.Id);
+            Logger.LogInformation("Successfully updated membership: {MembershipRole} (ID: {MembershipId})", membership.Role, membership.Id);
             return membership;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating membership {MembershipId} for group {GroupId}", membershipId, groupId);
+            Logger.LogError(ex, "Error updating membership {MembershipId} for group {GroupId}", membershipId, groupId);
             throw;
         }
     }
@@ -507,16 +504,16 @@ public class GroupsService : IGroupsService
         if (string.IsNullOrWhiteSpace(membershipId))
             throw new ArgumentException("Membership ID cannot be null or empty.", nameof(membershipId));
 
-        _logger.LogDebug("Deleting membership {MembershipId} from group {GroupId}", membershipId, groupId);
+        Logger.LogDebug("Deleting membership {MembershipId} from group {GroupId}", membershipId, groupId);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/groups/{groupId}/memberships/{membershipId}", cancellationToken);
-            _logger.LogInformation("Successfully deleted membership {MembershipId} from group {GroupId}", membershipId, groupId);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/groups/{groupId}/memberships/{membershipId}", cancellationToken);
+            Logger.LogInformation("Successfully deleted membership {MembershipId} from group {GroupId}", membershipId, groupId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting membership {MembershipId} from group {GroupId}", membershipId, groupId);
+            Logger.LogError(ex, "Error deleting membership {MembershipId} from group {GroupId}", membershipId, groupId);
             throw;
         }
     }

@@ -20,16 +20,13 @@ namespace PlanningCenter.Api.Client.Services;
 /// Follows Single Responsibility Principle - handles only Services API operations.
 /// Follows Dependency Inversion Principle - depends on abstractions.
 /// </summary>
-public class ServicesService : IServicesService
+public class ServicesService : ServiceBase, IServicesService
 {
-    private readonly IApiConnection _apiConnection;
-    private readonly ILogger<ServicesService> _logger;
     private const string BaseEndpoint = "/services/v2";
 
     public ServicesService(IApiConnection apiConnection, ILogger<ServicesService> logger)
+        : base(logger, apiConnection)
     {
-        _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     // Plan management
@@ -42,31 +39,31 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Plan ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Getting plan with ID: {PlanId}", id);
+        Logger.LogDebug("Getting plan with ID: {PlanId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PlanDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PlanDto>>(
                 $"{BaseEndpoint}/plans/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Plan with ID {PlanId} not found", id);
+                Logger.LogDebug("Plan with ID {PlanId} not found", id);
                 return null;
             }
 
             var plan = PlanMapper.MapToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
+            Logger.LogDebug("Successfully retrieved plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
             return plan;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Plan with ID {PlanId} not found", id);
+            Logger.LogDebug("Plan with ID {PlanId} not found", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting plan with ID: {PlanId}", id);
+            Logger.LogError(ex, "Error getting plan with ID: {PlanId}", id);
             throw;
         }
     }
@@ -76,16 +73,16 @@ public class ServicesService : IServicesService
     /// </summary>
     public async Task<IPagedResponse<Plan>> ListPlansAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing plans with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing plans with parameters: {@Parameters}", parameters);
 
         try
         {
-            var response = await _apiConnection.GetPagedAsync<PlanDto>(
+            var response = await ApiConnection.GetPagedAsync<PlanDto>(
                 $"{BaseEndpoint}/plans", parameters, cancellationToken);
 
             var plans = response.Data.Select(PlanMapper.MapToDomain).ToList();
 
-            _logger.LogDebug("Successfully retrieved {Count} plans", plans.Count);
+            Logger.LogDebug("Successfully retrieved {Count} plans", plans.Count);
 
             return new PagedResponse<Plan>
             {
@@ -96,7 +93,7 @@ public class ServicesService : IServicesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing plans");
+            Logger.LogError(ex, "Error listing plans");
             throw;
         }
     }
@@ -115,25 +112,25 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(request.ServiceTypeId))
             throw new ArgumentException("Service type ID is required.", nameof(request));
 
-        _logger.LogDebug("Creating plan: {PlanTitle}", request.Title);
+        Logger.LogDebug("Creating plan: {PlanTitle}", request.Title);
 
         try
         {
             var jsonApiRequest = PlanMapper.MapCreateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<PlanDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<PlanDto>>(
                 $"{BaseEndpoint}/plans", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to create plan - no data returned");
 
             var plan = PlanMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
+            Logger.LogInformation("Successfully created plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
             return plan;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating plan: {PlanTitle}", request.Title);
+            Logger.LogError(ex, "Error creating plan: {PlanTitle}", request.Title);
             throw;
         }
     }
@@ -149,25 +146,25 @@ public class ServicesService : IServicesService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating plan with ID: {PlanId}", id);
+        Logger.LogDebug("Updating plan with ID: {PlanId}", id);
 
         try
         {
             var jsonApiRequest = PlanMapper.MapUpdateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<PlanDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<PlanDto>>(
                 $"{BaseEndpoint}/plans/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to update plan - no data returned");
 
             var plan = PlanMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
+            Logger.LogInformation("Successfully updated plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
             return plan;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating plan with ID: {PlanId}", id);
+            Logger.LogError(ex, "Error updating plan with ID: {PlanId}", id);
             throw;
         }
     }
@@ -180,16 +177,16 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Plan ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Deleting plan with ID: {PlanId}", id);
+        Logger.LogDebug("Deleting plan with ID: {PlanId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/plans/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted plan with ID: {PlanId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/plans/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted plan with ID: {PlanId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting plan with ID: {PlanId}", id);
+            Logger.LogError(ex, "Error deleting plan with ID: {PlanId}", id);
             throw;
         }
     }
@@ -201,16 +198,16 @@ public class ServicesService : IServicesService
     /// </summary>
     public async Task<IPagedResponse<ServiceType>> ListServiceTypesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing service types with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing service types with parameters: {@Parameters}", parameters);
 
         try
         {
-            var response = await _apiConnection.GetPagedAsync<ServiceTypeDto>(
+            var response = await ApiConnection.GetPagedAsync<ServiceTypeDto>(
                 $"{BaseEndpoint}/service_types", parameters, cancellationToken);
 
             var serviceTypes = response.Data.Select(PlanMapper.MapServiceTypeToDomain).ToList();
 
-            _logger.LogDebug("Successfully retrieved {Count} service types", serviceTypes.Count);
+            Logger.LogDebug("Successfully retrieved {Count} service types", serviceTypes.Count);
 
             return new PagedResponse<ServiceType>
             {
@@ -221,7 +218,7 @@ public class ServicesService : IServicesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing service types");
+            Logger.LogError(ex, "Error listing service types");
             throw;
         }
     }
@@ -234,31 +231,31 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Service type ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Getting service type with ID: {ServiceTypeId}", id);
+        Logger.LogDebug("Getting service type with ID: {ServiceTypeId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<ServiceTypeDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<ServiceTypeDto>>(
                 $"{BaseEndpoint}/service_types/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Service type with ID {ServiceTypeId} not found", id);
+                Logger.LogDebug("Service type with ID {ServiceTypeId} not found", id);
                 return null;
             }
 
             var serviceType = PlanMapper.MapServiceTypeToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved service type: {ServiceTypeName} (ID: {ServiceTypeId})", serviceType.Name, serviceType.Id);
+            Logger.LogDebug("Successfully retrieved service type: {ServiceTypeName} (ID: {ServiceTypeId})", serviceType.Name, serviceType.Id);
             return serviceType;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Service type with ID {ServiceTypeId} not found", id);
+            Logger.LogDebug("Service type with ID {ServiceTypeId} not found", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting service type with ID: {ServiceTypeId}", id);
+            Logger.LogError(ex, "Error getting service type with ID: {ServiceTypeId}", id);
             throw;
         }
     }
@@ -273,16 +270,16 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(planId))
             throw new ArgumentException("Plan ID cannot be null or empty.", nameof(planId));
 
-        _logger.LogDebug("Listing items for plan {PlanId} with parameters: {@Parameters}", planId, parameters);
+        Logger.LogDebug("Listing items for plan {PlanId} with parameters: {@Parameters}", planId, parameters);
 
         try
         {
-            var response = await _apiConnection.GetPagedAsync<ItemDto>(
+            var response = await ApiConnection.GetPagedAsync<ItemDto>(
                 $"{BaseEndpoint}/plans/{planId}/items", parameters, cancellationToken);
 
             var items = response.Data.Select(PlanMapper.MapItemToDomain).ToList();
 
-            _logger.LogDebug("Successfully retrieved {Count} items for plan {PlanId}", items.Count, planId);
+            Logger.LogDebug("Successfully retrieved {Count} items for plan {PlanId}", items.Count, planId);
 
             return new PagedResponse<Item>
             {
@@ -293,7 +290,7 @@ public class ServicesService : IServicesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing items for plan {PlanId}", planId);
+            Logger.LogError(ex, "Error listing items for plan {PlanId}", planId);
             throw;
         }
     }
@@ -309,31 +306,31 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(itemId))
             throw new ArgumentException("Item ID cannot be null or empty.", nameof(itemId));
 
-        _logger.LogDebug("Getting item {ItemId} for plan {PlanId}", itemId, planId);
+        Logger.LogDebug("Getting item {ItemId} for plan {PlanId}", itemId, planId);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<ItemDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<ItemDto>>(
                 $"{BaseEndpoint}/plans/{planId}/items/{itemId}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Item {ItemId} for plan {PlanId} not found", itemId, planId);
+                Logger.LogDebug("Item {ItemId} for plan {PlanId} not found", itemId, planId);
                 return null;
             }
 
             var item = PlanMapper.MapItemToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved item: {ItemTitle} (ID: {ItemId})", item.Title, item.Id);
+            Logger.LogDebug("Successfully retrieved item: {ItemTitle} (ID: {ItemId})", item.Title, item.Id);
             return item;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Item {ItemId} for plan {PlanId} not found", itemId, planId);
+            Logger.LogDebug("Item {ItemId} for plan {PlanId} not found", itemId, planId);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting item {ItemId} for plan {PlanId}", itemId, planId);
+            Logger.LogError(ex, "Error getting item {ItemId} for plan {PlanId}", itemId, planId);
             throw;
         }
     }
@@ -345,16 +342,16 @@ public class ServicesService : IServicesService
     /// </summary>
     public async Task<IPagedResponse<Song>> ListSongsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing songs with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing songs with parameters: {@Parameters}", parameters);
 
         try
         {
-            var response = await _apiConnection.GetPagedAsync<SongDto>(
+            var response = await ApiConnection.GetPagedAsync<SongDto>(
                 $"{BaseEndpoint}/songs", parameters, cancellationToken);
 
             var songs = response.Data.Select(PlanMapper.MapSongToDomain).ToList();
 
-            _logger.LogDebug("Successfully retrieved {Count} songs", songs.Count);
+            Logger.LogDebug("Successfully retrieved {Count} songs", songs.Count);
 
             return new PagedResponse<Song>
             {
@@ -365,7 +362,7 @@ public class ServicesService : IServicesService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing songs");
+            Logger.LogError(ex, "Error listing songs");
             throw;
         }
     }
@@ -378,31 +375,31 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Song ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Getting song with ID: {SongId}", id);
+        Logger.LogDebug("Getting song with ID: {SongId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<SongDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SongDto>>(
                 $"{BaseEndpoint}/songs/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogDebug("Song with ID {SongId} not found", id);
+                Logger.LogDebug("Song with ID {SongId} not found", id);
                 return null;
             }
 
             var song = PlanMapper.MapSongToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved song: {SongTitle} (ID: {SongId})", song.Title, song.Id);
+            Logger.LogDebug("Successfully retrieved song: {SongTitle} (ID: {SongId})", song.Title, song.Id);
             return song;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogDebug("Song with ID {SongId} not found", id);
+            Logger.LogDebug("Song with ID {SongId} not found", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting song with ID: {SongId}", id);
+            Logger.LogError(ex, "Error getting song with ID: {SongId}", id);
             throw;
         }
     }
@@ -418,7 +415,7 @@ public class ServicesService : IServicesService
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting all plans with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Getting all plans with parameters: {@Parameters}", parameters);
 
         var allPlans = new List<Plan>();
         var currentParameters = parameters ?? new QueryParameters();
@@ -441,12 +438,12 @@ public class ServicesService : IServicesService
             }
             while (response.Links?.Next != null && !cancellationToken.IsCancellationRequested);
 
-            _logger.LogDebug("Successfully retrieved all {Count} plans", allPlans.Count);
+            Logger.LogDebug("Successfully retrieved all {Count} plans", allPlans.Count);
             return allPlans.AsReadOnly();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all plans");
+            Logger.LogError(ex, "Error getting all plans");
             throw;
         }
     }
@@ -459,7 +456,7 @@ public class ServicesService : IServicesService
         PaginationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Streaming plans with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Streaming plans with parameters: {@Parameters}", parameters);
 
         var currentParameters = parameters ?? new QueryParameters();
         var pageSize = options?.PageSize ?? 25;
@@ -487,7 +484,7 @@ public class ServicesService : IServicesService
         }
         finally
         {
-            _logger.LogDebug("Finished streaming plans");
+            Logger.LogDebug("Finished streaming plans");
         }
     }
 
@@ -505,25 +502,25 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(request.Title))
             throw new ArgumentException("Item title is required.", nameof(request));
 
-        _logger.LogDebug("Creating item: {ItemTitle} for plan {PlanId}", request.Title, planId);
+        Logger.LogDebug("Creating item: {ItemTitle} for plan {PlanId}", request.Title, planId);
 
         try
         {
             var jsonApiRequest = PlanMapper.MapItemCreateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<ItemDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<ItemDto>>(
                 $"{BaseEndpoint}/plans/{planId}/items", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to create item - no data returned");
 
             var item = PlanMapper.MapItemToDomain(response.Data);
-            _logger.LogInformation("Successfully created item: {ItemTitle} (ID: {ItemId})", item.Title, item.Id);
+            Logger.LogInformation("Successfully created item: {ItemTitle} (ID: {ItemId})", item.Title, item.Id);
             return item;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating item: {ItemTitle} for plan {PlanId}", request.Title, planId);
+            Logger.LogError(ex, "Error creating item: {ItemTitle} for plan {PlanId}", request.Title, planId);
             throw;
         }
     }
@@ -542,25 +539,25 @@ public class ServicesService : IServicesService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating item {ItemId} for plan {PlanId}", itemId, planId);
+        Logger.LogDebug("Updating item {ItemId} for plan {PlanId}", itemId, planId);
 
         try
         {
             var jsonApiRequest = PlanMapper.MapItemUpdateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<ItemDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<ItemDto>>(
                 $"{BaseEndpoint}/plans/{planId}/items/{itemId}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to update item - no data returned");
 
             var item = PlanMapper.MapItemToDomain(response.Data);
-            _logger.LogInformation("Successfully updated item: {ItemTitle} (ID: {ItemId})", item.Title, item.Id);
+            Logger.LogInformation("Successfully updated item: {ItemTitle} (ID: {ItemId})", item.Title, item.Id);
             return item;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating item {ItemId} for plan {PlanId}", itemId, planId);
+            Logger.LogError(ex, "Error updating item {ItemId} for plan {PlanId}", itemId, planId);
             throw;
         }
     }
@@ -576,16 +573,16 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(itemId))
             throw new ArgumentException("Item ID cannot be null or empty.", nameof(itemId));
 
-        _logger.LogDebug("Deleting item {ItemId} from plan {PlanId}", itemId, planId);
+        Logger.LogDebug("Deleting item {ItemId} from plan {PlanId}", itemId, planId);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/plans/{planId}/items/{itemId}", cancellationToken);
-            _logger.LogInformation("Successfully deleted item {ItemId} from plan {PlanId}", itemId, planId);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/plans/{planId}/items/{itemId}", cancellationToken);
+            Logger.LogInformation("Successfully deleted item {ItemId} from plan {PlanId}", itemId, planId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting item {ItemId} from plan {PlanId}", itemId, planId);
+            Logger.LogError(ex, "Error deleting item {ItemId} from plan {PlanId}", itemId, planId);
             throw;
         }
     }
@@ -601,25 +598,25 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(request.Title))
             throw new ArgumentException("Song title is required.", nameof(request));
 
-        _logger.LogDebug("Creating song: {SongTitle}", request.Title);
+        Logger.LogDebug("Creating song: {SongTitle}", request.Title);
 
         try
         {
             var jsonApiRequest = PlanMapper.MapSongCreateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<SongDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SongDto>>(
                 $"{BaseEndpoint}/songs", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to create song - no data returned");
 
             var song = PlanMapper.MapSongToDomain(response.Data);
-            _logger.LogInformation("Successfully created song: {SongTitle} (ID: {SongId})", song.Title, song.Id);
+            Logger.LogInformation("Successfully created song: {SongTitle} (ID: {SongId})", song.Title, song.Id);
             return song;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating song: {SongTitle}", request.Title);
+            Logger.LogError(ex, "Error creating song: {SongTitle}", request.Title);
             throw;
         }
     }
@@ -635,25 +632,25 @@ public class ServicesService : IServicesService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating song with ID: {SongId}", id);
+        Logger.LogDebug("Updating song with ID: {SongId}", id);
 
         try
         {
             var jsonApiRequest = PlanMapper.MapSongUpdateRequestToJsonApi(request);
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<SongDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SongDto>>(
                 $"{BaseEndpoint}/songs/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
                 throw new PlanningCenterApiGeneralException("Failed to update song - no data returned");
 
             var song = PlanMapper.MapSongToDomain(response.Data);
-            _logger.LogInformation("Successfully updated song: {SongTitle} (ID: {SongId})", song.Title, song.Id);
+            Logger.LogInformation("Successfully updated song: {SongTitle} (ID: {SongId})", song.Title, song.Id);
             return song;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating song with ID: {SongId}", id);
+            Logger.LogError(ex, "Error updating song with ID: {SongId}", id);
             throw;
         }
     }
@@ -666,16 +663,16 @@ public class ServicesService : IServicesService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Song ID cannot be null or empty.", nameof(id));
 
-        _logger.LogDebug("Deleting song with ID: {SongId}", id);
+        Logger.LogDebug("Deleting song with ID: {SongId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/songs/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted song with ID: {SongId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/songs/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted song with ID: {SongId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting song with ID: {SongId}", id);
+            Logger.LogError(ex, "Error deleting song with ID: {SongId}", id);
             throw;
         }
     }

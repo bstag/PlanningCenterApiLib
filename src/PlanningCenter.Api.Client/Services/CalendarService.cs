@@ -20,11 +20,14 @@ namespace PlanningCenter.Api.Client.Services;
 /// Follows Single Responsibility Principle - handles only Calendar API operations.
 /// Follows Dependency Inversion Principle - depends on abstractions.
 /// </summary>
-public class CalendarService(IApiConnection apiConnection, ILogger<CalendarService> logger) : ICalendarService
+public class CalendarService : ServiceBase, ICalendarService
 {
-    private readonly IApiConnection _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-    private readonly ILogger<CalendarService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private const string BaseEndpoint = "/calendar/v2";
+
+    public CalendarService(IApiConnection apiConnection, ILogger<CalendarService> logger)
+        : base(logger, apiConnection)
+    {
+    }
 
     // Event management
 
@@ -33,36 +36,24 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<Event?> GetEventAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Event ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        _logger.LogDebug("Getting event with ID: {EventId}", id);
-
-        try
-        {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<EventDto>>(
-                $"{BaseEndpoint}/events/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                _logger.LogDebug("Event with ID {EventId} not found", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<EventDto>>(
+                    $"{BaseEndpoint}/events/{id}", cancellationToken);
 
-            var eventItem = CalendarMapper.MapToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved event: {EventName} (ID: {EventId})", eventItem.Name, eventItem.Id);
-            return eventItem;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            _logger.LogDebug("Event with ID {EventId} not found", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting event with ID: {EventId}", id);
-            throw;
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Event with ID {id} not found");
+                }
+
+                return CalendarMapper.MapToDomain(response.Data);
+            },
+            "GetEvent",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -70,29 +61,23 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<IPagedResponse<Event>> ListEventsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing events with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var response = await _apiConnection.GetPagedAsync<EventDto>(
-                $"{BaseEndpoint}/events", parameters, cancellationToken);
-
-            var events = response.Data.Select(CalendarMapper.MapToDomain).ToList();
-
-            _logger.LogDebug("Successfully retrieved {Count} events", events.Count);
-
-            return new PagedResponse<Event>
+        return await ExecuteAsync(
+            async () =>
             {
-                Data = events,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error listing events");
-            throw;
-        }
+                var response = await ApiConnection.GetPagedAsync<EventDto>(
+                    $"{BaseEndpoint}/events", parameters, cancellationToken);
+
+                var events = response.Data.Select(CalendarMapper.MapToDomain).ToList();
+
+                return new PagedResponse<Event>
+                {
+                    Data = events,
+                    Meta = response.Meta,
+                    Links = response.Links
+                };
+            },
+            "ListEvents",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -100,32 +85,24 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<Event> CreateEventAsync(EventCreateRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ValidateNotNull(request, nameof(request));
+        ValidateNotNullOrEmpty(request.Name, nameof(request.Name));
 
-        if (string.IsNullOrWhiteSpace(request.Name))
-            throw new ArgumentException("Event name is required.", nameof(request));
+        return await ExecuteAsync(
+            async () =>
+            {
+                var jsonApiRequest = CalendarMapper.MapCreateRequestToJsonApi(request);
 
-        _logger.LogDebug("Creating event: {EventName}", request.Name);
+                var response = await ApiConnection.PostAsync<JsonApiSingleResponse<EventDto>>(
+                    $"{BaseEndpoint}/events", jsonApiRequest, cancellationToken);
 
-        try
-        {
-            var jsonApiRequest = CalendarMapper.MapCreateRequestToJsonApi(request);
+                if (response?.Data == null)
+                    throw new PlanningCenterApiGeneralException("Failed to create event - no data returned");
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<EventDto>>(
-                $"{BaseEndpoint}/events", jsonApiRequest, cancellationToken);
-
-            if (response?.Data == null)
-                throw new PlanningCenterApiGeneralException("Failed to create event - no data returned");
-
-            var eventItem = CalendarMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created event: {EventName} (ID: {EventId})", eventItem.Name, eventItem.Id);
-            return eventItem;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating event: {EventName}", request.Name);
-            throw;
-        }
+                return CalendarMapper.MapToDomain(response.Data);
+            },
+            "CreateEvent",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -133,32 +110,25 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<Event> UpdateEventAsync(string id, EventUpdateRequest request, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Event ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
+        ValidateNotNull(request, nameof(request));
 
-        ArgumentNullException.ThrowIfNull(request);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var jsonApiRequest = CalendarMapper.MapUpdateRequestToJsonApi(request);
 
-        _logger.LogDebug("Updating event with ID: {EventId}", id);
+                var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<EventDto>>(
+                    $"{BaseEndpoint}/events/{id}", jsonApiRequest, cancellationToken);
 
-        try
-        {
-            var jsonApiRequest = CalendarMapper.MapUpdateRequestToJsonApi(request);
+                if (response?.Data == null)
+                    throw new PlanningCenterApiGeneralException("Failed to update event - no data returned");
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<EventDto>>(
-                $"{BaseEndpoint}/events/{id}", jsonApiRequest, cancellationToken);
-
-            if (response?.Data == null)
-                throw new PlanningCenterApiGeneralException("Failed to update event - no data returned");
-
-            var eventItem = CalendarMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated event: {EventName} (ID: {EventId})", eventItem.Name, eventItem.Id);
-            return eventItem;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating event with ID: {EventId}", id);
-            throw;
-        }
+                return CalendarMapper.MapToDomain(response.Data);
+            },
+            "UpdateEvent",
+            id,
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -166,21 +136,17 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task DeleteEventAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Event ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        _logger.LogDebug("Deleting event with ID: {EventId}", id);
-
-        try
-        {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/events/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted event with ID: {EventId}", id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting event with ID: {EventId}", id);
-            throw;
-        }
+        await ExecuteAsync(
+            async () =>
+            {
+                await ApiConnection.DeleteAsync($"{BaseEndpoint}/events/{id}", cancellationToken);
+                return true; // ExecuteAsync requires a return value
+            },
+            "DeleteEvent",
+            id,
+            cancellationToken: cancellationToken);
     }
 
     // Resource management
@@ -190,29 +156,23 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<IPagedResponse<Resource>> ListResourcesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing resources with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var response = await _apiConnection.GetPagedAsync<ResourceDto>(
-                $"{BaseEndpoint}/resources", parameters, cancellationToken);
-
-            var resources = response.Data.Select(CalendarMapper.MapResourceToDomain).ToList();
-
-            _logger.LogDebug("Successfully retrieved {Count} resources", resources.Count);
-
-            return new PagedResponse<Resource>
+        return await ExecuteAsync(
+            async () =>
             {
-                Data = resources,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error listing resources");
-            throw;
-        }
+                var response = await ApiConnection.GetPagedAsync<ResourceDto>(
+                    $"{BaseEndpoint}/resources", parameters, cancellationToken);
+
+                var resources = response.Data.Select(CalendarMapper.MapResourceToDomain).ToList();
+
+                return new PagedResponse<Resource>
+                {
+                    Data = resources,
+                    Meta = response.Meta,
+                    Links = response.Links
+                };
+            },
+            "ListResources",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -220,36 +180,24 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<Resource?> GetResourceAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Resource ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        _logger.LogDebug("Getting resource with ID: {ResourceId}", id);
-
-        try
-        {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<ResourceDto>>(
-                $"{BaseEndpoint}/resources/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                _logger.LogDebug("Resource with ID {ResourceId} not found", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<ResourceDto>>(
+                    $"{BaseEndpoint}/resources/{id}", cancellationToken);
 
-            var resource = CalendarMapper.MapResourceToDomain(response.Data);
-            _logger.LogDebug("Successfully retrieved resource: {ResourceName} (ID: {ResourceId})", resource.Name, resource.Id);
-            return resource;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            _logger.LogDebug("Resource with ID {ResourceId} not found", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting resource with ID: {ResourceId}", id);
-            throw;
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Resource with ID {id} not found");
+                }
+
+                return CalendarMapper.MapResourceToDomain(response.Data);
+            },
+            "GetResource",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -257,32 +205,24 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<Resource> CreateResourceAsync(ResourceCreateRequest request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        ValidateNotNull(request, nameof(request));
+        ValidateNotNullOrEmpty(request.Name, nameof(request.Name));
 
-        if (string.IsNullOrWhiteSpace(request.Name))
-            throw new ArgumentException("Resource name is required.", nameof(request));
+        return await ExecuteAsync(
+            async () =>
+            {
+                var jsonApiRequest = CalendarMapper.MapResourceCreateRequestToJsonApi(request);
 
-        _logger.LogDebug("Creating resource: {ResourceName}", request.Name);
+                var response = await ApiConnection.PostAsync<JsonApiSingleResponse<ResourceDto>>(
+                    $"{BaseEndpoint}/resources", jsonApiRequest, cancellationToken);
 
-        try
-        {
-            var jsonApiRequest = CalendarMapper.MapResourceCreateRequestToJsonApi(request);
+                if (response?.Data == null)
+                    throw new PlanningCenterApiGeneralException("Failed to create resource - no data returned");
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<ResourceDto>>(
-                $"{BaseEndpoint}/resources", jsonApiRequest, cancellationToken);
-
-            if (response?.Data == null)
-                throw new PlanningCenterApiGeneralException("Failed to create resource - no data returned");
-
-            var resource = CalendarMapper.MapResourceToDomain(response.Data);
-            _logger.LogInformation("Successfully created resource: {ResourceName} (ID: {ResourceId})", resource.Name, resource.Id);
-            return resource;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating resource: {ResourceName}", request.Name);
-            throw;
-        }
+                return CalendarMapper.MapResourceToDomain(response.Data);
+            },
+            "CreateResource",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -290,32 +230,25 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<Resource> UpdateResourceAsync(string id, ResourceUpdateRequest request, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Resource ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
+        ValidateNotNull(request, nameof(request));
 
-        ArgumentNullException.ThrowIfNull(request);
+        return await ExecuteAsync(
+            async () =>
+            {
+                var jsonApiRequest = CalendarMapper.MapResourceUpdateRequestToJsonApi(request);
 
-        _logger.LogDebug("Updating resource with ID: {ResourceId}", id);
+                var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<ResourceDto>>(
+                    $"{BaseEndpoint}/resources/{id}", jsonApiRequest, cancellationToken);
 
-        try
-        {
-            var jsonApiRequest = CalendarMapper.MapResourceUpdateRequestToJsonApi(request);
+                if (response?.Data == null)
+                    throw new PlanningCenterApiGeneralException("Failed to update resource - no data returned");
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<ResourceDto>>(
-                $"{BaseEndpoint}/resources/{id}", jsonApiRequest, cancellationToken);
-
-            if (response?.Data == null)
-                throw new PlanningCenterApiGeneralException("Failed to update resource - no data returned");
-
-            var resource = CalendarMapper.MapResourceToDomain(response.Data);
-            _logger.LogInformation("Successfully updated resource: {ResourceName} (ID: {ResourceId})", resource.Name, resource.Id);
-            return resource;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating resource with ID: {ResourceId}", id);
-            throw;
-        }
+                return CalendarMapper.MapResourceToDomain(response.Data);
+            },
+            "UpdateResource",
+            id,
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -323,21 +256,17 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task DeleteResourceAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Resource ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        _logger.LogDebug("Deleting resource with ID: {ResourceId}", id);
-
-        try
-        {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/resources/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted resource with ID: {ResourceId}", id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting resource with ID: {ResourceId}", id);
-            throw;
-        }
+        await ExecuteAsync(
+            async () =>
+            {
+                await ApiConnection.DeleteAsync($"{BaseEndpoint}/resources/{id}", cancellationToken);
+                return true; // ExecuteAsync requires a return value
+            },
+            "DeleteResource",
+            id,
+            cancellationToken: cancellationToken);
     }
 
     // Event filtering by date range
@@ -347,8 +276,6 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
     /// </summary>
     public async Task<IPagedResponse<Event>> ListEventsByDateRangeAsync(DateTime startDate, DateTime endDate, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing events from {StartDate} to {EndDate} with parameters: {@Parameters}", startDate, endDate, parameters);
-
         var queryParams = parameters ?? new QueryParameters();
         
         // Add date range filters to the query parameters
@@ -369,37 +296,32 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting all events with parameters: {@Parameters}", parameters);
-
-        var allEvents = new List<Event>();
-        var currentParameters = parameters ?? new QueryParameters();
-        var pageSize = options?.PageSize ?? 25;
-        currentParameters.PerPage = pageSize;
-
-        try
-        {
-            IPagedResponse<Event> response;
-            do
+        return await ExecuteAsync(
+            async () =>
             {
-                response = await ListEventsAsync(currentParameters, cancellationToken);
-                allEvents.AddRange(response.Data);
+                var allEvents = new List<Event>();
+                var currentParameters = parameters ?? new QueryParameters();
+                var pageSize = options?.PageSize ?? 25;
+                currentParameters.PerPage = pageSize;
 
-                // Update parameters for next page
-                if (response.Links?.Next != null)
+                IPagedResponse<Event> response;
+                do
                 {
-                    currentParameters.Offset = (currentParameters.Offset ?? 0) + pageSize;
-                }
-            }
-            while (response.Links?.Next != null && !cancellationToken.IsCancellationRequested);
+                    response = await ListEventsAsync(currentParameters, cancellationToken);
+                    allEvents.AddRange(response.Data);
 
-            _logger.LogDebug("Successfully retrieved all {Count} events", allEvents.Count);
-            return allEvents.AsReadOnly();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting all events");
-            throw;
-        }
+                    // Update parameters for next page
+                    if (response.Links?.Next != null)
+                    {
+                        currentParameters.Offset = (currentParameters.Offset ?? 0) + pageSize;
+                    }
+                }
+                while (response.Links?.Next != null && !cancellationToken.IsCancellationRequested);
+
+                return (IReadOnlyList<Event>)allEvents.AsReadOnly();
+            },
+            "GetAllEvents",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -410,7 +332,7 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
         PaginationOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Streaming events with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Streaming events with parameters: {@Parameters}", parameters);
 
         var currentParameters = parameters ?? new QueryParameters();
         var pageSize = options?.PageSize ?? 25;
@@ -438,7 +360,7 @@ public class CalendarService(IApiConnection apiConnection, ILogger<CalendarServi
         }
         finally
         {
-            _logger.LogDebug("Finished streaming events");
+            Logger.LogDebug("Finished streaming events");
         }
     }
 }

@@ -17,18 +17,15 @@ namespace PlanningCenter.Api.Client.Services;
 /// Service implementation for the Planning Center Giving module.
 /// Provides comprehensive donation and financial giving management with built-in pagination support.
 /// </summary>
-public class GivingService : IGivingService
+public class GivingService : ServiceBase, IGivingService
 {
-    private readonly IApiConnection _apiConnection;
-    private readonly ILogger<GivingService> _logger;
     private const string BaseEndpoint = "/giving/v2";
 
     public GivingService(
         IApiConnection apiConnection,
         ILogger<GivingService> logger)
+        : base(logger, apiConnection)
     {
-        _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     #region Donation Management
@@ -41,31 +38,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Donation ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting donation with ID: {DonationId}", id);
+        Logger.LogDebug("Getting donation with ID: {DonationId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<DonationDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<DonationDto>>(
                 $"{BaseEndpoint}/donations/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Donation not found: {DonationId}", id);
+                Logger.LogWarning("Donation not found: {DonationId}", id);
                 return null;
             }
 
             var donation = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved donation: {DonationId}", id);
+            Logger.LogInformation("Successfully retrieved donation: {DonationId}", id);
             return donation;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Donation not found: {DonationId}", id);
+            Logger.LogWarning("Donation not found: {DonationId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving donation: {DonationId}", id);
+            Logger.LogError(ex, "Error retrieving donation: {DonationId}", id);
             throw;
         }
     }
@@ -75,17 +72,17 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<IPagedResponse<Donation>> ListDonationsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing donations with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing donations with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<DonationDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<DonationDto>>(
                 $"{BaseEndpoint}/donations{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No donations returned from API");
+                Logger.LogWarning("No donations returned from API");
                 return new PagedResponse<Donation>
                 {
                     Data = new List<Donation>(),
@@ -103,12 +100,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} donations", donations.Count);
+            Logger.LogInformation("Successfully retrieved {Count} donations", donations.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing donations");
+            Logger.LogError(ex, "Error listing donations");
             throw;
         }
     }
@@ -121,12 +118,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating donation with amount: {Amount}", request.AmountCents);
+        Logger.LogDebug("Creating donation with amount: {Amount}", request.AmountCents);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<DonationDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<DonationDto>>(
                 $"{BaseEndpoint}/donations", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -135,12 +132,12 @@ public class GivingService : IGivingService
             }
 
             var donation = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created donation: {DonationId}", donation.Id);
+            Logger.LogInformation("Successfully created donation: {DonationId}", donation.Id);
             return donation;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating donation");
+            Logger.LogError(ex, "Error creating donation");
             throw;
         }
     }
@@ -155,12 +152,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating donation: {DonationId}", id);
+        Logger.LogDebug("Updating donation: {DonationId}", id);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<DonationDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<DonationDto>>(
                 $"{BaseEndpoint}/donations/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -169,12 +166,12 @@ public class GivingService : IGivingService
             }
 
             var donation = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated donation: {DonationId}", id);
+            Logger.LogInformation("Successfully updated donation: {DonationId}", id);
             return donation;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating donation: {DonationId}", id);
+            Logger.LogError(ex, "Error updating donation: {DonationId}", id);
             throw;
         }
     }
@@ -187,16 +184,16 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Donation ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting donation: {DonationId}", id);
+        Logger.LogDebug("Deleting donation: {DonationId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/donations/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted donation: {DonationId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/donations/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted donation: {DonationId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting donation: {DonationId}", id);
+            Logger.LogError(ex, "Error deleting donation: {DonationId}", id);
             throw;
         }
     }
@@ -213,31 +210,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Fund ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting fund with ID: {FundId}", id);
+        Logger.LogDebug("Getting fund with ID: {FundId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<FundDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<FundDto>>(
                 $"{BaseEndpoint}/funds/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Fund not found: {FundId}", id);
+                Logger.LogWarning("Fund not found: {FundId}", id);
                 return null;
             }
 
             var fund = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved fund: {FundId}", id);
+            Logger.LogInformation("Successfully retrieved fund: {FundId}", id);
             return fund;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Fund not found: {FundId}", id);
+            Logger.LogWarning("Fund not found: {FundId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving fund: {FundId}", id);
+            Logger.LogError(ex, "Error retrieving fund: {FundId}", id);
             throw;
         }
     }
@@ -247,17 +244,17 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<IPagedResponse<Fund>> ListFundsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing funds with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing funds with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<FundDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<FundDto>>(
                 $"{BaseEndpoint}/funds{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No funds returned from API");
+                Logger.LogWarning("No funds returned from API");
                 return new PagedResponse<Fund>
                 {
                     Data = new List<Fund>(),
@@ -275,12 +272,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} funds", funds.Count);
+            Logger.LogInformation("Successfully retrieved {Count} funds", funds.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing funds");
+            Logger.LogError(ex, "Error listing funds");
             throw;
         }
     }
@@ -293,12 +290,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating fund with name: {Name}", request.Name);
+        Logger.LogDebug("Creating fund with name: {Name}", request.Name);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<FundDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<FundDto>>(
                 $"{BaseEndpoint}/funds", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -307,12 +304,12 @@ public class GivingService : IGivingService
             }
 
             var fund = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created fund: {FundId}", fund.Id);
+            Logger.LogInformation("Successfully created fund: {FundId}", fund.Id);
             return fund;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating fund");
+            Logger.LogError(ex, "Error creating fund");
             throw;
         }
     }
@@ -327,12 +324,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating fund: {FundId}", id);
+        Logger.LogDebug("Updating fund: {FundId}", id);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<FundDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<FundDto>>(
                 $"{BaseEndpoint}/funds/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -341,12 +338,12 @@ public class GivingService : IGivingService
             }
 
             var fund = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated fund: {FundId}", id);
+            Logger.LogInformation("Successfully updated fund: {FundId}", id);
             return fund;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating fund: {FundId}", id);
+            Logger.LogError(ex, "Error updating fund: {FundId}", id);
             throw;
         }
     }
@@ -363,31 +360,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Batch ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting batch with ID: {BatchId}", id);
+        Logger.LogDebug("Getting batch with ID: {BatchId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<BatchDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Batch not found: {BatchId}", id);
+                Logger.LogWarning("Batch not found: {BatchId}", id);
                 return null;
             }
 
             var batch = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved batch: {BatchId}", id);
+            Logger.LogInformation("Successfully retrieved batch: {BatchId}", id);
             return batch;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Batch not found: {BatchId}", id);
+            Logger.LogWarning("Batch not found: {BatchId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving batch: {BatchId}", id);
+            Logger.LogError(ex, "Error retrieving batch: {BatchId}", id);
             throw;
         }
     }
@@ -397,17 +394,17 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<IPagedResponse<Batch>> ListBatchesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing batches with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing batches with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<BatchDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No batches returned from API");
+                Logger.LogWarning("No batches returned from API");
                 return new PagedResponse<Batch>
                 {
                     Data = new List<Batch>(),
@@ -425,12 +422,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} batches", batches.Count);
+            Logger.LogInformation("Successfully retrieved {Count} batches", batches.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing batches");
+            Logger.LogError(ex, "Error listing batches");
             throw;
         }
     }
@@ -443,12 +440,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating batch with description: {Description}", request.Description);
+        Logger.LogDebug("Creating batch with description: {Description}", request.Description);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<BatchDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -457,12 +454,12 @@ public class GivingService : IGivingService
             }
 
             var batch = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created batch: {BatchId}", batch.Id);
+            Logger.LogInformation("Successfully created batch: {BatchId}", batch.Id);
             return batch;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating batch");
+            Logger.LogError(ex, "Error creating batch");
             throw;
         }
     }
@@ -477,12 +474,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating batch: {BatchId}", id);
+        Logger.LogDebug("Updating batch: {BatchId}", id);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<BatchDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -491,12 +488,12 @@ public class GivingService : IGivingService
             }
 
             var batch = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated batch: {BatchId}", id);
+            Logger.LogInformation("Successfully updated batch: {BatchId}", id);
             return batch;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating batch: {BatchId}", id);
+            Logger.LogError(ex, "Error updating batch: {BatchId}", id);
             throw;
         }
     }
@@ -509,11 +506,11 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Batch ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Committing batch: {BatchId}", id);
+        Logger.LogDebug("Committing batch: {BatchId}", id);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<BatchDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<BatchDto>>(
                 $"{BaseEndpoint}/batches/{id}/commit", null, cancellationToken);
 
             if (response?.Data == null)
@@ -522,12 +519,12 @@ public class GivingService : IGivingService
             }
 
             var batch = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully committed batch: {BatchId}", id);
+            Logger.LogInformation("Successfully committed batch: {BatchId}", id);
             return batch;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error committing batch: {BatchId}", id);
+            Logger.LogError(ex, "Error committing batch: {BatchId}", id);
             throw;
         }
     }
@@ -544,31 +541,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Pledge ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting pledge with ID: {PledgeId}", id);
+        Logger.LogDebug("Getting pledge with ID: {PledgeId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PledgeDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PledgeDto>>(
                 $"{BaseEndpoint}/pledges/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Pledge not found: {PledgeId}", id);
+                Logger.LogWarning("Pledge not found: {PledgeId}", id);
                 return null;
             }
 
             var pledge = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved pledge: {PledgeId}", id);
+            Logger.LogInformation("Successfully retrieved pledge: {PledgeId}", id);
             return pledge;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Pledge not found: {PledgeId}", id);
+            Logger.LogWarning("Pledge not found: {PledgeId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving pledge: {PledgeId}", id);
+            Logger.LogError(ex, "Error retrieving pledge: {PledgeId}", id);
             throw;
         }
     }
@@ -578,17 +575,17 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<IPagedResponse<Pledge>> ListPledgesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing pledges with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing pledges with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<PledgeDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<PledgeDto>>(
                 $"{BaseEndpoint}/pledges{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No pledges returned from API");
+                Logger.LogWarning("No pledges returned from API");
                 return new PagedResponse<Pledge>
                 {
                     Data = new List<Pledge>(),
@@ -606,12 +603,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} pledges", pledges.Count);
+            Logger.LogInformation("Successfully retrieved {Count} pledges", pledges.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing pledges");
+            Logger.LogError(ex, "Error listing pledges");
             throw;
         }
     }
@@ -624,12 +621,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating pledge with amount: {Amount}", request.AmountCents);
+        Logger.LogDebug("Creating pledge with amount: {Amount}", request.AmountCents);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<PledgeDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<PledgeDto>>(
                 $"{BaseEndpoint}/pledges", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -638,12 +635,12 @@ public class GivingService : IGivingService
             }
 
             var pledge = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created pledge: {PledgeId}", pledge.Id);
+            Logger.LogInformation("Successfully created pledge: {PledgeId}", pledge.Id);
             return pledge;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating pledge");
+            Logger.LogError(ex, "Error creating pledge");
             throw;
         }
     }
@@ -658,12 +655,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating pledge: {PledgeId}", id);
+        Logger.LogDebug("Updating pledge: {PledgeId}", id);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<PledgeDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<PledgeDto>>(
                 $"{BaseEndpoint}/pledges/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -672,12 +669,12 @@ public class GivingService : IGivingService
             }
 
             var pledge = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated pledge: {PledgeId}", id);
+            Logger.LogInformation("Successfully updated pledge: {PledgeId}", id);
             return pledge;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating pledge: {PledgeId}", id);
+            Logger.LogError(ex, "Error updating pledge: {PledgeId}", id);
             throw;
         }
     }
@@ -694,31 +691,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Recurring donation ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting recurring donation with ID: {RecurringDonationId}", id);
+        Logger.LogDebug("Getting recurring donation with ID: {RecurringDonationId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<RecurringDonationDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<RecurringDonationDto>>(
                 $"{BaseEndpoint}/recurring_donations/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Recurring donation not found: {RecurringDonationId}", id);
+                Logger.LogWarning("Recurring donation not found: {RecurringDonationId}", id);
                 return null;
             }
 
             var recurringDonation = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved recurring donation: {RecurringDonationId}", id);
+            Logger.LogInformation("Successfully retrieved recurring donation: {RecurringDonationId}", id);
             return recurringDonation;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Recurring donation not found: {RecurringDonationId}", id);
+            Logger.LogWarning("Recurring donation not found: {RecurringDonationId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving recurring donation: {RecurringDonationId}", id);
+            Logger.LogError(ex, "Error retrieving recurring donation: {RecurringDonationId}", id);
             throw;
         }
     }
@@ -728,17 +725,17 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<IPagedResponse<RecurringDonation>> ListRecurringDonationsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing recurring donations with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing recurring donations with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<RecurringDonationDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<RecurringDonationDto>>(
                 $"{BaseEndpoint}/recurring_donations{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No recurring donations returned from API");
+                Logger.LogWarning("No recurring donations returned from API");
                 return new PagedResponse<RecurringDonation>
                 {
                     Data = new List<RecurringDonation>(),
@@ -756,12 +753,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} recurring donations", recurringDonations.Count);
+            Logger.LogInformation("Successfully retrieved {Count} recurring donations", recurringDonations.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing recurring donations");
+            Logger.LogError(ex, "Error listing recurring donations");
             throw;
         }
     }
@@ -774,12 +771,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating recurring donation with amount: {Amount}", request.AmountCents);
+        Logger.LogDebug("Creating recurring donation with amount: {Amount}", request.AmountCents);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<RecurringDonationDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<RecurringDonationDto>>(
                 $"{BaseEndpoint}/recurring_donations", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -788,12 +785,12 @@ public class GivingService : IGivingService
             }
 
             var recurringDonation = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully created recurring donation: {RecurringDonationId}", recurringDonation.Id);
+            Logger.LogInformation("Successfully created recurring donation: {RecurringDonationId}", recurringDonation.Id);
             return recurringDonation;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating recurring donation");
+            Logger.LogError(ex, "Error creating recurring donation");
             throw;
         }
     }
@@ -808,12 +805,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating recurring donation: {RecurringDonationId}", id);
+        Logger.LogDebug("Updating recurring donation: {RecurringDonationId}", id);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<RecurringDonationDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<RecurringDonationDto>>(
                 $"{BaseEndpoint}/recurring_donations/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -822,12 +819,12 @@ public class GivingService : IGivingService
             }
 
             var recurringDonation = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated recurring donation: {RecurringDonationId}", id);
+            Logger.LogInformation("Successfully updated recurring donation: {RecurringDonationId}", id);
             return recurringDonation;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating recurring donation: {RecurringDonationId}", id);
+            Logger.LogError(ex, "Error updating recurring donation: {RecurringDonationId}", id);
             throw;
         }
     }
@@ -844,31 +841,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(donationId))
             throw new ArgumentException("Donation ID cannot be null or empty", nameof(donationId));
 
-        _logger.LogDebug("Getting refund for donation: {DonationId}", donationId);
+        Logger.LogDebug("Getting refund for donation: {DonationId}", donationId);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<RefundDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<RefundDto>>(
                 $"{BaseEndpoint}/donations/{donationId}/refund", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Refund not found for donation: {DonationId}", donationId);
+                Logger.LogWarning("Refund not found for donation: {DonationId}", donationId);
                 return null;
             }
 
             var refund = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved refund for donation: {DonationId}", donationId);
+            Logger.LogInformation("Successfully retrieved refund for donation: {DonationId}", donationId);
             return refund;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Refund not found for donation: {DonationId}", donationId);
+            Logger.LogWarning("Refund not found for donation: {DonationId}", donationId);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving refund for donation: {DonationId}", donationId);
+            Logger.LogError(ex, "Error retrieving refund for donation: {DonationId}", donationId);
             throw;
         }
     }
@@ -878,17 +875,17 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<IPagedResponse<Refund>> ListRefundsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing refunds with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing refunds with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<RefundDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<RefundDto>>(
                 $"{BaseEndpoint}/refunds{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No refunds returned from API");
+                Logger.LogWarning("No refunds returned from API");
                 return new PagedResponse<Refund>
                 {
                     Data = new List<Refund>(),
@@ -906,12 +903,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} refunds", refunds.Count);
+            Logger.LogInformation("Successfully retrieved {Count} refunds", refunds.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing refunds");
+            Logger.LogError(ex, "Error listing refunds");
             throw;
         }
     }
@@ -926,12 +923,12 @@ public class GivingService : IGivingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Issuing refund for donation: {DonationId}", donationId);
+        Logger.LogDebug("Issuing refund for donation: {DonationId}", donationId);
 
         try
         {
             var jsonApiRequest = GivingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<RefundDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<RefundDto>>(
                 $"{BaseEndpoint}/donations/{donationId}/refund", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -940,12 +937,12 @@ public class GivingService : IGivingService
             }
 
             var refund = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully issued refund for donation: {DonationId}", donationId);
+            Logger.LogInformation("Successfully issued refund for donation: {DonationId}", donationId);
             return refund;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error issuing refund for donation: {DonationId}", donationId);
+            Logger.LogError(ex, "Error issuing refund for donation: {DonationId}", donationId);
             throw;
         }
     }
@@ -962,31 +959,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Payment source ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting payment source with ID: {PaymentSourceId}", id);
+        Logger.LogDebug("Getting payment source with ID: {PaymentSourceId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PaymentSourceDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PaymentSourceDto>>(
                 $"{BaseEndpoint}/payment_sources/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Payment source not found: {PaymentSourceId}", id);
+                Logger.LogWarning("Payment source not found: {PaymentSourceId}", id);
                 return null;
             }
 
             var paymentSource = GivingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved payment source: {PaymentSourceId}", id);
+            Logger.LogInformation("Successfully retrieved payment source: {PaymentSourceId}", id);
             return paymentSource;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Payment source not found: {PaymentSourceId}", id);
+            Logger.LogWarning("Payment source not found: {PaymentSourceId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving payment source: {PaymentSourceId}", id);
+            Logger.LogError(ex, "Error retrieving payment source: {PaymentSourceId}", id);
             throw;
         }
     }
@@ -996,17 +993,17 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<IPagedResponse<PaymentSource>> ListPaymentSourcesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing payment sources with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing payment sources with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<PaymentSourceDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<PaymentSourceDto>>(
                 $"{BaseEndpoint}/payment_sources{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No payment sources returned from API");
+                Logger.LogWarning("No payment sources returned from API");
                 return new PagedResponse<PaymentSource>
                 {
                     Data = new List<PaymentSource>(),
@@ -1024,12 +1021,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} payment sources", paymentSources.Count);
+            Logger.LogInformation("Successfully retrieved {Count} payment sources", paymentSources.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing payment sources");
+            Logger.LogError(ex, "Error listing payment sources");
             throw;
         }
     }
@@ -1046,31 +1043,31 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Person ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting person with ID: {PersonId}", id);
+        Logger.LogDebug("Getting person with ID: {PersonId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
                 $"{BaseEndpoint}/people/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Person not found: {PersonId}", id);
+                Logger.LogWarning("Person not found: {PersonId}", id);
                 return null;
             }
 
             var person = PersonMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved person: {PersonId}", id);
+            Logger.LogInformation("Successfully retrieved person: {PersonId}", id);
             return person;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Person not found: {PersonId}", id);
+            Logger.LogWarning("Person not found: {PersonId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving person: {PersonId}", id);
+            Logger.LogError(ex, "Error retrieving person: {PersonId}", id);
             throw;
         }
     }
@@ -1083,17 +1080,17 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(personId))
             throw new ArgumentException("Person ID cannot be null or empty", nameof(personId));
 
-        _logger.LogDebug("Getting donations for person: {PersonId}", personId);
+        Logger.LogDebug("Getting donations for person: {PersonId}", personId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<DonationDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<DonationDto>>(
                 $"{BaseEndpoint}/people/{personId}/donations{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No donations returned for person: {PersonId}", personId);
+                Logger.LogWarning("No donations returned for person: {PersonId}", personId);
                 return new PagedResponse<Donation>
                 {
                     Data = new List<Donation>(),
@@ -1111,12 +1108,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} donations for person: {PersonId}", donations.Count, personId);
+            Logger.LogInformation("Successfully retrieved {Count} donations for person: {PersonId}", donations.Count, personId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting donations for person: {PersonId}", personId);
+            Logger.LogError(ex, "Error getting donations for person: {PersonId}", personId);
             throw;
         }
     }
@@ -1129,17 +1126,17 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(personId))
             throw new ArgumentException("Person ID cannot be null or empty", nameof(personId));
 
-        _logger.LogDebug("Getting pledges for person: {PersonId}", personId);
+        Logger.LogDebug("Getting pledges for person: {PersonId}", personId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<PledgeDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<PledgeDto>>(
                 $"{BaseEndpoint}/people/{personId}/pledges{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No pledges returned for person: {PersonId}", personId);
+                Logger.LogWarning("No pledges returned for person: {PersonId}", personId);
                 return new PagedResponse<Pledge>
                 {
                     Data = new List<Pledge>(),
@@ -1157,12 +1154,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} pledges for person: {PersonId}", pledges.Count, personId);
+            Logger.LogInformation("Successfully retrieved {Count} pledges for person: {PersonId}", pledges.Count, personId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting pledges for person: {PersonId}", personId);
+            Logger.LogError(ex, "Error getting pledges for person: {PersonId}", personId);
             throw;
         }
     }
@@ -1175,17 +1172,17 @@ public class GivingService : IGivingService
         if (string.IsNullOrWhiteSpace(personId))
             throw new ArgumentException("Person ID cannot be null or empty", nameof(personId));
 
-        _logger.LogDebug("Getting recurring donations for person: {PersonId}", personId);
+        Logger.LogDebug("Getting recurring donations for person: {PersonId}", personId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<RecurringDonationDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<RecurringDonationDto>>(
                 $"{BaseEndpoint}/people/{personId}/recurring_donations{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No recurring donations returned for person: {PersonId}", personId);
+                Logger.LogWarning("No recurring donations returned for person: {PersonId}", personId);
                 return new PagedResponse<RecurringDonation>
                 {
                     Data = new List<RecurringDonation>(),
@@ -1203,12 +1200,12 @@ public class GivingService : IGivingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} recurring donations for person: {PersonId}", recurringDonations.Count, personId);
+            Logger.LogInformation("Successfully retrieved {Count} recurring donations for person: {PersonId}", recurringDonations.Count, personId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting recurring donations for person: {PersonId}", personId);
+            Logger.LogError(ex, "Error getting recurring donations for person: {PersonId}", personId);
             throw;
         }
     }
@@ -1222,7 +1219,7 @@ public class GivingService : IGivingService
     /// </summary>
     public async Task<long> GetTotalGivingAsync(DateTime startDate, DateTime endDate, string? fundId = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting total giving from {StartDate} to {EndDate} for fund: {FundId}", startDate, endDate, fundId);
+        Logger.LogDebug("Getting total giving from {StartDate} to {EndDate} for fund: {FundId}", startDate, endDate, fundId);
 
         try
         {
@@ -1235,22 +1232,22 @@ public class GivingService : IGivingService
             }
 
             var queryString = parameters.ToQueryString();
-            var response = await _apiConnection.GetAsync<PagedResponse<DonationDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<DonationDto>>(
                 $"{BaseEndpoint}/donations{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No donations returned for total giving calculation");
+                Logger.LogWarning("No donations returned for total giving calculation");
                 return 0;
             }
 
             var totalCents = response.Data.Sum(d => d.Attributes.AmountCents);
-            _logger.LogInformation("Total giving calculated: {TotalCents} cents", totalCents);
+            Logger.LogInformation("Total giving calculated: {TotalCents} cents", totalCents);
             return totalCents;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calculating total giving");
+            Logger.LogError(ex, "Error calculating total giving");
             throw;
         }
     }
@@ -1268,7 +1265,7 @@ public class GivingService : IGivingService
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting all donations with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Getting all donations with parameters: {@Parameters}", parameters);
 
         var allDonations = new List<Donation>();
         var pageSize = options?.PageSize ?? 100;
@@ -1302,12 +1299,12 @@ public class GivingService : IGivingService
                 }
             } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-            _logger.LogInformation("Retrieved {Count} total donations across {Pages} pages", allDonations.Count, currentPage);
+            Logger.LogInformation("Retrieved {Count} total donations across {Pages} pages", allDonations.Count, currentPage);
             return allDonations.AsReadOnly();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all donations");
+            Logger.LogError(ex, "Error getting all donations");
             throw;
         }
     }
@@ -1320,7 +1317,7 @@ public class GivingService : IGivingService
         PaginationOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Streaming donations with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Streaming donations with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
         var maxItems = options?.MaxItems ?? int.MaxValue;
@@ -1356,7 +1353,7 @@ public class GivingService : IGivingService
             }
         } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-        _logger.LogInformation("Completed streaming donations across {Pages} pages", currentPage);
+        Logger.LogInformation("Completed streaming donations across {Pages} pages", currentPage);
     }
 
     #endregion

@@ -13,18 +13,15 @@ namespace PlanningCenter.Api.Client.Services;
 /// Service implementation for the Planning Center Publishing module.
 /// Provides comprehensive media content and sermon management with built-in pagination support.
 /// </summary>
-public class PublishingService : IPublishingService
+public class PublishingService : ServiceBase, IPublishingService
 {
-    private readonly IApiConnection _apiConnection;
-    private readonly ILogger<PublishingService> _logger;
     private const string BaseEndpoint = "/publishing/v2";
 
     public PublishingService(
         IApiConnection apiConnection,
         ILogger<PublishingService> logger)
+        : base(logger, apiConnection)
     {
-        _apiConnection = apiConnection ?? throw new ArgumentNullException(nameof(apiConnection));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     #region Episode Management
@@ -37,32 +34,32 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Episode ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting episode with ID: {EpisodeId}", id);
+        Logger.LogDebug("Getting episode with ID: {EpisodeId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<EpisodeDto>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<EpisodeDto>>(
                 $"{BaseEndpoint}/episodes/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Episode not found: {EpisodeId}", id);
+                Logger.LogWarning("Episode not found: {EpisodeId}", id);
                 return null;
             }
 
             var episode = PublishingMapper.MapToDomain(response.Data);
 
-            _logger.LogInformation("Successfully retrieved episode: {EpisodeId}", id);
+            Logger.LogInformation("Successfully retrieved episode: {EpisodeId}", id);
             return episode;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Episode not found: {EpisodeId}", id);
+            Logger.LogWarning("Episode not found: {EpisodeId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving episode: {EpisodeId}", id);
+            Logger.LogError(ex, "Error retrieving episode: {EpisodeId}", id);
             throw;
         }
     }
@@ -72,18 +69,18 @@ public class PublishingService : IPublishingService
     /// </summary>
     public async Task<IPagedResponse<Episode>> ListEpisodesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing episodes with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing episodes with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
             
-            var response = await _apiConnection.GetAsync<PagedResponse<EpisodeDto>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<EpisodeDto>>(
                 $"{BaseEndpoint}/episodes{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No episodes returned from API");
+                Logger.LogWarning("No episodes returned from API");
                 return new PagedResponse<Episode>
                 {
                     Data = new List<Episode>(),
@@ -101,12 +98,12 @@ public class PublishingService : IPublishingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} episodes", episodes.Count);
+            Logger.LogInformation("Successfully retrieved {Count} episodes", episodes.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing episodes");
+            Logger.LogError(ex, "Error listing episodes");
             throw;
         }
     }
@@ -119,12 +116,12 @@ public class PublishingService : IPublishingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating episode with title: {Title}", request.Title);
+        Logger.LogDebug("Creating episode with title: {Title}", request.Title);
 
         try
         {
             var jsonApiRequest = PublishingMapper.MapCreateRequestToJsonApi(request);
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<EpisodeDto>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<EpisodeDto>>(
                 $"{BaseEndpoint}/episodes", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -134,12 +131,12 @@ public class PublishingService : IPublishingService
 
             var episode = PublishingMapper.MapToDomain(response.Data);
 
-            _logger.LogInformation("Successfully created episode: {EpisodeId}", episode.Id);
+            Logger.LogInformation("Successfully created episode: {EpisodeId}", episode.Id);
             return episode;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating episode");
+            Logger.LogError(ex, "Error creating episode");
             throw;
         }
     }
@@ -154,12 +151,12 @@ public class PublishingService : IPublishingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating episode: {EpisodeId}", id);
+        Logger.LogDebug("Updating episode: {EpisodeId}", id);
 
         try
         {
             var jsonApiRequest = PublishingMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<EpisodeDto>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<EpisodeDto>>(
                 $"{BaseEndpoint}/episodes/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -169,12 +166,12 @@ public class PublishingService : IPublishingService
 
             var episode = PublishingMapper.MapToDomain(response.Data);
 
-            _logger.LogInformation("Successfully updated episode: {EpisodeId}", id);
+            Logger.LogInformation("Successfully updated episode: {EpisodeId}", id);
             return episode;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating episode: {EpisodeId}", id);
+            Logger.LogError(ex, "Error updating episode: {EpisodeId}", id);
             throw;
         }
     }
@@ -187,16 +184,16 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Episode ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting episode: {EpisodeId}", id);
+        Logger.LogDebug("Deleting episode: {EpisodeId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/episodes/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted episode: {EpisodeId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/episodes/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted episode: {EpisodeId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting episode: {EpisodeId}", id);
+            Logger.LogError(ex, "Error deleting episode: {EpisodeId}", id);
             throw;
         }
     }
@@ -213,11 +210,11 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Episode ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Publishing episode: {EpisodeId}", id);
+        Logger.LogDebug("Publishing episode: {EpisodeId}", id);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/episodes/{id}/publish", null, cancellationToken);
 
             if (response?.Data == null)
@@ -234,12 +231,12 @@ public class PublishingService : IPublishingService
                 DataSource = "Publishing"
             };
 
-            _logger.LogInformation("Successfully published episode: {EpisodeId}", id);
+            Logger.LogInformation("Successfully published episode: {EpisodeId}", id);
             return episode;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error publishing episode: {EpisodeId}", id);
+            Logger.LogError(ex, "Error publishing episode: {EpisodeId}", id);
             throw;
         }
     }
@@ -252,11 +249,11 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Episode ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Unpublishing episode: {EpisodeId}", id);
+        Logger.LogDebug("Unpublishing episode: {EpisodeId}", id);
 
         try
         {
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/episodes/{id}/unpublish", null, cancellationToken);
 
             if (response?.Data == null)
@@ -273,12 +270,12 @@ public class PublishingService : IPublishingService
                 DataSource = "Publishing"
             };
 
-            _logger.LogInformation("Successfully unpublished episode: {EpisodeId}", id);
+            Logger.LogInformation("Successfully unpublished episode: {EpisodeId}", id);
             return episode;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error unpublishing episode: {EpisodeId}", id);
+            Logger.LogError(ex, "Error unpublishing episode: {EpisodeId}", id);
             throw;
         }
     }
@@ -296,7 +293,7 @@ public class PublishingService : IPublishingService
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Getting all episodes with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Getting all episodes with parameters: {@Parameters}", parameters);
 
         var allEpisodes = new List<Episode>();
         var pageSize = options?.PageSize ?? 100;
@@ -329,12 +326,12 @@ public class PublishingService : IPublishingService
                 }
             } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-            _logger.LogInformation("Retrieved {Count} total episodes across {Pages} pages", allEpisodes.Count, currentPage);
+            Logger.LogInformation("Retrieved {Count} total episodes across {Pages} pages", allEpisodes.Count, currentPage);
             return allEpisodes.AsReadOnly();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all episodes");
+            Logger.LogError(ex, "Error getting all episodes");
             throw;
         }
     }
@@ -347,7 +344,7 @@ public class PublishingService : IPublishingService
         PaginationOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Streaming episodes with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Streaming episodes with parameters: {@Parameters}", parameters);
 
         var pageSize = options?.PageSize ?? 100;
         var maxPages = options?.MaxItems ?? int.MaxValue;
@@ -381,7 +378,7 @@ public class PublishingService : IPublishingService
             }
         } while (!string.IsNullOrEmpty(response.Links?.Next));
 
-        _logger.LogInformation("Completed streaming episodes across {Pages} pages", currentPage);
+        Logger.LogInformation("Completed streaming episodes across {Pages} pages", currentPage);
     }
 
     #endregion
@@ -396,48 +393,48 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Series ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting series with ID: {SeriesId}", id);
+        Logger.LogDebug("Getting series with ID: {SeriesId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/series/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Series not found: {SeriesId}", id);
+                Logger.LogWarning("Series not found: {SeriesId}", id);
                 return null;
             }
 
             var series = PublishingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved series: {SeriesId}", id);
+            Logger.LogInformation("Successfully retrieved series: {SeriesId}", id);
             return series;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Series not found: {SeriesId}", id);
+            Logger.LogWarning("Series not found: {SeriesId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving series: {SeriesId}", id);
+            Logger.LogError(ex, "Error retrieving series: {SeriesId}", id);
             throw;
         }
     }
 
     public async Task<IPagedResponse<Series>> ListSeriesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing series with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing series with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/series{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No series returned from API");
+                Logger.LogWarning("No series returned from API");
                 return new PagedResponse<Series>
                 {
                     Data = new List<Series>(),
@@ -455,12 +452,12 @@ public class PublishingService : IPublishingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} series", series.Count);
+            Logger.LogInformation("Successfully retrieved {Count} series", series.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing series");
+            Logger.LogError(ex, "Error listing series");
             throw;
         }
     }
@@ -485,48 +482,48 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Speaker ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting speaker with ID: {SpeakerId}", id);
+        Logger.LogDebug("Getting speaker with ID: {SpeakerId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/speakers/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Speaker not found: {SpeakerId}", id);
+                Logger.LogWarning("Speaker not found: {SpeakerId}", id);
                 return null;
             }
 
             var speaker = PublishingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved speaker: {SpeakerId}", id);
+            Logger.LogInformation("Successfully retrieved speaker: {SpeakerId}", id);
             return speaker;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Speaker not found: {SpeakerId}", id);
+            Logger.LogWarning("Speaker not found: {SpeakerId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving speaker: {SpeakerId}", id);
+            Logger.LogError(ex, "Error retrieving speaker: {SpeakerId}", id);
             throw;
         }
     }
 
     public async Task<IPagedResponse<Speaker>> ListSpeakersAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Listing speakers with parameters: {@Parameters}", parameters);
+        Logger.LogDebug("Listing speakers with parameters: {@Parameters}", parameters);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/speakers{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No speakers returned from API");
+                Logger.LogWarning("No speakers returned from API");
                 return new PagedResponse<Speaker>
                 {
                     Data = new List<Speaker>(),
@@ -544,12 +541,12 @@ public class PublishingService : IPublishingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} speakers", speakers.Count);
+            Logger.LogInformation("Successfully retrieved {Count} speakers", speakers.Count);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing speakers");
+            Logger.LogError(ex, "Error listing speakers");
             throw;
         }
     }
@@ -559,7 +556,7 @@ public class PublishingService : IPublishingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Creating speaker with name: {FirstName} {LastName}", request.FirstName, request.LastName);
+        Logger.LogDebug("Creating speaker with name: {FirstName} {LastName}", request.FirstName, request.LastName);
 
         try
         {
@@ -587,7 +584,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/speakers", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -596,12 +593,12 @@ public class PublishingService : IPublishingService
             }
 
             var speaker = PublishingMapper.MapToDomain((SpeakerDto)response.Data);
-            _logger.LogInformation("Successfully created speaker: {SpeakerId}", speaker.Id);
+            Logger.LogInformation("Successfully created speaker: {SpeakerId}", speaker.Id);
             return speaker;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating speaker");
+            Logger.LogError(ex, "Error creating speaker");
             throw;
         }
     }
@@ -613,7 +610,7 @@ public class PublishingService : IPublishingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating speaker: {SpeakerId}", id);
+        Logger.LogDebug("Updating speaker: {SpeakerId}", id);
 
         try
         {
@@ -642,7 +639,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/speakers/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -651,12 +648,12 @@ public class PublishingService : IPublishingService
             }
 
             var speaker = PublishingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated speaker: {SpeakerId}", id);
+            Logger.LogInformation("Successfully updated speaker: {SpeakerId}", id);
             return speaker;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating speaker: {SpeakerId}", id);
+            Logger.LogError(ex, "Error updating speaker: {SpeakerId}", id);
             throw;
         }
     }
@@ -666,16 +663,16 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Speaker ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting speaker: {SpeakerId}", id);
+        Logger.LogDebug("Deleting speaker: {SpeakerId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/speakers/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted speaker: {SpeakerId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/speakers/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted speaker: {SpeakerId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting speaker: {SpeakerId}", id);
+            Logger.LogError(ex, "Error deleting speaker: {SpeakerId}", id);
             throw;
         }
     }
@@ -705,31 +702,31 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Media ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Getting media with ID: {MediaId}", id);
+        Logger.LogDebug("Getting media with ID: {MediaId}", id);
 
         try
         {
-            var response = await _apiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/media/{id}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("Media not found: {MediaId}", id);
+                Logger.LogWarning("Media not found: {MediaId}", id);
                 return null;
             }
 
             var media = PublishingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully retrieved media: {MediaId}", id);
+            Logger.LogInformation("Successfully retrieved media: {MediaId}", id);
             return media;
         }
         catch (PlanningCenterApiNotFoundException)
         {
-            _logger.LogWarning("Media not found: {MediaId}", id);
+            Logger.LogWarning("Media not found: {MediaId}", id);
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving media: {MediaId}", id);
+            Logger.LogError(ex, "Error retrieving media: {MediaId}", id);
             throw;
         }
     }
@@ -739,17 +736,17 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(episodeId))
             throw new ArgumentException("Episode ID cannot be null or empty", nameof(episodeId));
 
-        _logger.LogDebug("Listing media for episode: {EpisodeId}", episodeId);
+        Logger.LogDebug("Listing media for episode: {EpisodeId}", episodeId);
 
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await _apiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
                 $"{BaseEndpoint}/episodes/{episodeId}/media{queryString}", cancellationToken);
 
             if (response?.Data == null)
             {
-                _logger.LogWarning("No media returned for episode: {EpisodeId}", episodeId);
+                Logger.LogWarning("No media returned for episode: {EpisodeId}", episodeId);
                 return new PagedResponse<Media>
                 {
                     Data = new List<Media>(),
@@ -767,12 +764,12 @@ public class PublishingService : IPublishingService
                 Links = response.Links
             };
 
-            _logger.LogInformation("Successfully retrieved {Count} media files for episode: {EpisodeId}", media.Count, episodeId);
+            Logger.LogInformation("Successfully retrieved {Count} media files for episode: {EpisodeId}", media.Count, episodeId);
             return pagedResponse;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing media for episode: {EpisodeId}", episodeId);
+            Logger.LogError(ex, "Error listing media for episode: {EpisodeId}", episodeId);
             throw;
         }
     }
@@ -784,7 +781,7 @@ public class PublishingService : IPublishingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Uploading media to episode: {EpisodeId}", episodeId);
+        Logger.LogDebug("Uploading media to episode: {EpisodeId}", episodeId);
 
         try
         {
@@ -812,7 +809,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/episodes/{episodeId}/media", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -821,12 +818,12 @@ public class PublishingService : IPublishingService
             }
 
             var media = PublishingMapper.MapToDomain((MediaDto)response.Data);
-            _logger.LogInformation("Successfully uploaded media: {MediaId} to episode: {EpisodeId}", media.Id, episodeId);
+            Logger.LogInformation("Successfully uploaded media: {MediaId} to episode: {EpisodeId}", media.Id, episodeId);
             return media;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading media to episode: {EpisodeId}", episodeId);
+            Logger.LogError(ex, "Error uploading media to episode: {EpisodeId}", episodeId);
             throw;
         }
     }
@@ -838,7 +835,7 @@ public class PublishingService : IPublishingService
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        _logger.LogDebug("Updating media: {MediaId}", id);
+        Logger.LogDebug("Updating media: {MediaId}", id);
 
         try
         {
@@ -857,7 +854,7 @@ public class PublishingService : IPublishingService
                 }
             };
 
-            var response = await _apiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
                 $"{BaseEndpoint}/media/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -866,12 +863,12 @@ public class PublishingService : IPublishingService
             }
 
             var media = PublishingMapper.MapToDomain(response.Data);
-            _logger.LogInformation("Successfully updated media: {MediaId}", id);
+            Logger.LogInformation("Successfully updated media: {MediaId}", id);
             return media;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating media: {MediaId}", id);
+            Logger.LogError(ex, "Error updating media: {MediaId}", id);
             throw;
         }
     }
@@ -881,16 +878,16 @@ public class PublishingService : IPublishingService
         if (string.IsNullOrWhiteSpace(id))
             throw new ArgumentException("Media ID cannot be null or empty", nameof(id));
 
-        _logger.LogDebug("Deleting media: {MediaId}", id);
+        Logger.LogDebug("Deleting media: {MediaId}", id);
 
         try
         {
-            await _apiConnection.DeleteAsync($"{BaseEndpoint}/media/{id}", cancellationToken);
-            _logger.LogInformation("Successfully deleted media: {MediaId}", id);
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/media/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted media: {MediaId}", id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting media: {MediaId}", id);
+            Logger.LogError(ex, "Error deleting media: {MediaId}", id);
             throw;
         }
     }
