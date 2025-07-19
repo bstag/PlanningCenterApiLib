@@ -40,9 +40,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("123");
-        result.Title.Should().Be(planDto.Attributes.Title);
-        result.DataSource.Should().Be("Services");
+        result!.Id.Should().Be("123");
+        result!.Title.Should().Be(planDto.Attributes.Title);
+        result!.DataSource.Should().Be("Services");
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Data[0].Id.Should().Be("1");
         result.Data[1].Id.Should().Be("2");
         result.Meta.Should().NotBeNull();
@@ -114,9 +114,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-plan-123");
-        result.Title.Should().Be("Test Plan");
-        result.DataSource.Should().Be("Services");
+        result!.Id.Should().Be("new-plan-123");
+        result!.Title.Should().Be("Test Plan");
+        result!.DataSource.Should().Be("Services");
     }
 
     [Fact]
@@ -172,9 +172,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("plan-123");
-        result.Title.Should().Be("Updated Plan");
-        result.IsPublic.Should().BeFalse();
+        result!.Id.Should().Be("plan-123");
+        result!.Title.Should().Be("Updated Plan");
+        result!.IsPublic.Should().BeFalse();
     }
 
     [Fact]
@@ -201,9 +201,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("song-123");
-        result.Title.Should().Be(songDto.Attributes.Title);
-        result.DataSource.Should().Be("Services");
+        result!.Id.Should().Be("song-123");
+        result!.Title.Should().Be(songDto.Attributes.Title);
+        result!.DataSource.Should().Be("Services");
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Data[0].Id.Should().Be("1");
         result.Data[1].Id.Should().Be("2");
     }
@@ -254,9 +254,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-song-123");
-        result.Title.Should().Be("Amazing Grace");
-        result.Author.Should().Be("John Newton");
+        result!.Id.Should().Be("new-song-123");
+        result!.Title.Should().Be("Amazing Grace");
+        result!.Author.Should().Be("John Newton");
     }
 
     #endregion
@@ -276,9 +276,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("service-type-123");
-        result.Name.Should().Be(serviceTypeDto.Attributes.Name);
-        result.DataSource.Should().Be("Services");
+        result!.Id.Should().Be("service-type-123");
+        result!.Name.Should().Be(serviceTypeDto.Attributes.Name);
+        result!.DataSource.Should().Be("Services");
     }
 
     [Fact]
@@ -297,7 +297,7 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Data[0].Id.Should().Be("1");
         result.Data[1].Id.Should().Be("2");
     }
@@ -319,9 +319,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("item-123");
-        result.Title.Should().Be(itemDto.Attributes.Title);
-        result.DataSource.Should().Be("Services");
+        result!.Id.Should().Be("item-123");
+        result!.Title.Should().Be(itemDto.Attributes.Title);
+        result!.DataSource.Should().Be("Services");
     }
 
     [Fact]
@@ -340,7 +340,7 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Data[0].Id.Should().Be("1");
         result.Data[1].Id.Should().Be("2");
     }
@@ -372,9 +372,9 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-item-123");
-        result.Title.Should().Be("Opening Song");
-        result.Sequence.Should().Be(1);
+        result!.Id.Should().Be("new-item-123");
+        result!.Title.Should().Be("Opening Song");
+        result!.Sequence.Should().Be(1);
     }
 
     #endregion
@@ -398,7 +398,7 @@ public class ServicesServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(3);
+        result!.Should().HaveCount(3);
         result[0].Id.Should().Be("1");
         result[1].Id.Should().Be("2");
         result[2].Id.Should().Be("3");

@@ -41,7 +41,7 @@ public class MockApiConnection : IApiConnection
             {
                 try 
                 {
-                    return Task.FromResult((T)pagedObj);
+                    return Task.FromResult((T)pagedObj!);
                 }
                 catch (InvalidCastException)
                 {
@@ -54,7 +54,7 @@ public class MockApiConnection : IApiConnection
             {
                 try 
                 {
-                    return Task.FromResult((T)basePaged);
+                    return Task.FromResult((T)basePaged!);
                 }
                 catch (InvalidCastException)
                 {

@@ -152,4 +152,49 @@ public static class GlobalExceptionHandler
             throw;
         }
     }
+
+    /// <summary>
+    /// Creates a structured error context dictionary for logging and telemetry.
+    /// </summary>
+    /// <param name="exception">The exception that occurred</param>
+    /// <param name="operationName">The name of the operation that failed</param>
+    /// <param name="resourceId">Optional resource identifier</param>
+    /// <param name="additionalContext">Additional context to include</param>
+    /// <returns>A dictionary containing structured error context</returns>
+    public static Dictionary<string, object> CreateErrorContext(
+        Exception exception,
+        string operationName,
+        string? resourceId = null,
+        Dictionary<string, object>? additionalContext = null)
+    {
+        var context = new Dictionary<string, object>
+        {
+            ["OperationName"] = operationName,
+            ["ExceptionType"] = exception.GetType().Name,
+            ["CorrelationId"] = CorrelationContext.Current ?? "unknown"
+        };
+        
+        if (resourceId != null)
+        {
+            context["ResourceId"] = resourceId;
+        }
+        
+        if (exception is PlanningCenterApiException apiEx)
+        {
+            if (apiEx.RequestId != null) context["RequestId"] = apiEx.RequestId;
+            if (apiEx.RequestUrl != null) context["RequestUrl"] = apiEx.RequestUrl;
+            if (apiEx.StatusCode.HasValue) context["StatusCode"] = apiEx.StatusCode.Value;
+            if (apiEx.ErrorCode != null) context["ErrorCode"] = apiEx.ErrorCode;
+        }
+        
+        if (additionalContext != null)
+        {
+            foreach (var (key, value) in additionalContext)
+            {
+                context[key] = value;
+            }
+        }
+        
+        return context;
+    }
 }

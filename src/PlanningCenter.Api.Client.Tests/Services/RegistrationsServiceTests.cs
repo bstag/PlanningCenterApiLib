@@ -42,9 +42,9 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("signup123");
-        result.Name.Should().Be(signupDto.Attributes.Name);
-        result.DataSource.Should().Be("Registrations");
+        result!.Id.Should().Be("signup123");
+        result!.Name.Should().Be(signupDto.Attributes.Name);
+        result!.DataSource.Should().Be("Registrations");
     }
 
     [Fact]
@@ -80,8 +80,8 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(3);
-        result.Meta.Should().NotBeNull();
+        result!.Data.Should().HaveCount(3);
+        result!.Meta.Should().NotBeNull();
     }
 
     [Fact]
@@ -109,9 +109,9 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newsignup123");
-        result.Name.Should().Be("Summer Camp 2024");
-        result.Description.Should().Be("Annual summer camp for kids");
+        result!.Id.Should().Be("newsignup123");
+        result!.Name.Should().Be("Summer Camp 2024");
+        result!.Description.Should().Be("Annual summer camp for kids");
     }
 
     [Fact]
@@ -146,9 +146,9 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("signup123");
-        result.Name.Should().Be("Updated Camp Name");
-        result.Description.Should().Be("Updated description");
+        result!.Id.Should().Be("signup123");
+        result!.Name.Should().Be("Updated Camp Name");
+        result!.Description.Should().Be("Updated description");
     }
 
     [Fact]
@@ -192,8 +192,8 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("reg123");
-        result.Status.Should().Be(registrationDto.Attributes.Status);
+        result!.Id.Should().Be("reg123");
+        result!.Status.Should().Be(registrationDto.Attributes.Status);
     }
 
     [Fact]
@@ -240,11 +240,11 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newreg123");
-        result.FirstName.Should().Be("John");
-        result.LastName.Should().Be("Doe");
-        result.Email.Should().Be("john.doe@example.com");
-        result.Status.Should().Be("confirmed");
+        result!.Id.Should().Be("newreg123");
+        result!.FirstName.Should().Be("John");
+        result!.LastName.Should().Be("Doe");
+        result!.Email.Should().Be("john.doe@example.com");
+        result!.Status.Should().Be("confirmed");
     }
 
     #endregion
@@ -264,9 +264,9 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("attendee123");
-        result.FirstName.Should().Be(attendeeDto.Attributes.FirstName);
-        result.LastName.Should().Be(attendeeDto.Attributes.LastName);
+        result!.Id.Should().Be("attendee123");
+        result!.FirstName.Should().Be(attendeeDto.Attributes.FirstName);
+        result!.LastName.Should().Be(attendeeDto.Attributes.LastName);
     }
 
     [Fact]
@@ -312,10 +312,10 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newattendee123");
-        result.FirstName.Should().Be("John");
-        result.LastName.Should().Be("Doe");
-        result.Email.Should().Be("john.doe@example.com");
+        result!.Id.Should().Be("newattendee123");
+        result!.FirstName.Should().Be("John");
+        result!.LastName.Should().Be("Doe");
+        result!.Email.Should().Be("john.doe@example.com");
     }
 
     [Fact]
@@ -343,9 +343,9 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("attendee123");
-        result.FirstName.Should().Be("Jane");
-        result.LastName.Should().Be("Smith");
+        result!.Id.Should().Be("attendee123");
+        result!.FirstName.Should().Be("Jane");
+        result!.LastName.Should().Be("Smith");
     }
 
     [Fact]
@@ -386,9 +386,9 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("waitlistattendee123");
-        result.FirstName.Should().Be("Waitlist");
-        result.LastName.Should().Be("Person");
+        result!.Id.Should().Be("waitlistattendee123");
+        result!.FirstName.Should().Be("Waitlist");
+        result!.LastName.Should().Be("Person");
     }
 
     [Fact]
@@ -404,7 +404,7 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("attendee123");
+        result!.Id.Should().Be("attendee123");
     }
 
     [Fact]
@@ -420,7 +420,7 @@ public class RegistrationsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("attendee123");
+        result!.Id.Should().Be("attendee123");
     }
 
     #endregion

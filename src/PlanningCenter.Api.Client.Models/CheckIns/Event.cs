@@ -12,7 +12,7 @@ public class Event : PlanningCenterResource
     /// <summary>
     /// Gets or sets the data source for the event.
     /// </summary>
-    public string DataSource { get; set; } = "CheckIns";
+    public new string DataSource { get; set; } = "CheckIns";
 
     /// <summary>
     /// Gets or sets the event name.
@@ -37,10 +37,10 @@ public class Event : PlanningCenterResource
     /// <summary>
     /// Gets or sets the creation date.
     /// </summary>
-    public DateTime? CreatedAt { get; set; }
+    public new DateTime? CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the last update date.
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public new DateTime? UpdatedAt { get; set; }
 }

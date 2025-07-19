@@ -40,9 +40,9 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("group-123");
-        result.Name.Should().Be(groupDto.Attributes.Name);
-        result.DataSource.Should().Be("Groups");
+        result!.Id.Should().Be("group-123");
+        result!.Name.Should().Be(groupDto.Attributes.Name);
+        result!.DataSource.Should().Be("Groups");
     }
 
     [Fact]
@@ -82,10 +82,10 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Data[0].Id.Should().Be("1");
-        result.Data[1].Id.Should().Be("2");
-        result.Meta.Should().NotBeNull();
+        result!.Data.Should().HaveCount(2);
+        result!.Data[0].Id.Should().Be("1");
+        result!.Data[1].Id.Should().Be("2");
+        result!.Meta.Should().NotBeNull();
     }
 
     [Fact]
@@ -116,10 +116,10 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-group-123");
-        result.Name.Should().Be("Small Group Alpha");
-        result.Description.Should().Be("A small group for fellowship");
-        result.DataSource.Should().Be("Groups");
+        result!.Id.Should().Be("new-group-123");
+        result!.Name.Should().Be("Small Group Alpha");
+        result!.Description.Should().Be("A small group for fellowship");
+        result!.DataSource.Should().Be("Groups");
     }
 
     [Fact]
@@ -207,9 +207,9 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("group-type-123");
-        result.Name.Should().Be(groupTypeDto.Attributes.Name);
-        result.DataSource.Should().Be("Groups");
+        result!.Id.Should().Be("group-type-123");
+        result!.Name.Should().Be(groupTypeDto.Attributes.Name);
+        result!.DataSource.Should().Be("Groups");
     }
 
     [Fact]
@@ -228,9 +228,9 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Data[0].Id.Should().Be("1");
-        result.Data[1].Id.Should().Be("2");
+        result!.Data.Should().HaveCount(2);
+        result!.Data[0].Id.Should().Be("1");
+        result!.Data[1].Id.Should().Be("2");
     }
 
     #endregion
@@ -250,9 +250,9 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("membership-123");
-        result.Role.Should().Be(membershipDto.Attributes.Role);
-        result.DataSource.Should().Be("Groups");
+        result!.Id.Should().Be("membership-123");
+        result!.Role.Should().Be(membershipDto.Attributes.Role);
+        result!.DataSource.Should().Be("Groups");
     }
 
     [Fact]
@@ -271,9 +271,9 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Data[0].Id.Should().Be("1");
-        result.Data[1].Id.Should().Be("2");
+        result!.Data.Should().HaveCount(2);
+        result!.Data[0].Id.Should().Be("1");
+        result!.Data[1].Id.Should().Be("2");
     }
 
     [Fact]
@@ -304,10 +304,10 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-membership-123");
-        result.Role.Should().Be("Leader");
-        result.CanViewMembers.Should().BeTrue();
-        result.CanManageMembers.Should().BeTrue();
+        result!.Id.Should().Be("new-membership-123");
+        result!.Role.Should().Be("Leader");
+        result!.CanViewMembers.Should().BeTrue();
+        result!.CanManageMembers.Should().BeTrue();
     }
 
     [Fact]
@@ -349,9 +349,9 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("membership-123");
-        result.Role.Should().Be("Co-Leader");
-        result.CanCreateEvents.Should().BeTrue();
+        result!.Id.Should().Be("membership-123");
+        result!.Role.Should().Be("Co-Leader");
+        result!.CanCreateEvents.Should().BeTrue();
     }
 
     [Fact]
@@ -382,10 +382,10 @@ public class GroupsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(3);
-        result[0].Id.Should().Be("1");
-        result[1].Id.Should().Be("2");
-        result[2].Id.Should().Be("3");
+        result!.Should().HaveCount(3);
+        result![0].Id.Should().Be("1");
+        result![1].Id.Should().Be("2");
+        result![2].Id.Should().Be("3");
     }
 
     [Fact]
@@ -408,8 +408,8 @@ public class GroupsServiceTests
 
         // Assert
         groups.Should().HaveCount(2);
-        groups[0].Id.Should().Be("1");
-        groups[1].Id.Should().Be("2");
+        groups![0].Id.Should().Be("1");
+        groups![1].Id.Should().Be("2");
     }
 
     #endregion

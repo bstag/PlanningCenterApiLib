@@ -12,7 +12,7 @@ public class Resource : PlanningCenterResource
     /// <summary>
     /// Gets or sets the data source for the resource.
     /// </summary>
-    public string DataSource { get; set; } = "Calendar";
+    public new string DataSource { get; set; } = "Calendar";
 
     /// <summary>
     /// Gets or sets the resource name.
@@ -62,10 +62,10 @@ public class Resource : PlanningCenterResource
     /// <summary>
     /// Gets or sets the creation date.
     /// </summary>
-    public DateTime? CreatedAt { get; set; }
+    public new DateTime? CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the last update date.
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public new DateTime? UpdatedAt { get; set; }
 }

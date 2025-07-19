@@ -36,10 +36,10 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("123");
-        result.AmountCents.Should().Be(donationDto.Attributes.AmountCents);
-        result.AmountCurrency.Should().Be(donationDto.Attributes.AmountCurrency);
-        result.DataSource.Should().Be("Giving");
+        result!.Id.Should().Be("123");
+        result!.AmountCents.Should().Be(donationDto.Attributes.AmountCents);
+        result!.AmountCurrency.Should().Be(donationDto.Attributes.AmountCurrency);
+        result!.DataSource.Should().Be("Giving");
     }
 
 
@@ -64,9 +64,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(3);
-        result.Meta.Should().NotBeNull();
-        result.Meta.TotalCount.Should().Be(3);
+        result!.Data.Should().HaveCount(3);
+        result!.Meta.Should().NotBeNull();
+        result!.Meta.TotalCount.Should().Be(3);
     }
 
     [Fact]
@@ -97,10 +97,10 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new123");
-        result.AmountCents.Should().Be(5000);
-        result.AmountCurrency.Should().Be("USD");
-        result.PaymentMethod.Should().Be("Credit Card");
+        result!.Id.Should().Be("new123");
+        result!.AmountCents.Should().Be(5000);
+        result!.AmountCurrency.Should().Be("USD");
+        result!.PaymentMethod.Should().Be("Credit Card");
     }
 
     [Fact]
@@ -136,9 +136,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("123");
-        result.AmountCents.Should().Be(6000);
-        result.PaymentMethod.Should().Be("Check");
+        result!.Id.Should().Be("123");
+        result!.AmountCents.Should().Be(6000);
+        result!.PaymentMethod.Should().Be("Check");
     }
 
     [Fact]
@@ -166,9 +166,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("fund123");
-        result.Name.Should().Be(fundDto.Attributes.Name);
-        result.DataSource.Should().Be("Giving");
+        result!.Id.Should().Be("fund123");
+        result!.Name.Should().Be(fundDto.Attributes.Name);
+        result!.DataSource.Should().Be("Giving");
     }
 
     [Fact]
@@ -183,9 +183,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
-        result.Meta.TotalCount.Should().Be(2);
+        result!.Data.Should().HaveCount(2);
+        result!.Meta.Should().NotBeNull();
+        result!.Meta.TotalCount.Should().Be(2);
     }
 
     [Fact]
@@ -215,10 +215,10 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newfund123");
-        result.Name.Should().Be("Building Fund");
-        result.Description.Should().Be("For building improvements");
-        result.Code.Should().Be("BUILD");
+        result!.Id.Should().Be("newfund123");
+        result!.Name.Should().Be("Building Fund");
+        result!.Description.Should().Be("For building improvements");
+        result!.Code.Should().Be("BUILD");
     }
 
     #endregion
@@ -238,9 +238,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("batch123");
-        result.Description.Should().Be(batchDto.Attributes.Description);
-        result.DataSource.Should().Be("Giving");
+        result!.Id.Should().Be("batch123");
+        result!.Description.Should().Be(batchDto.Attributes.Description);
+        result!.DataSource.Should().Be("Giving");
     }
 
     [Fact]
@@ -262,9 +262,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("batch123");
-        result.Status.Should().Be("committed");
-        result.CommittedAt.Should().NotBeNull();
+        result!.Id.Should().Be("batch123");
+        result!.Status.Should().Be("committed");
+        result!.CommittedAt.Should().NotBeNull();
     }
 
     #endregion
@@ -284,9 +284,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("pledge123");
-        result.AmountCents.Should().Be(pledgeDto.Attributes.AmountCents);
-        result.DataSource.Should().Be("Giving");
+        result!.Id.Should().Be("pledge123");
+        result!.AmountCents.Should().Be(pledgeDto.Attributes.AmountCents);
+        result!.DataSource.Should().Be("Giving");
     }
 
     [Fact]
@@ -316,9 +316,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newpledge123");
-        result.AmountCents.Should().Be(100000);
-        result.AmountCurrency.Should().Be("USD");
+        result!.Id.Should().Be("newpledge123");
+        result!.AmountCents.Should().Be(100000);
+        result!.AmountCurrency.Should().Be("USD");
     }
 
     #endregion
@@ -338,9 +338,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("recurring123");
-        result.AmountCents.Should().Be(recurringDto.Attributes.AmountCents);
-        result.DataSource.Should().Be("Giving");
+        result!.Id.Should().Be("recurring123");
+        result!.AmountCents.Should().Be(recurringDto.Attributes.AmountCents);
+        result!.DataSource.Should().Be("Giving");
     }
 
     [Fact]
@@ -371,9 +371,9 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newrecurring123");
-        result.AmountCents.Should().Be(5000);
-        result.Schedule.Should().Be("monthly");
+        result!.Id.Should().Be("newrecurring123");
+        result!.AmountCents.Should().Be(5000);
+        result!.Schedule.Should().Be("monthly");
     }
 
     #endregion
@@ -392,8 +392,8 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
+        result!.Data.Should().HaveCount(2);
+        result!.Meta.Should().NotBeNull();
     }
 
     [Fact]
@@ -408,8 +408,8 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(1);
-        result.Meta.Should().NotBeNull();
+        result!.Data.Should().HaveCount(1);
+        result!.Meta.Should().NotBeNull();
     }
 
     [Fact]
@@ -424,8 +424,8 @@ public class GivingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(1);
-        result.Meta.Should().NotBeNull();
+        result!.Data.Should().HaveCount(1);
+        result!.Meta.Should().NotBeNull();
     }
 
     #endregion

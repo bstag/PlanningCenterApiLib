@@ -12,7 +12,7 @@ namespace PlanningCenter.Api.Client.Models.People
         /// <summary>
         /// Gets or sets the data source for the form.
         /// </summary>
-        public string DataSource { get; set; } = "People";
+        public new string DataSource { get; set; } = "People";
 
         /// <summary>
         /// Gets or sets the name of the form.
@@ -37,12 +37,12 @@ namespace PlanningCenter.Api.Client.Models.People
         /// <summary>
         /// Gets or sets the created at date for the form.
         /// </summary>
-        public DateTime? CreatedAt { get; set; }
+        public new DateTime? CreatedAt { get; set; }
 
         /// <summary>
         /// Gets or sets the updated at date for the form.
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public new DateTime? UpdatedAt { get; set; }
 
         /// <summary>
         /// Gets or sets the archived at date for the form.
@@ -58,7 +58,7 @@ namespace PlanningCenter.Api.Client.Models.People
         /// <summary>
         /// Gets or sets the data source for the form submission.
         /// </summary>
-        public string DataSource { get; set; } = "People";
+        public new string DataSource { get; set; } = "People";
 
         /// <summary>
         /// Gets or sets the person ID associated with the form submission.
@@ -73,12 +73,12 @@ namespace PlanningCenter.Api.Client.Models.People
         /// <summary>
         /// Gets or sets the created at date for the form submission.
         /// </summary>
-        public DateTime? CreatedAt { get; set; }
+        public new DateTime? CreatedAt { get; set; }
 
         /// <summary>
         /// Gets or sets the updated at date for the form submission.
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public new DateTime? UpdatedAt { get; set; }
 
         /// <summary>
         /// Gets or sets the form fields and their values.

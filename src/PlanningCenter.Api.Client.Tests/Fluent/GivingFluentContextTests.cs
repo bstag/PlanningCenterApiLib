@@ -65,7 +65,7 @@ public class GivingFluentContextTests
     public void Include_ShouldReturnSameContext_WhenIncludeExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.Include(d => d.PersonId);
+        var result = _fluentContext.Include(d => d.PersonId!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -75,7 +75,7 @@ public class GivingFluentContextTests
     public void OrderBy_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderBy(d => d.ReceivedAt);
+        var result = _fluentContext.OrderBy(d => d.ReceivedAt!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -359,7 +359,7 @@ public class GivingFluentContextTests
             .ByFund("fund-123")
             .ByDateRange(DateTime.Now.AddMonths(-1), DateTime.Now)
             .WithMinimumAmount(500)
-            .OrderByDescending(d => d.ReceivedAt);
+            .OrderByDescending(d => d.ReceivedAt!);
 
         result.Should().BeSameAs(_fluentContext);
     }

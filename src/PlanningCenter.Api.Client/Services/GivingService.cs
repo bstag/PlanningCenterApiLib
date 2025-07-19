@@ -511,7 +511,7 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<BatchDto>>(
-                $"{BaseEndpoint}/batches/{id}/commit", null, cancellationToken);
+                $"{BaseEndpoint}/batches/{id}/commit", null!, cancellationToken);
 
             if (response?.Data == null)
             {

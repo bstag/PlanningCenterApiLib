@@ -215,7 +215,7 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
-                $"{BaseEndpoint}/episodes/{id}/publish", null, cancellationToken);
+                $"{BaseEndpoint}/episodes/{id}/publish", null!, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -254,7 +254,7 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
-                $"{BaseEndpoint}/episodes/{id}/unpublish", null, cancellationToken);
+                $"{BaseEndpoint}/episodes/{id}/unpublish", null!, cancellationToken);
 
             if (response?.Data == null)
             {

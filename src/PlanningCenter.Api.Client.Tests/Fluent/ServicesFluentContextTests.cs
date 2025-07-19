@@ -65,7 +65,7 @@ public class ServicesFluentContextTests
     public void Include_ShouldReturnSameContext_WhenIncludeExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.Include(p => p.ServiceTypeId);
+        var result = _fluentContext.Include(p => p.ServiceTypeId!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -75,7 +75,7 @@ public class ServicesFluentContextTests
     public void OrderBy_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderBy(p => p.SortDate);
+        var result = _fluentContext.OrderBy(p => p.SortDate!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -85,7 +85,7 @@ public class ServicesFluentContextTests
     public void OrderByDescending_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderByDescending(p => p.CreatedAt);
+        var result = _fluentContext.OrderByDescending(p => p.CreatedAt!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -370,7 +370,7 @@ public class ServicesFluentContextTests
             .Upcoming()
             .Public()
             .WithMinimumLength(60)
-            .OrderBy(p => p.SortDate);
+            .OrderBy(p => p.SortDate!);
 
         result.Should().BeSameAs(_fluentContext);
     }

@@ -66,9 +66,9 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("123");
-        result.FirstName.Should().Be(personDto.Attributes.FirstName);
-        result.LastName.Should().Be(personDto.Attributes.LastName);
+        result!.Id.Should().Be("123");
+        result!.FirstName.Should().Be(personDto.Attributes.FirstName);
+        result!.LastName.Should().Be(personDto.Attributes.LastName);
     }
 
     [Fact]
@@ -120,10 +120,10 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new123");
-        result.FirstName.Should().Be("John");
-        result.LastName.Should().Be("Doe");
-        result.Birthdate.Should().Be(DateTime.Parse("1990-01-01"));
+        result!.Id.Should().Be("new123");
+        result!.FirstName.Should().Be("John");
+        result!.LastName.Should().Be("Doe");
+        result!.Birthdate.Should().Be(DateTime.Parse("1990-01-01"));
     }
 
     [Fact]
@@ -510,8 +510,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("household123");
-        result.Name.Should().Be(householdDto.Attributes.Name);
+        result!.Id.Should().Be("household123");
+        result!.Name.Should().Be(householdDto.Attributes.Name);
     }
 
     [Fact]
@@ -556,9 +556,9 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newhousehold123");
-        result.Name.Should().Be("Smith Family");
-        result.PrimaryContactId.Should().Be("person123");
+        result!.Id.Should().Be("newhousehold123");
+        result!.Name.Should().Be("Smith Family");
+        result!.PrimaryContactId.Should().Be("person123");
     }
 
     [Fact]
@@ -599,8 +599,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("household123");
-        result.Name.Should().Be("Updated Family Name");
+        result!.Id.Should().Be("household123");
+        result!.Name.Should().Be("Updated Family Name");
     }
 
     [Fact]
@@ -628,8 +628,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("workflow123");
-        result.Name.Should().Be(workflowDto.Attributes.Name);
+        result!.Id.Should().Be("workflow123");
+        result!.Name.Should().Be(workflowDto.Attributes.Name);
     }
 
     [Fact]
@@ -661,8 +661,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("card123");
-        result.PersonId.Should().Be(cardDto.Attributes.PersonId);
+        result!.Id.Should().Be("card123");
+        result!.PersonId.Should().Be(cardDto.Attributes.PersonId);
     }
 
     [Fact]
@@ -706,9 +706,9 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newcard123");
-        result.PersonId.Should().Be("person123");
-        result.Notes.Should().Be("Test workflow card");
+        result!.Id.Should().Be("newcard123");
+        result!.PersonId.Should().Be("person123");
+        result!.Notes.Should().Be("Test workflow card");
     }
 
     [Fact]
@@ -734,8 +734,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("card123");
-        result.Notes.Should().Be("Updated note");
+        result!.Id.Should().Be("card123");
+        result!.Notes.Should().Be("Updated note");
     }
 
     [Fact]
@@ -762,8 +762,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("form123");
-        result.Name.Should().Be(formDto.Attributes.Name);
+        result!.Id.Should().Be("form123");
+        result!.Name.Should().Be(formDto.Attributes.Name);
     }
 
     [Fact]
@@ -795,8 +795,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("submission123");
-        result.PersonId.Should().Be(submissionDto.Relationships!.Person!.Id);
+        result!.Id.Should().Be("submission123");
+        result!.PersonId.Should().Be(submissionDto.Relationships!.Person!.Id);
     }
 
     [Fact]
@@ -843,8 +843,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newsubmission123");
-        result.PersonId.Should().Be("person123");
+        result!.Id.Should().Be("newsubmission123");
+        result!.PersonId.Should().Be("person123");
     }
 
     [Fact]
@@ -878,8 +878,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("list123");
-        result.Name.Should().Be(listDto.Attributes.Name);
+        result!.Id.Should().Be("list123");
+        result!.Name.Should().Be(listDto.Attributes.Name);
     }
 
     [Fact]
@@ -923,9 +923,9 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newlist123");
-        result.Name.Should().Be("Test List");
-        result.Description.Should().Be("A test list");
+        result!.Id.Should().Be("newlist123");
+        result!.Name.Should().Be("Test List");
+        result!.Description.Should().Be("A test list");
     }
 
     [Fact]
@@ -951,8 +951,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("list123");
-        result.Name.Should().Be("Updated List Name");
+        result!.Id.Should().Be("list123");
+        result!.Name.Should().Be("Updated List Name");
     }
 
     [Fact]
@@ -986,8 +986,8 @@ public class PeopleServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("member123");
-        result.PersonId.Should().Be("person123");
+        result!.Id.Should().Be("member123");
+        result!.PersonId.Should().Be("person123");
     }
 
     [Fact]

@@ -162,13 +162,7 @@ public class PlanningCenterClient : IPlanningCenterClient
         }
         catch (Exception ex)
         {
-            return new HealthCheckResult
-            {
-                IsHealthy = false,
-                ResponseTimeMs = 0,
-                AdditionalInfo = { ["Error"] = ex.Message },
-                CheckedAt = DateTime.UtcNow
-            };
+            return new HealthCheckResult { IsHealthy = false, ResponseTimeMs = 0, Details = { ["Error"] = ex.Message }, CheckedAt = DateTime.UtcNow };
         }
     }
 

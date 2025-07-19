@@ -12,7 +12,7 @@ public class Group : PlanningCenterResource
     /// <summary>
     /// Gets or sets the data source for the group.
     /// </summary>
-    public string DataSource { get; set; } = "Groups";
+    public new string DataSource { get; set; } = "Groups";
 
     /// <summary>
     /// Gets or sets the group name.
@@ -105,12 +105,12 @@ public class Group : PlanningCenterResource
     public string? LocationId { get; set; }
 
     /// <summary>
-    /// Gets or sets the creation date.
+    /// Gets or sets the created at date for the group.
     /// </summary>
-    public DateTime? CreatedAt { get; set; }
+    public new DateTime? CreatedAt { get; set; }
 
     /// <summary>
-    /// Gets or sets the last update date.
+    /// Gets or sets the updated at date for the group.
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public new DateTime? UpdatedAt { get; set; }
 }

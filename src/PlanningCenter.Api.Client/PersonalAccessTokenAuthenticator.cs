@@ -65,4 +65,14 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
     {
         return Task.FromResult(true);
     }
+    
+    /// <summary>
+    /// Gets the authorization header value for API requests.
+    /// For Personal Access Tokens, this is the Basic Authentication header.
+    /// </summary>
+    /// <returns>The authorization header value.</returns>
+    public Task<string> GetAuthorizationHeaderAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_basicAuthHeader);
+    }
 }

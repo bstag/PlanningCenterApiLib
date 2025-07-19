@@ -36,9 +36,9 @@ public class PublishingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("episode123");
-        result.Title.Should().Be(episodeDto.Attributes.Title);
-        result.DataSource.Should().Be("Publishing");
+        result!.Id.Should().Be("episode123");
+        result!.Title.Should().Be(episodeDto.Attributes.Title);
+        result!.DataSource.Should().Be("Publishing");
     }
 
 
@@ -94,9 +94,9 @@ public class PublishingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("newepisode123");
-        result.Title.Should().Be("Test Episode");
-        result.Description.Should().Be("A test episode");
+        result!.Id.Should().Be("newepisode123");
+        result!.Title.Should().Be("Test Episode");
+        result!.Description.Should().Be("A test episode");
     }
 
     [Fact]
@@ -132,9 +132,9 @@ public class PublishingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("episode123");
-        result.Title.Should().Be("Updated Episode");
-        result.Description.Should().Be("Updated description");
+        result!.Id.Should().Be("episode123");
+        result!.Title.Should().Be("Updated Episode");
+        result!.Description.Should().Be("Updated description");
     }
 
     [Fact]
@@ -164,8 +164,8 @@ public class PublishingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("episode123");
-        result.IsPublished.Should().BeTrue();
+        result!.Id.Should().Be("episode123");
+        result!.IsPublished.Should().BeTrue();
     }
 
     [Fact]
@@ -183,8 +183,8 @@ public class PublishingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("episode123");
-        result.IsPublished.Should().BeFalse();
+        result!.Id.Should().Be("episode123");
+        result!.IsPublished.Should().BeFalse();
     }
 
     #endregion
@@ -204,8 +204,8 @@ public class PublishingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("speaker123");
-        result.DataSource.Should().Be("Publishing");
+        result!.Id.Should().Be("speaker123");
+        result!.DataSource.Should().Be("Publishing");
     }
 
 
@@ -236,8 +236,8 @@ public class PublishingServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("media123");
-        result.DataSource.Should().Be("Publishing");
+        result!.Id.Should().Be("media123");
+        result!.DataSource.Should().Be("Publishing");
     }
 
 

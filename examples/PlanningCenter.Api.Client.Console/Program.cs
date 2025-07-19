@@ -1,238 +1,405 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client;
-using PlanningCenter.Api.Client.Console;
 using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.Exceptions;
+using PlanningCenter.Api.Client.Models.Requests;
+using PlanningCenter.Api.Client.Extensions;
+using System;
+using System.Threading.Tasks;
 
-// Create host builder with dependency injection
-var builder = Host.CreateApplicationBuilder(args);
-
-// Configure logging
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.SetMinimumLevel(LogLevel.Information);
-
-// Add Planning Center API client
-// NOTE: You need to provide actual credentials for this to work
-// You can get these from your Planning Center API application settings
-
-// Option 1: OAuth Authentication (for user-facing applications)
-/*
-builder.Services.AddPlanningCenterApiClient(options =>
+namespace PlanningCenter.Api.Client.Console
 {
-    // For demo purposes - in real applications, use configuration or environment variables
-    options.ClientId = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_ID") ?? "";
-    options.ClientSecret = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_SECRET") ?? "";
-    
-     options.BaseUrl = "https://api.planningcenteronline.com";   
-
-    // Optional: Enable detailed logging for debugging (be careful in production)
-    options.EnableDetailedLogging = true;
-    
-    // Optional: Configure caching
-    options.EnableCaching = true;
-    options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
-});
-*/
-// Option 2: Personal Access Token (PAT) Authentication (for server-side applications)
-// Uncomment the lines below and comment out the OAuth configuration above to use PAT
-
-builder.Services.AddPlanningCenterApiClientWithPAT(
-    Environment.GetEnvironmentVariable("PLANNING_CENTER_PAT") ?? "your-app-id:your-secret");
-
-builder.Services.Configure<PlanningCenterOptions>(options =>
-{
-    options.EnableDetailedLogging = true;
-    options.EnableCaching = true;
-    options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
-});
-
-// Register the example service
-builder.Services.AddTransient<PeopleManagementExample>();
-
-// Build the host
-var host = builder.Build();
-
-// Get the logger
-var logger = host.Services.GetRequiredService<ILogger<Program>>();
-
-try
-{
-    logger.LogInformation("🚀 Planning Center SDK Console Example Starting...");
-    
-    // Get the People service
-    var peopleService = host.Services.GetRequiredService<IPeopleService>();
-    
-    // Example 1: Get current user (great for testing authentication)
-    logger.LogInformation("👤 Example 1: Getting current authenticated user...");
-    
-    var currentUser = await peopleService.GetMeAsync();
-    logger.LogInformation("✅ Authentication successful! Current user: {FullName} (ID: {Id})", 
-        currentUser.FullName, currentUser.Id);
-    logger.LogInformation("   Status: {Status}, Membership: {MembershipStatus}", 
-        currentUser.Status, currentUser.MembershipStatus ?? "Not specified");
-    if (!string.IsNullOrEmpty(currentUser.AvatarUrl))
+    class Program
     {
-        logger.LogInformation("   Avatar: {AvatarUrl}", currentUser.AvatarUrl);
-    }
-    
-    // Example 2: List people with pagination
-    logger.LogInformation("📋 Example 2: Listing people with built-in pagination...");
-    
-    var parameters = new QueryParameters
-    {
-        Where = new Dictionary<string, object> { ["status"] = "active" },
-        PerPage = 10  // Small page size for demo
-    };
-    
-    var firstPage = await peopleService.ListAsync(parameters);
-    
-    logger.LogInformation("✅ Retrieved page {CurrentPage} of {TotalPages} with {Count} people (Total: {TotalCount})",
-        firstPage.Meta.CurrentPage, 
-        firstPage.Meta.TotalPages, 
-        firstPage.Data.Count, 
-        firstPage.Meta.TotalCount);
-    
-    // Display first few people
-    foreach (var person in firstPage.Data.Take(3))
-    {
-        logger.LogInformation("👤 {FullName} (ID: {Id}, Status: {Status})", 
-            person.FullName, person.Id, person.Status);
-    }
-    
-    // Example 3: Navigate through a few pages using built-in helpers
-    var currentPage = firstPage;
-    var pageCount = 1;
-    var maxPages = 3; // Limit to 3 pages for demo
-    
-    while (currentPage.HasNextPage && pageCount < maxPages)
-    {
-        logger.LogInformation("➡️ Example 3: Getting page {PageNumber} using built-in navigation...", pageCount + 1);
-        
-        var nextPage = await currentPage.GetNextPageAsync();
-        if (nextPage != null)
+        static async Task Main(string[] args)
         {
-            currentPage = nextPage;
-            pageCount++;
-            
-            logger.LogInformation("✅ Retrieved page {CurrentPage} with {Count} people", 
-                currentPage.Meta.CurrentPage, currentPage.Data.Count);
-            
-            // Show first person from this page
-            var firstPerson = currentPage.Data.FirstOrDefault();
-            if (firstPerson != null)
+            // Create host builder with dependency injection
+            var builder = Host.CreateApplicationBuilder(args);
+
+            // Configure logging
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+            builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+            // Add Planning Center API client with proper authentication
+            var pat = Environment.GetEnvironmentVariable("PLANNING_CENTER_PAT");
+            var clientId = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_ID");
+            var clientSecret = Environment.GetEnvironmentVariable("PLANNING_CENTER_CLIENT_SECRET");
+
+            if (!string.IsNullOrEmpty(pat))
             {
-                logger.LogInformation("👤 First person on page: {FullName} (ID: {Id})", 
-                    firstPerson.FullName, firstPerson.Id);
+                builder.Services.AddPlanningCenterApiClientWithPAT(pat);
+            }
+            else if (!string.IsNullOrEmpty(clientId) && !string.IsNullOrEmpty(clientSecret))
+            {
+                builder.Services.AddPlanningCenterApiClient(clientId, clientSecret);
+            }
+            else
+            {
+                builder.Services.AddPlanningCenterApiClientWithPAT("demo-app-id:demo-secret");
+            }
+
+            // Configure SDK options
+            builder.Services.Configure<PlanningCenterOptions>(options =>
+            {
+                options.EnableDetailedLogging = true;
+                options.EnableCaching = true;
+                options.DefaultCacheExpiration = TimeSpan.FromMinutes(5);
+                options.MaxRetryAttempts = 3;
+                options.RequestTimeout = TimeSpan.FromSeconds(30);
+            });
+
+            var host = builder.Build();
+            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+            var peopleService = host.Services.GetRequiredService<IPeopleService>();
+            var client = host.Services.GetRequiredService<IPlanningCenterClient>();
+
+            logger.LogInformation("🚀 Planning Center SDK - Comprehensive Examples");
+            logger.LogInformation("📚 Demonstrating both Traditional Service API and Fluent API patterns");
+            logger.LogInformation("");
+
+            try
+            {
+                // Example 1: Authentication Testing
+                await TestAuthenticationExample(peopleService, logger);
+
+                // Example 2: Traditional Service API
+                await TraditionalServiceExamples(peopleService, logger);
+
+                // Example 3: Fluent API Examples
+                await FluentApiExamples(client, logger);
+
+                // Example 4: Advanced Features
+                await AdvancedFeaturesExamples(client, logger);
+
+                // Example 5: Error Handling
+                await ErrorHandlingExamples(peopleService, logger);
+
+                // Example 6: Multi-Module Examples
+                await MultiModuleExamples(client, logger);
+
+                logger.LogInformation("");
+                logger.LogInformation("🎉 All examples completed successfully!");
+                DisplaySummary(logger);
+            }
+            catch (PlanningCenterApiAuthenticationException ex)
+            {
+                HandleAuthenticationError(ex, logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "❌ An unexpected error occurred");
+                Environment.Exit(1);
+            }
+
+            // Example Methods
+
+            static async Task TestAuthenticationExample(IPeopleService peopleService, ILogger logger)
+            {
+                logger.LogInformation("🔐 Example 1: Authentication Testing");
+                logger.LogInformation("─────────────────────────────────────");
+
+                try
+                {
+                    var currentUser = await peopleService.GetMeAsync();
+                    logger.LogInformation("✅ Authentication successful!");
+                    logger.LogInformation("   👤 Current user: {FullName} (ID: {Id})", currentUser.FullName, currentUser.Id);
+                    logger.LogInformation("   📊 Status: {Status}, Membership: {MembershipStatus}",
+                        currentUser.Status, currentUser.MembershipStatus ?? "Not specified");
+
+                    if (currentUser.Birthdate.HasValue)
+                    {
+                        logger.LogInformation("   🎂 Birthday: {Birthday:yyyy-MM-dd}", currentUser.Birthdate.Value);
+                    }
+
+                    logger.LogInformation("");
+                }
+                catch (PlanningCenterApiAuthenticationException)
+                {
+                    logger.LogError("❌ Authentication failed - please check your credentials");
+                    throw;
+                }
+            }
+
+            static async Task TraditionalServiceExamples(IPeopleService peopleService, ILogger logger)
+            {
+                logger.LogInformation("👥 Example 2: Traditional Service API");
+                logger.LogInformation("─────────────────────────────────────");
+
+                // Basic listing with pagination
+                var parameters = new QueryParameters
+                {
+                    PerPage = 5,
+                    Where = new Dictionary<string, object> { ["status"] = "active" },
+                    OrderBy = "last_name"
+                };
+
+                var firstPage = await peopleService.ListAsync(parameters);
+                logger.LogInformation("📋 Retrieved page {CurrentPage} with {Count} people (Total: {TotalCount})",
+                    firstPage.Meta.CurrentPage, firstPage.Data.Count, firstPage.Meta.TotalCount);
+
+                foreach (var person in firstPage.Data.Take(3))
+                {
+                    logger.LogInformation("   👤 {FullName} - {Status}", person.FullName, person.Status);
+                }
+
+                // Demonstrate pagination navigation
+                if (firstPage.HasNextPage)
+                {
+                    logger.LogInformation("➡️ Navigating to next page...");
+                    var nextPage = await firstPage.GetNextPageAsync();
+                    if (nextPage != null)
+                    {
+                        logger.LogInformation("✅ Page {Page} retrieved with {Count} people",
+                            nextPage.Meta.CurrentPage, nextPage.Data.Count);
+                    }
+                }
+
+                // Demonstrate automatic pagination
+                logger.LogInformation("🔄 Getting all people (automatic pagination)...");
+                var limitedOptions = new PaginationOptions { MaxItems = 10 }; // Limit for demo
+                var allPeople = await peopleService.GetAllAsync(parameters, limitedOptions);
+                logger.LogInformation("✅ Retrieved {Count} people total using automatic pagination", allPeople.Count);
+
+                logger.LogInformation("");
+            }
+
+            static async Task FluentApiExamples(IPlanningCenterClient client, ILogger logger)
+            {
+                logger.LogInformation("🚀 Example 3: Fluent API");
+                logger.LogInformation("─────────────────────────────────────");
+
+                try
+                {
+                    // Basic fluent query
+                    logger.LogInformation("🔍 Basic fluent query...");
+                    var people = await client.People()
+                        .OrderBy(p => p.LastName)
+                        .GetPagedAsync(pageSize: 5);
+
+                    logger.LogInformation("✅ Fluent query returned {Count} people", people.Data.Count);
+
+                    // LINQ-like operations
+                    logger.LogInformation("📊 LINQ-like operations...");
+
+                    var totalCount = await client.People().CountAsync();
+                    logger.LogInformation("   📈 Total people count: {Count}", totalCount);
+
+                    var anyPeople = await client.People().AnyAsync();
+                    logger.LogInformation("   ❓ Any people exist: {AnyPeople}", anyPeople);
+
+                    var firstPerson = await client.People()
+                        .OrderBy(p => p.CreatedAt!)
+                        .FirstOrDefaultAsync();
+
+                    if (firstPerson != null)
+                    {
+                        logger.LogInformation("   👤 First person (by creation date): {FullName}", firstPerson.FullName);
+                    }
+
+                    // Memory-efficient streaming
+                    logger.LogInformation("🌊 Memory-efficient streaming...");
+                    var processedCount = 0;
+
+                    await foreach (var person in client.People()
+                        .OrderBy(p => p.LastName)
+                        .AsAsyncEnumerable())
+                    {
+                        processedCount++;
+                        if (processedCount <= 3)
+                        {
+                            logger.LogInformation("   👤 Streaming: {FullName}", person.FullName);
+                        }
+
+                        if (processedCount >= 5) break; // Limit for demo
+                    }
+
+                    logger.LogInformation("✅ Processed {Count} people via streaming", processedCount);
+
+                    logger.LogInformation("");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "⚠️ Fluent API example failed (may be expected if not authenticated)");
+                    logger.LogInformation("");
+                }
+            }
+
+            static async Task AdvancedFeaturesExamples(IPlanningCenterClient client, ILogger logger)
+            {
+                logger.LogInformation("⚡ Example 4: Advanced Features");
+                logger.LogInformation("─────────────────────────────────────");
+
+                try
+                {
+                    // Performance monitoring
+                    logger.LogInformation("📊 Performance monitoring...");
+                    var result = await client.People()
+                        .OrderBy(p => p.LastName)
+                        .GetPagedAsync(pageSize: 5);
+
+                    logger.LogInformation("✅ Query executed successfully");
+                    logger.LogInformation("   📊 Returned {Count} people", result.Data.Count);
+
+                    // Basic query
+                    var people = await client.People()
+                        .Where(p => p.Status == "active")
+                        .GetPagedAsync(pageSize: 5);
+
+                    logger.LogInformation("🔧 Query information:");
+                    logger.LogInformation("   📊 Total count: {Count}", people.Meta.TotalCount);
+                    logger.LogInformation("   📈 Current page: {Page}", people.Meta.CurrentPage);
+
+                    // Include related data
+                    logger.LogInformation("⚙️ Including related data...");
+                    var customQuery = await client.People()
+                        .Include(p => p.Addresses)
+                        .Include(p => p.Emails)
+                        .GetPagedAsync(pageSize: 3);
+
+                    logger.LogInformation("✅ Custom parameter query returned {Count} people", customQuery.Data.Count);
+
+                    logger.LogInformation("");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "⚠️ Advanced features example failed");
+                    logger.LogInformation("");
+                }
+            }
+
+            static async Task ErrorHandlingExamples(IPeopleService peopleService, ILogger logger)
+            {
+                logger.LogInformation("🛡️ Example 5: Error Handling");
+                logger.LogInformation("─────────────────────────────────────");
+
+                // Test getting a non-existent person
+                try
+                {
+                    logger.LogInformation("🔍 Testing error handling with non-existent person...");
+                    var nonExistentPerson = await peopleService.GetAsync("999999999");
+
+                    if (nonExistentPerson == null)
+                    {
+                        logger.LogInformation("✅ Properly handled non-existent person (returned null)");
+                    }
+                }
+                catch (PlanningCenterApiNotFoundException ex)
+                {
+                    logger.LogInformation("✅ Caught NotFoundException: {Message}", ex.Message);
+                    logger.LogInformation("   📋 Request ID: {RequestId}", ex.RequestId);
+                    logger.LogInformation("   🕒 Timestamp: {Timestamp}", ex.Timestamp);
+                }
+                catch (PlanningCenterApiException ex)
+                {
+                    logger.LogInformation("✅ Caught API Exception: {Message}", ex.Message);
+                    logger.LogInformation("   📋 Status Code: {StatusCode}", ex.StatusCode);
+                    logger.LogInformation("   🔗 Request URL: {RequestUrl}", ex.RequestUrl);
+                }
+
+                logger.LogInformation("");
+            }
+
+            static async Task MultiModuleExamples(IPlanningCenterClient client, ILogger logger)
+            {
+                logger.LogInformation("🏗️ Example 6: Multi-Module Examples");
+                logger.LogInformation("─────────────────────────────────────");
+
+                try
+                {
+                    // Try to access different modules
+                    logger.LogInformation("📅 Testing Calendar module access...");
+                    try
+                    {
+                        var events = await client.Calendar()
+                            .OrderBy(e => e.StartsAt!)
+                            .GetPagedAsync(pageSize: 3);
+                        logger.LogInformation("✅ Calendar module: Retrieved {Count} events", events.Data.Count);
+                    }
+                    catch (InvalidOperationException ex) when (ex.Message.Contains("not registered"))
+                    {
+                        logger.LogInformation("ℹ️ Calendar service not registered (expected in basic setup)");
+                    }
+
+                    logger.LogInformation("💰 Testing Giving module access...");
+                    try
+                    {
+                        var donations = await client.Giving()
+                            .OrderByDescending(d => d.ReceivedAt!)
+                            .GetPagedAsync(pageSize: 3);
+                        logger.LogInformation("✅ Giving module: Retrieved {Count} donations", donations.Data.Count);
+                    }
+                    catch (InvalidOperationException ex) when (ex.Message.Contains("not registered"))
+                    {
+                        logger.LogInformation("ℹ️ Giving service not registered (expected in basic setup)");
+                    }
+
+                    logger.LogInformation("👥 Testing Groups module access...");
+                    try
+                    {
+                        var groups = await client.Groups()
+                            .Where(g => g.Name.Contains("open"))
+                            .GetPagedAsync(pageSize: 3);
+                        logger.LogInformation("✅ Groups module: Retrieved {Count} groups", groups.Data.Count);
+                    }
+                    catch (InvalidOperationException ex) when (ex.Message.Contains("not registered"))
+                    {
+                        logger.LogInformation("ℹ️ Groups service not registered (expected in basic setup)");
+                    }
+
+                    logger.LogInformation("");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "⚠️ Multi-module example failed");
+                    logger.LogInformation("");
+                }
+            }
+
+            static void HandleAuthenticationError(PlanningCenterApiAuthenticationException ex, ILogger logger)
+            {
+                logger.LogError("🔐 Authentication failed: {Message}", ex.Message);
+                logger.LogWarning("");
+                logger.LogWarning("Please set your credentials using one of these methods:");
+                logger.LogWarning("");
+                logger.LogWarning("Option 1 - Personal Access Token (Recommended):");
+                logger.LogWarning("   export PLANNING_CENTER_PAT=\"your-app-id:your-secret\"");
+                logger.LogWarning("");
+                logger.LogWarning("Option 2 - OAuth Credentials:");
+                logger.LogWarning("   export PLANNING_CENTER_CLIENT_ID=\"your-client-id\"");
+                logger.LogWarning("   export PLANNING_CENTER_CLIENT_SECRET=\"your-client-secret\"");
+                logger.LogWarning("");
+                logger.LogWarning("You can get these from your Planning Center API application settings at:");
+                logger.LogWarning("https://api.planningcenteronline.com/oauth/applications");
+
+                Environment.Exit(1);
+            }
+
+            static void DisplaySummary(ILogger logger)
+            {
+                logger.LogInformation("📋 Examples Summary");
+                logger.LogInformation("─────────────────────────────────────");
+                logger.LogInformation("✅ Authentication testing with GetMeAsync()");
+                logger.LogInformation("✅ Traditional service-based API patterns");
+                logger.LogInformation("✅ Fluent API with LINQ-like syntax");
+                logger.LogInformation("✅ Built-in pagination helpers and navigation");
+                logger.LogInformation("✅ Memory-efficient streaming with AsAsyncEnumerable()");
+                logger.LogInformation("✅ Performance monitoring and query optimization");
+                logger.LogInformation("✅ Comprehensive error handling with specific exception types");
+                logger.LogInformation("✅ Multi-module architecture demonstration");
+                logger.LogInformation("✅ Correlation tracking and detailed logging");
+                logger.LogInformation("✅ Custom parameters and advanced query features");
+                logger.LogInformation("");
+                logger.LogInformation("🚀 Ready to build amazing Planning Center integrations!");
+                logger.LogInformation("");
+                logger.LogInformation("📖 Next Steps:");
+                logger.LogInformation("   • Check out the module documentation in /docs/modules/");
+                logger.LogInformation("   • Try the fluent console example for advanced patterns");
+                logger.LogInformation("   • Explore the worker service example for background processing");
+                logger.LogInformation("   • Review the integration tests for comprehensive examples");
             }
         }
     }
-    
-    logger.LogInformation("📄 Navigated through {PageCount} pages total", pageCount);
-    
-    // Example 4: Get limited people automatically (handles pagination behind the scenes)
-    logger.LogInformation("🔄 Example 4: Getting limited people automatically...");
-    
-    var limitedParameters = new QueryParameters
-    {
-        Where = new Dictionary<string, object> { ["status"] = "active" },
-        PerPage = 5  // Small page size for demo
-    };
-    
-    // For demo purposes, let's limit to first 15 people to avoid long waits
-    var paginationOptions = new PaginationOptions
-    {
-        MaxItems = 15  // Limit to 15 people for demo
-    };
-    
-    var allPeople = await peopleService.GetAllAsync(limitedParameters, paginationOptions);
-    
-    logger.LogInformation("✅ Retrieved {Count} people automatically (pagination handled behind the scenes)", 
-        allPeople.Count);
-    
-    // Example 5: Stream people memory-efficiently
-    logger.LogInformation("🌊 Example 5: Streaming people memory-efficiently...");
-    
-    var streamCount = 0;
-    await foreach (var person in peopleService.StreamAsync(limitedParameters, paginationOptions))
-    {
-        streamCount++;
-        if (streamCount <= 5)  // Only log first 5 for demo
-        {
-            logger.LogInformation("🌊 Streamed: {FullName} (Age: {Age})", 
-                person.FullName, person.Age?.ToString() ?? "Unknown");
-        }
-    }
-    
-    logger.LogInformation("✅ Streamed {Count} people total", streamCount);
-    
-    // Example 6: Comprehensive People Management (including address, email, phone management)
-    logger.LogInformation("🏠 Example 6: Comprehensive People Management...");
-    
-    var peopleExample = host.Services.GetRequiredService<PeopleManagementExample>();
-    await peopleExample.RunExampleAsync();
-    
-    // Example 7: Create a new person (commented out to avoid creating test data)
-    /*
-    logger.LogInformation("➕ Example 6: Creating a new person...");
-    
-    var createRequest = new PersonCreateRequest
-    {
-        FirstName = "Test",
-        LastName = "Person",
-        Email = "test@example.com",
-        Status = "active"
-    };
-    
-    var newPerson = await peopleService.CreateAsync(createRequest);
-    logger.LogInformation("✅ Created person: {FullName} (ID: {Id})", newPerson.FullName, newPerson.Id);
-    
-    // Clean up - delete the test person
-    await peopleService.DeleteAsync(newPerson.Id);
-    logger.LogInformation("🗑️ Cleaned up test person");
-    */
-    
-    logger.LogInformation("🎉 All examples completed successfully!");
-    logger.LogInformation("");
-    logger.LogInformation("🔑 Key Features Demonstrated:");
-    logger.LogInformation("   ✅ Authentication testing with /me endpoint");
-    logger.LogInformation("   ✅ Built-in pagination helpers eliminate manual pagination logic");
-    logger.LogInformation("   ✅ Automatic page fetching with GetAllAsync()");
-    logger.LogInformation("   ✅ Memory-efficient streaming with StreamAsync()");
-    logger.LogInformation("   ✅ Rich pagination metadata and navigation");
-    logger.LogInformation("   ✅ Comprehensive error handling and logging");
-    logger.LogInformation("");
-    logger.LogInformation("📖 To run this example with real data:");
-    logger.LogInformation("   Option 1 - OAuth:");
-    logger.LogInformation("   1. Set PLANNING_CENTER_CLIENT_ID environment variable");
-    logger.LogInformation("   2. Set PLANNING_CENTER_CLIENT_SECRET environment variable");
-    logger.LogInformation("   3. Run: dotnet run");
-    logger.LogInformation("");
-    logger.LogInformation("   Option 2 - Personal Access Token (recommended for scripts):");
-    logger.LogInformation("   1. Set PLANNING_CENTER_PAT environment variable (format: app_id:secret)");
-    logger.LogInformation("   2. Uncomment PAT configuration in Program.cs");
-    logger.LogInformation("   3. Comment out OAuth configuration");
-    logger.LogInformation("   4. Run: dotnet run");
-}
-catch (Exception ex)
-{
-    logger.LogError(ex, "❌ An error occurred during execution");
-    
-    if (ex.Message.Contains("your-client-id") || ex.Message.Contains("your-app-id") || ex.Message.Contains("Authentication"))
-    {
-        logger.LogWarning("");
-        logger.LogWarning("🔑 Authentication Error - Please set your credentials:");
-        logger.LogWarning("");
-        logger.LogWarning("   Option 1 - OAuth (for user-facing apps):");
-        logger.LogWarning("   export PLANNING_CENTER_CLIENT_ID=\"your-actual-client-id\"");
-        logger.LogWarning("   export PLANNING_CENTER_CLIENT_SECRET=\"your-actual-client-secret\"");
-        logger.LogWarning("");
-        logger.LogWarning("   Option 2 - Personal Access Token (for server apps):");
-        logger.LogWarning("   export PLANNING_CENTER_PAT=\"your-app-id:your-secret\"");
-        logger.LogWarning("");
-        logger.LogWarning("   You can get these from your Planning Center API application settings.");
-    }
-    
-    Environment.Exit(1);
 }

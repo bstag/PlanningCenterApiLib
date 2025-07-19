@@ -11,7 +11,7 @@ namespace PlanningCenter.Api.Client.Models.Giving
         /// <summary>
         /// Gets or sets the data source for the donation.
         /// </summary>
-        public string DataSource { get; set; } = "Giving";
+        public new string DataSource { get; set; } = "Giving";
 
         /// <summary>
         /// Gets or sets the donation amount in cents.
@@ -99,13 +99,13 @@ namespace PlanningCenter.Api.Client.Models.Giving
         public string? RefundId { get; set; }
 
         /// <summary>
-        /// Gets or sets the created at date for the donation.
+        /// Gets or sets the creation date.
         /// </summary>
-        public DateTime? CreatedAt { get; set; }
+        public new DateTime? CreatedAt { get; set; }
 
         /// <summary>
-        /// Gets or sets the updated at date for the donation.
+        /// Gets or sets the last update date.
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public new DateTime? UpdatedAt { get; set; }
     }
 }

@@ -12,7 +12,7 @@ public class ServiceType : PlanningCenterResource
     /// <summary>
     /// Gets or sets the data source for the service type.
     /// </summary>
-    public string DataSource { get; set; } = "Services";
+    public new string DataSource { get; set; } = "Services";
 
     /// <summary>
     /// Gets or sets the service type name.
@@ -27,10 +27,10 @@ public class ServiceType : PlanningCenterResource
     /// <summary>
     /// Gets or sets the creation date.
     /// </summary>
-    public DateTime? CreatedAt { get; set; }
+    public new DateTime? CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the last update date.
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public new DateTime? UpdatedAt { get; set; }
 }

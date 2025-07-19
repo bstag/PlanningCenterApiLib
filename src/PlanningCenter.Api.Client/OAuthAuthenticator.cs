@@ -115,6 +115,17 @@ public class OAuthAuthenticator : IAuthenticator, IDisposable
         return Task.FromResult(isValid);
     }
 
+    /// <summary>
+    /// Gets the authorization header value for API requests.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Authorization header value</returns>
+    public async Task<string> GetAuthorizationHeaderAsync(CancellationToken cancellationToken = default)
+    {
+        var token = await GetAccessTokenAsync(cancellationToken);
+        return $"Bearer {token}";
+    }
+
     private async Task RefreshTokenInternalAsync(CancellationToken cancellationToken)
     {
         _logger.LogDebug("Refreshing access token");

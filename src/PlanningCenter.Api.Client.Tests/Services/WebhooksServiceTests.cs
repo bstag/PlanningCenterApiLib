@@ -37,9 +37,9 @@ public class WebhooksServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("sub123");
-        result.Url.Should().Be(subscriptionDto.Attributes.Url);
-        result.DataSource.Should().Be("Webhooks");
+        result!.Id.Should().Be("sub123");
+        result!.Url.Should().Be(subscriptionDto.Attributes.Url);
+        result!.DataSource.Should().Be("Webhooks");
     }
 
     [Fact]
@@ -308,8 +308,8 @@ public class WebhooksServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("event123");
-        result.DataSource.Should().Be("Webhooks");
+        result!.Id.Should().Be("event123");
+        result!.DataSource.Should().Be("Webhooks");
     }
 
     [Fact]
@@ -338,8 +338,8 @@ public class WebhooksServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("event123");
-        result.DataSource.Should().Be("Webhooks");
+        result!.Id.Should().Be("event123");
+        result!.DataSource.Should().Be("Webhooks");
     }
 
     [Fact]
@@ -355,8 +355,8 @@ public class WebhooksServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("event123");
-        result.DataSource.Should().Be("Webhooks");
+        result!.Id.Should().Be("event123");
+        result!.DataSource.Should().Be("Webhooks");
     }
 
     #endregion
@@ -394,7 +394,7 @@ public class WebhooksServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Meta.TotalCount.Should().Be(2);
     }
 
@@ -443,7 +443,7 @@ public class WebhooksServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.TotalSubscriptions.Should().Be(2);
+        result!.TotalSubscriptions.Should().Be(2);
         result.PeriodStart.Should().Be(request.StartDate);
         result.PeriodEnd.Should().Be(request.EndDate);
         result.GeneratedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));

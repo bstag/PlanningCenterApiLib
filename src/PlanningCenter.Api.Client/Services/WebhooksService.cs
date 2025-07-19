@@ -218,7 +218,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
-                $"{BaseEndpoint}/subscriptions/{id}/activate", null, cancellationToken);
+                $"{BaseEndpoint}/subscriptions/{id}/activate", null!, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -257,7 +257,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
-                $"{BaseEndpoint}/subscriptions/{id}/deactivate", null, cancellationToken);
+                $"{BaseEndpoint}/subscriptions/{id}/deactivate", null!, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -379,7 +379,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var response = await ApiConnection.PostAsync<dynamic>(
-                $"{BaseEndpoint}/subscriptions/{id}/test", null, cancellationToken);
+                $"{BaseEndpoint}/subscriptions/{id}/test", null!, cancellationToken);
 
             // This would parse the actual response in a complete implementation
             var testResult = new WebhookTestResult
@@ -767,7 +767,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
-                $"{BaseEndpoint}/events/{eventId}/redeliver", null, cancellationToken);
+                $"{BaseEndpoint}/events/{eventId}/redeliver",null!, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -1071,7 +1071,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
                 PeriodEnd = request.EndDate,
                 AdditionalData = new Dictionary<string, object>
                 {
-                    ["subscription_analytics"] = request.IncludeEventDetails ? subscriptionAnalytics : null,
+                    ["subscription_analytics"] = request.IncludeEventDetails ? subscriptionAnalytics : null!,
                     ["active_subscriptions"] = subscriptions.Data.Count(s => s.Active),
                     ["inactive_subscriptions"] = subscriptions.Data.Count(s => !s.Active),
                     ["average_success_rate"] = subscriptionAnalytics.Any() 

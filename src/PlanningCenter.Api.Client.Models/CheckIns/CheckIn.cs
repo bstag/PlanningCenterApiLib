@@ -12,7 +12,7 @@ public class CheckIn : PlanningCenterResource
     /// <summary>
     /// Gets or sets the data source for the check-in.
     /// </summary>
-    public string DataSource { get; set; } = "CheckIns";
+    public new string DataSource { get; set; } = "CheckIns";
 
     /// <summary>
     /// Gets or sets the first name.
@@ -42,7 +42,7 @@ public class CheckIn : PlanningCenterResource
     /// <summary>
     /// Gets or sets the check-in timestamp.
     /// </summary>
-    public DateTime? CreatedAt { get; set; }
+    public new DateTime? CreatedAt { get; set; }
 
     /// <summary>
     /// Gets or sets the check-out timestamp.
@@ -97,5 +97,5 @@ public class CheckIn : PlanningCenterResource
     /// <summary>
     /// Gets or sets the last update date.
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
+    public new DateTime? UpdatedAt { get; set; }
 }

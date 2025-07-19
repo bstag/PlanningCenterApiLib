@@ -40,9 +40,9 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("event-123");
-        result.Name.Should().Be(eventDto.Attributes.Name);
-        result.DataSource.Should().Be("Calendar");
+        result!.Id.Should().Be("event-123");
+        result!.Name.Should().Be(eventDto.Attributes.Name);
+        result!.DataSource.Should().Be("Calendar");
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Data[0].Id.Should().Be("1");
         result.Data[1].Id.Should().Be("2");
         result.Meta.Should().NotBeNull();
@@ -120,10 +120,10 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-event-123");
-        result.Name.Should().Be("Christmas Service");
-        result.Summary.Should().Be("Special Christmas celebration");
-        result.DataSource.Should().Be("Calendar");
+        result!.Id.Should().Be("new-event-123");
+        result!.Name.Should().Be("Christmas Service");
+        result!.Summary.Should().Be("Special Christmas celebration");
+        result!.DataSource.Should().Be("Calendar");
     }
 
     [Fact]
@@ -167,10 +167,10 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("event-123");
-        result.Name.Should().Be("Updated Event Name");
-        result.Summary.Should().Be("Updated summary");
-        result.VisibleInChurchCenter.Should().BeFalse();
+        result!.Id.Should().Be("event-123");
+        result!.Name.Should().Be("Updated Event Name");
+        result!.Summary.Should().Be("Updated summary");
+        result!.VisibleInChurchCenter.Should().BeFalse();
     }
 
     [Fact]
@@ -198,7 +198,7 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Data[0].Id.Should().Be("1");
         result.Data[1].Id.Should().Be("2");
     }
@@ -220,9 +220,9 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("resource-123");
-        result.Name.Should().Be(resourceDto.Attributes.Name);
-        result.DataSource.Should().Be("Calendar");
+        result!.Id.Should().Be("resource-123");
+        result!.Name.Should().Be(resourceDto.Attributes.Name);
+        result!.DataSource.Should().Be("Calendar");
     }
 
     [Fact]
@@ -241,7 +241,7 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        result!.Data.Should().HaveCount(2);
         result.Data[0].Id.Should().Be("1");
         result.Data[1].Id.Should().Be("2");
     }
@@ -275,10 +275,10 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-resource-123");
-        result.Name.Should().Be("Sound System");
-        result.Description.Should().Be("Main sanctuary sound system");
-        result.Kind.Should().Be("Equipment");
+        result!.Id.Should().Be("new-resource-123");
+        result!.Name.Should().Be("Sound System");
+        result!.Description.Should().Be("Main sanctuary sound system");
+        result!.Kind.Should().Be("Equipment");
     }
 
     [Fact]
@@ -322,10 +322,10 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("resource-123");
-        result.Name.Should().Be("Updated Resource Name");
-        result.Description.Should().Be("Updated description");
-        result.Quantity.Should().Be(2);
+        result!.Id.Should().Be("resource-123");
+        result!.Name.Should().Be("Updated Resource Name");
+        result!.Description.Should().Be("Updated description");
+        result!.Quantity.Should().Be(2);
     }
 
     [Fact]
@@ -356,7 +356,7 @@ public class CalendarServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(3);
+        result!.Should().HaveCount(3);
         result[0].Id.Should().Be("1");
         result[1].Id.Should().Be("2");
         result[2].Id.Should().Be("3");
@@ -382,8 +382,8 @@ public class CalendarServiceTests
 
         // Assert
         events.Should().HaveCount(2);
-        events[0].Id.Should().Be("1");
-        events[1].Id.Should().Be("2");
+        events![0].Id.Should().Be("1");
+        events![1].Id.Should().Be("2");
     }
 
     #endregion

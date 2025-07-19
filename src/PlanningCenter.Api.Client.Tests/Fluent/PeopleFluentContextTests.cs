@@ -95,7 +95,7 @@ public class PeopleFluentContextTests
     public void OrderByDescending_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderByDescending(p => p.CreatedAt);
+        var result = _fluentContext.OrderByDescending(p => p.CreatedAt!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -115,7 +115,7 @@ public class PeopleFluentContextTests
     public void ThenByDescending_ShouldReturnSameContext_WhenThenByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderBy(p => p.LastName).ThenByDescending(p => p.CreatedAt);
+        var result = _fluentContext.OrderBy(p => p.LastName).ThenByDescending(p => p.CreatedAt!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -158,8 +158,8 @@ public class PeopleFluentContextTests
         var pagedResponse = new PagedResponse<Person>
         {
             Data = expectedResponse.Data!.Select(dto => _builder.BuildPerson(dto.Id)).ToList(),
-            Meta = expectedResponse.Meta,
-            Links = expectedResponse.Links
+            Meta = expectedResponse.Meta!,
+            Links = expectedResponse.Links!
         };
 
         _mockPeopleService.Setup(s => s.ListAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
@@ -397,7 +397,7 @@ public class PeopleFluentContextTests
             .Include(p => p.Emails)
             .OrderBy(p => p.LastName)
             .ThenBy(p => p.FirstName)
-            .ThenByDescending(p => p.CreatedAt);
+            .ThenByDescending(p => p.CreatedAt!);
 
         result.Should().BeSameAs(_fluentContext);
     }

@@ -40,10 +40,10 @@ public class CheckInsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("checkin-123");
-        result.FirstName.Should().Be(checkInDto.Attributes.FirstName);
-        result.LastName.Should().Be(checkInDto.Attributes.LastName);
-        result.DataSource.Should().Be("CheckIns");
+        result!.Id.Should().Be("checkin-123");
+        result!.FirstName.Should().Be(checkInDto.Attributes.FirstName);
+        result!.LastName.Should().Be(checkInDto.Attributes.LastName);
+        result!.DataSource.Should().Be("CheckIns");
     }
 
     [Fact]
@@ -83,10 +83,10 @@ public class CheckInsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Data[0].Id.Should().Be("1");
-        result.Data[1].Id.Should().Be("2");
-        result.Meta.Should().NotBeNull();
+        result!.Data.Should().HaveCount(2);
+        result!.Data[0].Id.Should().Be("1");
+        result!.Data[1].Id.Should().Be("2");
+        result!.Meta.Should().NotBeNull();
     }
 
     [Fact]
@@ -118,11 +118,11 @@ public class CheckInsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("new-checkin-123");
-        result.FirstName.Should().Be("John");
-        result.LastName.Should().Be("Doe");
-        result.Kind.Should().Be("regular");
-        result.DataSource.Should().Be("CheckIns");
+        result!.Id.Should().Be("new-checkin-123");
+        result!.FirstName.Should().Be("John");
+        result!.LastName.Should().Be("Doe");
+        result!.Kind.Should().Be("regular");
+        result!.DataSource.Should().Be("CheckIns");
     }
 
     [Fact]
@@ -242,9 +242,9 @@ public class CheckInsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Id.Should().Be("event-123");
-        result.Name.Should().Be(eventDto.Attributes.Name);
-        result.DataSource.Should().Be("CheckIns");
+        result!.Id.Should().Be("event-123");
+        result!.Name.Should().Be(eventDto.Attributes.Name);
+        result!.DataSource.Should().Be("CheckIns");
     }
 
     [Fact]
@@ -263,9 +263,9 @@ public class CheckInsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Data[0].Id.Should().Be("1");
-        result.Data[1].Id.Should().Be("2");
+        result!.Data.Should().HaveCount(2);
+        result!.Data[0].Id.Should().Be("1");
+        result!.Data[1].Id.Should().Be("2");
     }
 
     [Fact]
@@ -284,9 +284,9 @@ public class CheckInsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Data[0].Id.Should().Be("1");
-        result.Data[1].Id.Should().Be("2");
+        result!.Data.Should().HaveCount(2);
+        result!.Data[0].Id.Should().Be("1");
+        result!.Data[1].Id.Should().Be("2");
     }
 
     [Fact]
@@ -317,10 +317,10 @@ public class CheckInsServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(3);
-        result[0].Id.Should().Be("1");
-        result[1].Id.Should().Be("2");
-        result[2].Id.Should().Be("3");
+        result!.Should().HaveCount(3);
+        result![0].Id.Should().Be("1");
+        result![1].Id.Should().Be("2");
+        result![2].Id.Should().Be("3");
     }
 
     [Fact]
@@ -343,8 +343,8 @@ public class CheckInsServiceTests
 
         // Assert
         checkIns.Should().HaveCount(2);
-        checkIns[0].Id.Should().Be("1");
-        checkIns[1].Id.Should().Be("2");
+        checkIns![0].Id.Should().Be("1");
+        checkIns![1].Id.Should().Be("2");
     }
 
     #endregion

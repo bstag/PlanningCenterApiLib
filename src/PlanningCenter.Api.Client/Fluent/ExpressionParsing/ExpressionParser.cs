@@ -21,7 +21,7 @@ public static class ExpressionParser
         {
             return ParseBooleanExpression(expression.Body);
         }
-        catch (Exception ex)
+        catch
         {
             // If parsing fails, return empty result rather than throwing
             // This allows graceful degradation to client-side filtering

@@ -10,9 +10,9 @@ namespace PlanningCenter.Api.Client.Models.People
     public class PeopleList : PlanningCenterResource
     {
         /// <summary>
-        /// Gets or sets the data source for the list.
+        /// Gets or sets the data source for the people list.
         /// </summary>
-        public string DataSource { get; set; } = "People";
+        public new string DataSource { get; set; } = "People";
 
         /// <summary>
         /// Gets or sets the name of the list.
@@ -45,14 +45,14 @@ namespace PlanningCenter.Api.Client.Models.People
         public bool IsPublic { get; set; }
 
         /// <summary>
-        /// Gets or sets the created at date for the list.
+        /// Gets or sets the created at date for the people list.
         /// </summary>
-        public DateTime? CreatedAt { get; set; }
+        public new DateTime? CreatedAt { get; set; }
 
         /// <summary>
-        /// Gets or sets the updated at date for the list.
+        /// Gets or sets the updated at date for the people list.
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public new DateTime? UpdatedAt { get; set; }
     }
 
     /// <summary>
@@ -63,7 +63,7 @@ namespace PlanningCenter.Api.Client.Models.People
         /// <summary>
         /// Gets or sets the data source for the list member.
         /// </summary>
-        public string DataSource { get; set; } = "People";
+        public new string DataSource { get; set; } = "People";
 
         /// <summary>
         /// Gets or sets the list ID associated with the member.
@@ -78,11 +78,11 @@ namespace PlanningCenter.Api.Client.Models.People
         /// <summary>
         /// Gets or sets the created at date for the list member.
         /// </summary>
-        public DateTime? CreatedAt { get; set; }
+        public new DateTime? CreatedAt { get; set; }
 
         /// <summary>
         /// Gets or sets the updated at date for the list member.
         /// </summary>
-        public DateTime? UpdatedAt { get; set; }
+        public new DateTime? UpdatedAt { get; set; }
     }
 }

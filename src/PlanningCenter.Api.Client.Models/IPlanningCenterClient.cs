@@ -1,3 +1,4 @@
+using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.Fluent;
 
 namespace PlanningCenter.Api.Client.Models;
@@ -88,36 +89,6 @@ public interface IPlanningCenterClient
     Task<CurrentUserInfo> GetCurrentUserAsync(CancellationToken cancellationToken = default);
 }
 
-/// <summary>
-/// Health check result information.
-/// </summary>
-public class HealthCheckResult
-{
-    /// <summary>
-    /// Whether the API is healthy and accessible
-    /// </summary>
-    public bool IsHealthy { get; set; }
-    
-    /// <summary>
-    /// Response time in milliseconds
-    /// </summary>
-    public double ResponseTimeMs { get; set; }
-    
-    /// <summary>
-    /// API version information
-    /// </summary>
-    public string? ApiVersion { get; set; }
-    
-    /// <summary>
-    /// Additional status information
-    /// </summary>
-    public Dictionary<string, object> AdditionalInfo { get; set; } = new();
-    
-    /// <summary>
-    /// When the health check was performed
-    /// </summary>
-    public DateTime CheckedAt { get; set; } = DateTime.UtcNow;
-}
 
 /// <summary>
 /// API rate limit information.

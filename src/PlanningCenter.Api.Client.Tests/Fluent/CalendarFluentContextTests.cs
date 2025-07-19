@@ -23,7 +23,8 @@ public class CalendarFluentContextTests
 {
     private readonly Mock<ICalendarService> _mockCalendarService;
     private readonly CalendarFluentContext _fluentContext;
-    private readonly TestDataBuilder _builder = new();
+    // Not used, removing to fix warning
+    // private readonly TestDataBuilder _builder = new();
 
     public CalendarFluentContextTests()
     {
@@ -65,30 +66,30 @@ public class CalendarFluentContextTests
     public void Include_ShouldReturnSameContext_WhenIncludeExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.Include(e => e.LocationName);
+        var result = _fluentContext.Include(e => e.LocationName!);
 
         // Assert
-        result.Should().BeSameAs(_fluentContext);
+        result.Should().BeSameAs(_fluentContext!);
     }
 
     [Fact]
     public void OrderBy_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderBy(e => e.StartsAt);
+        var result = _fluentContext.OrderBy(e => e.StartsAt!);
 
         // Assert
-        result.Should().BeSameAs(_fluentContext);
+        result.Should().BeSameAs(_fluentContext!);
     }
 
     [Fact]
     public void OrderByDescending_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderByDescending(e => e.CreatedAt);
+        var result = _fluentContext.OrderByDescending(e => e.CreatedAt!);
 
         // Assert
-        result.Should().BeSameAs(_fluentContext);
+        result.Should().BeSameAs(_fluentContext!);
     }
 
     #endregion
@@ -186,7 +187,7 @@ public class CalendarFluentContextTests
         var expectedCount = 42;
         var pagedResponse = new PagedResponse<Event>
         {
-            Data = new List<Event> { BuildEvent("1") },
+            Data = [BuildEvent("1")],
             Meta = new PagedResponseMeta { TotalCount = expectedCount },
             Links = new PagedResponseLinks()
         };
@@ -298,7 +299,7 @@ public class CalendarFluentContextTests
             .Where(e => e.Name.Contains("Service"))
             .Today()
             .Upcoming()
-            .OrderBy(e => e.StartsAt);
+            .OrderBy(e => e.StartsAt!);
 
         result.Should().BeSameAs(_fluentContext);
     }
@@ -307,7 +308,7 @@ public class CalendarFluentContextTests
 
     #region Helper Methods
 
-    private Event BuildEvent(string id)
+    private static Event BuildEvent(string id)
     {
         var random = new Random();
         return new Event
@@ -321,17 +322,17 @@ public class CalendarFluentContextTests
         };
     }
 
-    private PagedResponse<Event> BuildEventPagedResponse(int count)
+    private static PagedResponse<Event> BuildEventPagedResponse(int count)
     {
         var events = Enumerable.Range(1, count).Select(i => BuildEvent(i.ToString())).ToList();
         return BuildEventPagedResponse(events);
     }
 
-    private PagedResponse<Event> BuildEventPagedResponse(List<Event> events)
+    private static PagedResponse<Event> BuildEventPagedResponse(List<Event> events)
     {
         return new PagedResponse<Event>
         {
-            Data = events,
+            Data = [.. events],
             Meta = new PagedResponseMeta { TotalCount = events.Count },
             Links = new PagedResponseLinks()
         };

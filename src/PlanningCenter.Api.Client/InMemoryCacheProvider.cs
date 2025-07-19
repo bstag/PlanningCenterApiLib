@@ -218,6 +218,14 @@ public class InMemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public Task ClearAllAsync(CancellationToken cancellationToken = default)
     {
+        return ClearAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Clears all cache entries.
+    /// </summary>
+    public Task ClearAsync(CancellationToken cancellationToken = default)
+    {
         List<string> allKeys;
         
         lock (_keysLock)

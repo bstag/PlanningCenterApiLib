@@ -64,9 +64,19 @@ public class PlanningCenterOptions
     public TimeSpan DefaultCacheExpiration { get; set; } = TimeSpan.FromMinutes(5);
     
     /// <summary>
+    /// Maximum number of items to keep in the cache.
+    /// </summary>
+    public int MaxCacheSize { get; set; } = 1000;
+    
+    /// <summary>
     /// User agent string to send with requests.
     /// </summary>
     public string UserAgent { get; set; } = "PlanningCenter.Api.Client/1.0";
+    
+    /// <summary>
+    /// OAuth token endpoint URL.
+    /// </summary>
+    public string TokenEndpoint { get; set; } = "https://api.planningcenteronline.com/oauth/token";
     
     /// <summary>
     /// Whether to log request and response details (for debugging).
@@ -78,6 +88,36 @@ public class PlanningCenterOptions
     /// Custom headers to include with all requests.
     /// </summary>
     public Dictionary<string, string> DefaultHeaders { get; set; } = new();
+    
+    /// <summary>
+    /// Checks if the configuration is valid.
+    /// </summary>
+    /// <returns>True if the configuration is valid, otherwise false.</returns>
+    public bool IsValid()
+    {
+        try
+        {
+            Validate();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    
+    /// <summary>
+    /// Checks if any authentication method is configured.
+    /// </summary>
+    /// <returns>True if authentication is configured, otherwise false.</returns>
+    public bool HasAuthentication()
+    {
+        var hasOAuthCredentials = !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
+        var hasAccessToken = !string.IsNullOrWhiteSpace(AccessToken);
+        var hasPersonalAccessToken = !string.IsNullOrWhiteSpace(PersonalAccessToken);
+        
+        return hasOAuthCredentials || hasAccessToken || hasPersonalAccessToken;
+    }
     
     /// <summary>
     /// Validates the configuration options.

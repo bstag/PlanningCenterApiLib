@@ -575,7 +575,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
-                $"{BaseEndpoint}/attendees/{attendeeId}/promote_from_waitlist", null, cancellationToken);
+                $"{BaseEndpoint}/attendees/{attendeeId}/promote_from_waitlist", null!, cancellationToken);
 
             if (response?.Data == null)
             {

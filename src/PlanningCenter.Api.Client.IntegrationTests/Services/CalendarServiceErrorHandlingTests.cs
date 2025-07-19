@@ -185,15 +185,15 @@ public class CalendarServiceErrorHandlingTests : IClassFixture<TestFixture>
 
         // Act & Assert - Test null request
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            _calendarService.CreateEventAsync(null));
+            _calendarService.CreateEventAsync(null!));
             
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            _calendarService.CreateResourceAsync(null));
+            _calendarService.CreateResourceAsync(null!));
             
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            _calendarService.UpdateEventAsync("valid-id", null));
+            _calendarService.UpdateEventAsync("valid-id", null!));
             
         await Assert.ThrowsAsync<ArgumentNullException>(() => 
-            _calendarService.UpdateResourceAsync("valid-id", null));
+            _calendarService.UpdateResourceAsync("valid-id", null!));
     }
 }

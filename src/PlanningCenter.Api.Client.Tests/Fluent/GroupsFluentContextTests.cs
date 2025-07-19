@@ -65,7 +65,7 @@ public class GroupsFluentContextTests
     public void Include_ShouldReturnSameContext_WhenIncludeExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.Include(g => g.GroupTypeId);
+        var result = _fluentContext.Include(g => g.GroupTypeId!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);

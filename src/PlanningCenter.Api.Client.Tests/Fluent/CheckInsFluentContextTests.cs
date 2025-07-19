@@ -65,7 +65,7 @@ public class CheckInsFluentContextTests
     public void Include_ShouldReturnSameContext_WhenIncludeExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.Include(c => c.PersonId);
+        var result = _fluentContext.Include(c => c.PersonId!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -75,7 +75,7 @@ public class CheckInsFluentContextTests
     public void OrderBy_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderBy(c => c.CreatedAt);
+        var result = _fluentContext.OrderBy(c => c.CreatedAt!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -85,7 +85,7 @@ public class CheckInsFluentContextTests
     public void OrderByDescending_ShouldReturnSameContext_WhenOrderByExpressionIsProvided()
     {
         // Act
-        var result = _fluentContext.OrderByDescending(c => c.FirstName);
+        var result = _fluentContext.OrderByDescending(c => c.FirstName!);
 
         // Assert
         result.Should().BeSameAs(_fluentContext);
@@ -465,7 +465,7 @@ public class CheckInsFluentContextTests
             .CheckedIn()
             .Confirmed()
             .Members()
-            .OrderBy(c => c.CreatedAt);
+            .OrderBy(c => c.CreatedAt!);
 
         result.Should().BeSameAs(_fluentContext);
     }
