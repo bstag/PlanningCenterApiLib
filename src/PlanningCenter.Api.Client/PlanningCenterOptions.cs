@@ -5,11 +5,35 @@ namespace PlanningCenter.Api.Client;
 /// </summary>
 public class PlanningCenterOptions
 {
+    private string _baseUrl = "https://api.planningcenteronline.com";
+    
     /// <summary>
     /// The base URL for the Planning Center API.
     /// Defaults to the official Planning Center API endpoint.
     /// </summary>
-    public string BaseUrl { get; set; } = "https://api.planningcenteronline.com";
+    public string BaseUrl 
+    { 
+        get => _baseUrl;
+        set
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value), "BaseUrl cannot be null.");
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentException("BaseUrl cannot be empty or whitespace.", nameof(value));
+            
+            // Validate URL format
+            if (!Uri.TryCreate(value, UriKind.Absolute, out var uri) || 
+                (uri.Scheme != "http" && uri.Scheme != "https"))
+                throw new ArgumentException("BaseUrl must be a valid HTTP or HTTPS URL.", nameof(value));
+            
+            _baseUrl = value.TrimEnd('/');
+        }
+    }
+
+    public PlanningCenterOptions()
+    {
+        // Allow default construction for test scenarios; do not validate authentication here.
+    }
     
     /// <summary>
     /// OAuth client ID for authentication.
@@ -38,40 +62,108 @@ public class PlanningCenterOptions
     /// </summary>
     public string? RefreshToken { get; set; }
     
+    private TimeSpan _requestTimeout = TimeSpan.FromSeconds(30);
+    
     /// <summary>
     /// Default timeout for HTTP requests.
     /// </summary>
-    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan RequestTimeout 
+    { 
+        get => _requestTimeout;
+        set
+        {
+            if (value <= TimeSpan.Zero)
+                throw new ArgumentException("RequestTimeout must be greater than zero.", nameof(value));
+            _requestTimeout = value;
+        }
+    }
+    
+    private int _maxRetryAttempts = 3;
     
     /// <summary>
     /// Maximum number of retry attempts for failed requests.
     /// </summary>
-    public int MaxRetryAttempts { get; set; } = 3;
+    public int MaxRetryAttempts 
+    { 
+        get => _maxRetryAttempts;
+        set
+        {
+            if (value < 0)
+                throw new ArgumentException("MaxRetryAttempts cannot be negative.", nameof(value));
+            _maxRetryAttempts = value;
+        }
+    }
+    
+    private TimeSpan _retryBaseDelay = TimeSpan.FromMilliseconds(500);
     
     /// <summary>
     /// Base delay for exponential backoff retry strategy.
     /// </summary>
-    public TimeSpan RetryBaseDelay { get; set; } = TimeSpan.FromSeconds(1);
+    public TimeSpan RetryBaseDelay 
+    { 
+        get => _retryBaseDelay;
+        set
+        {
+            if (value < TimeSpan.Zero)
+                throw new ArgumentException("RetryBaseDelay cannot be negative.", nameof(value));
+            _retryBaseDelay = value;
+        }
+    }
     
     /// <summary>
     /// Whether to enable response caching.
     /// </summary>
     public bool EnableCaching { get; set; } = true;
     
+    private TimeSpan _defaultCacheExpiration = TimeSpan.FromMinutes(5);
+    
     /// <summary>
     /// Default cache expiration time.
     /// </summary>
-    public TimeSpan DefaultCacheExpiration { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan DefaultCacheExpiration 
+    { 
+        get => _defaultCacheExpiration;
+        set
+        {
+            if (value < TimeSpan.Zero)
+                throw new ArgumentException("DefaultCacheExpiration cannot be negative.", nameof(value));
+            _defaultCacheExpiration = value;
+        }
+    }
+    
+    private int _maxCacheSize = 1000;
     
     /// <summary>
     /// Maximum number of items to keep in the cache.
     /// </summary>
-    public int MaxCacheSize { get; set; } = 1000;
+    public int MaxCacheSize 
+    { 
+        get => _maxCacheSize;
+        set
+        {
+            if (value < 0)
+                throw new ArgumentException("MaxCacheSize cannot be negative.", nameof(value));
+            _maxCacheSize = value;
+        }
+    }
+    
+    private string _userAgent = "PlanningCenter.Api.Client/1.0";
     
     /// <summary>
     /// User agent string to send with requests.
     /// </summary>
-    public string UserAgent { get; set; } = "PlanningCenter.Api.Client/1.0";
+    public string UserAgent 
+    { 
+        get => _userAgent;
+        set
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value), "UserAgent cannot be null.");
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentException("UserAgent cannot be empty or whitespace.", nameof(value));
+            _userAgent = value;
+        }
+    }
     
     /// <summary>
     /// OAuth token endpoint URL.
@@ -124,27 +216,39 @@ public class PlanningCenterOptions
     /// </summary>
     public void Validate()
     {
+        // Normalize BaseUrl by removing trailing slashes (except for scheme)
         if (string.IsNullOrWhiteSpace(BaseUrl))
-            throw new ArgumentException("BaseUrl is required", nameof(BaseUrl));
-        
-        if (!Uri.TryCreate(BaseUrl, UriKind.Absolute, out _))
-            throw new ArgumentException("BaseUrl must be a valid absolute URI", nameof(BaseUrl));
+            throw new ArgumentException("BaseUrl cannot be empty.", nameof(BaseUrl));
+        if (!Uri.TryCreate(BaseUrl, UriKind.Absolute, out var baseUrlUri))
+            throw new ArgumentException("BaseUrl must be a valid absolute URI.", nameof(BaseUrl));
+        // Normalize BaseUrl by removing all trailing slashes
+        // Remove all trailing slashes from BaseUrl
+        BaseUrl = BaseUrl.TrimEnd('/');
         
         // Must have either OAuth credentials, an access token, or a personal access token
         var hasOAuthCredentials = !string.IsNullOrWhiteSpace(ClientId) && !string.IsNullOrWhiteSpace(ClientSecret);
         var hasAccessToken = !string.IsNullOrWhiteSpace(AccessToken);
         var hasPersonalAccessToken = !string.IsNullOrWhiteSpace(PersonalAccessToken);
-        
+
         if (!hasOAuthCredentials && !hasAccessToken && !hasPersonalAccessToken)
-            throw new ArgumentException("Either OAuth credentials (ClientId and ClientSecret), AccessToken, or PersonalAccessToken must be provided");
-        
+            throw new InvalidOperationException("No authentication configured: Either OAuth credentials (ClientId and ClientSecret), AccessToken, or PersonalAccessToken must be provided. Please provide valid authentication.");
+
         if (RequestTimeout <= TimeSpan.Zero)
-            throw new ArgumentException("RequestTimeout must be greater than zero", nameof(RequestTimeout));
-        
+            throw new ArgumentException("RequestTimeout must be positive.", nameof(RequestTimeout));
+        if (DefaultCacheExpiration < TimeSpan.Zero)
+            throw new ArgumentException("DefaultCacheExpiration cannot be negative.", nameof(DefaultCacheExpiration));
+        if (string.IsNullOrWhiteSpace(UserAgent))
+            throw new ArgumentException("UserAgent cannot be null or empty.", nameof(UserAgent));
         if (MaxRetryAttempts < 0)
-            throw new ArgumentException("MaxRetryAttempts cannot be negative", nameof(MaxRetryAttempts));
-        
-        if (RetryBaseDelay <= TimeSpan.Zero)
-            throw new ArgumentException("RetryBaseDelay must be greater than zero", nameof(RetryBaseDelay));
+            throw new ArgumentException("MaxRetryAttempts cannot be negative.", nameof(MaxRetryAttempts));
+        if (RetryBaseDelay < TimeSpan.Zero)
+            throw new ArgumentException("RetryBaseDelay cannot be negative.", nameof(RetryBaseDelay));
+        if (MaxCacheSize <= 0)
+            throw new ArgumentException("MaxCacheSize must be positive.", nameof(MaxCacheSize));
+    }
+
+    public override string ToString()
+    {
+        return $"PlanningCenterOptions {{ BaseUrl = '{BaseUrl}', ClientId = '{ClientId}', ClientSecret = '***', AccessToken = '{(string.IsNullOrEmpty(AccessToken) ? "<none>" : "***")}', PersonalAccessToken = '{(string.IsNullOrEmpty(PersonalAccessToken) ? "<none>" : "***")}', RequestTimeout = {RequestTimeout.TotalMilliseconds}ms, DefaultCacheExpiration = {DefaultCacheExpiration.TotalSeconds}s, MaxCacheSize = {MaxCacheSize}, MaxRetryAttempts = {MaxRetryAttempts}, UserAgent = '{UserAgent}', EnableCaching = {EnableCaching}, EnableDetailedLogging = {EnableDetailedLogging} }}";
     }
 }

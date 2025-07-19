@@ -266,4 +266,351 @@ public static class RegistrationsMapper
     }
 
     #endregion
+
+    #region SelectionType Mapping
+
+    /// <summary>
+    /// Maps a SelectionTypeCreateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapCreateRequestToJsonApi(SelectionTypeCreateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "SelectionType",
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    category = request.Category,
+                    cost = request.Cost,
+                    currency = request.Currency,
+                    required = request.Required,
+                    allow_multiple = request.AllowMultiple,
+                    max_selections = request.MaxSelections,
+                    min_selections = request.MinSelections,
+                    selection_limit = request.SelectionLimit,
+                    sort_order = request.SortOrder,
+                    active = request.Active
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    /// <summary>
+    /// Maps a SelectionTypeUpdateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapUpdateRequestToJsonApi(string id, SelectionTypeUpdateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "SelectionType",
+                id = id,
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    category = request.Category,
+                    cost = request.Cost,
+                    currency = request.Currency,
+                    required = request.Required,
+                    allow_multiple = request.AllowMultiple,
+                    max_selections = request.MaxSelections,
+                    min_selections = request.MinSelections,
+                    selection_limit = request.SelectionLimit,
+                    sort_order = request.SortOrder,
+                    active = request.Active
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    #endregion
+
+    #region SignupLocation Mapping
+
+    /// <summary>
+    /// Maps a SignupLocationCreateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapCreateRequestToJsonApi(SignupLocationCreateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "SignupLocation",
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    street_address = request.StreetAddress,
+                    city = request.City,
+                    state = request.State,
+                    postal_code = request.PostalCode,
+                    country = request.Country,
+                    latitude = request.Latitude,
+                    longitude = request.Longitude,
+                    phone_number = request.PhoneNumber,
+                    website_url = request.WebsiteUrl,
+                    directions = request.Directions,
+                    parking_info = request.ParkingInfo,
+                    accessibility_info = request.AccessibilityInfo,
+                    capacity = request.Capacity,
+                    notes = request.Notes,
+                    timezone = request.Timezone
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    /// <summary>
+    /// Maps a SignupLocationUpdateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapUpdateRequestToJsonApi(string signupId, SignupLocationUpdateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "SignupLocation",
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    street_address = request.StreetAddress,
+                    city = request.City,
+                    state = request.State,
+                    postal_code = request.PostalCode,
+                    country = request.Country,
+                    latitude = request.Latitude,
+                    longitude = request.Longitude,
+                    phone_number = request.PhoneNumber,
+                    website_url = request.WebsiteUrl,
+                    directions = request.Directions,
+                    parking_info = request.ParkingInfo,
+                    accessibility_info = request.AccessibilityInfo,
+                    capacity = request.Capacity,
+                    notes = request.Notes,
+                    timezone = request.Timezone
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    #endregion
+
+    #region SignupTime Mapping
+
+    /// <summary>
+    /// Maps a SignupTimeCreateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapCreateRequestToJsonApi(SignupTimeCreateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "SignupTime",
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    start_time = request.StartTime,
+                    end_time = request.EndTime,
+                    all_day = request.AllDay,
+                    timezone = request.Timezone,
+                    time_type = request.TimeType,
+                    capacity = request.Capacity,
+                    required = request.Required,
+                    sort_order = request.SortOrder,
+                    active = request.Active,
+                    location = request.Location,
+                    room = request.Room,
+                    instructor = request.Instructor,
+                    cost = request.Cost,
+                    notes = request.Notes
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    /// <summary>
+    /// Maps a SignupTimeUpdateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapUpdateRequestToJsonApi(string id, SignupTimeUpdateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "SignupTime",
+                id = id,
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    start_time = request.StartTime,
+                    end_time = request.EndTime,
+                    all_day = request.AllDay,
+                    timezone = request.Timezone,
+                    time_type = request.TimeType,
+                    capacity = request.Capacity,
+                    required = request.Required,
+                    sort_order = request.SortOrder,
+                    active = request.Active,
+                    location = request.Location,
+                    room = request.Room,
+                    instructor = request.Instructor,
+                    cost = request.Cost,
+                    notes = request.Notes
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    #endregion
+
+    #region EmergencyContact Mapping
+
+    /// <summary>
+    /// Maps an EmergencyContactCreateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapCreateRequestToJsonApi(EmergencyContactCreateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "EmergencyContact",
+                attributes = new
+                {
+                    first_name = request.FirstName,
+                    last_name = request.LastName,
+                    relationship = request.Relationship,
+                    primary_phone = request.PrimaryPhone,
+                    secondary_phone = request.SecondaryPhone,
+                    email = request.Email,
+                    street_address = request.StreetAddress,
+                    city = request.City,
+                    state = request.State,
+                    postal_code = request.PostalCode,
+                    country = request.Country,
+                    is_primary = request.IsPrimary,
+                    priority = request.Priority,
+                    notes = request.Notes,
+                    preferred_contact_method = request.PreferredContactMethod,
+                    best_time_to_contact = request.BestTimeToContact,
+                    can_authorize_medical_treatment = request.CanAuthorizeMedicalTreatment
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    /// <summary>
+    /// Maps an EmergencyContactUpdateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapUpdateRequestToJsonApi(string attendeeId, EmergencyContactUpdateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "EmergencyContact",
+                attributes = new
+                {
+                    first_name = request.FirstName,
+                    last_name = request.LastName,
+                    relationship = request.Relationship,
+                    primary_phone = request.PrimaryPhone,
+                    secondary_phone = request.SecondaryPhone,
+                    email = request.Email,
+                    street_address = request.StreetAddress,
+                    city = request.City,
+                    state = request.State,
+                    postal_code = request.PostalCode,
+                    country = request.Country,
+                    is_primary = request.IsPrimary,
+                    priority = request.Priority,
+                    notes = request.Notes,
+                    preferred_contact_method = request.PreferredContactMethod,
+                    best_time_to_contact = request.BestTimeToContact,
+                    can_authorize_medical_treatment = request.CanAuthorizeMedicalTreatment
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    #endregion
+
+    #region Category Mapping
+
+    /// <summary>
+    /// Maps a CategoryCreateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapCreateRequestToJsonApi(CategoryCreateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "Category",
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    color = request.Color,
+                    sort_order = request.SortOrder,
+                    active = request.Active
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    /// <summary>
+    /// Maps a CategoryUpdateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<dynamic> MapUpdateRequestToJsonApi(string id, CategoryUpdateRequest request)
+    {
+        var jsonApiRequest = new JsonApiRequest<dynamic>
+        {
+            Data = new
+            {
+                type = "Category",
+                id = id,
+                attributes = new
+                {
+                    name = request.Name,
+                    description = request.Description,
+                    color = request.Color,
+                    sort_order = request.SortOrder,
+                    active = request.Active
+                }
+            }
+        };
+
+        return jsonApiRequest;
+    }
+
+    #endregion
 }

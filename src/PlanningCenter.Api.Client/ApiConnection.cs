@@ -64,6 +64,16 @@ public class ApiConnection : IApiConnection, IDisposable
 
         try
         {
+            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
+            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
+            {
+                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
+                if (expando == null)
+                {
+                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
+                }
+                return (T)(object)expando;
+            }
             var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
             if (result == null)
             {
@@ -93,6 +103,16 @@ public class ApiConnection : IApiConnection, IDisposable
         
         try
         {
+            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
+            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
+            {
+                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
+                if (expando == null)
+                {
+                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
+                }
+                return (T)(object)expando;
+            }
             var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
             if (result == null)
             {
@@ -122,6 +142,16 @@ public class ApiConnection : IApiConnection, IDisposable
         
         try
         {
+            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
+            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
+            {
+                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
+                if (expando == null)
+                {
+                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
+                }
+                return (T)(object)expando;
+            }
             var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
             if (result == null)
             {
@@ -151,6 +181,16 @@ public class ApiConnection : IApiConnection, IDisposable
         
         try
         {
+            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
+            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
+            {
+                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
+                if (expando == null)
+                {
+                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
+                }
+                return (T)(object)expando;
+            }
             var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
             if (result == null)
             {
@@ -361,11 +401,21 @@ public class ApiConnection : IApiConnection, IDisposable
         CancellationToken cancellationToken)
     {
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        var requestId = response.Headers.GetValues("X-Request-Id").FirstOrDefault();
+        string requestId = null;
+        if (response.Headers.TryGetValues("X-Request-Id", out var requestIdValues))
+        {
+            requestId = requestIdValues.FirstOrDefault();
+        }
         
         _logger.LogError("HTTP {StatusCode} error for {Method} {Endpoint}: {Content}", 
             response.StatusCode, method, endpoint, content);
 
+        string retryAfter = null;
+        if (response.Headers.TryGetValues("Retry-After", out var retryAfterValues))
+        {
+            retryAfter = retryAfterValues.FirstOrDefault();
+        }
+        
         switch (response.StatusCode)
         {
             case HttpStatusCode.NotFound:

@@ -1,0 +1,10 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  PlanningCenter.Api.Client.Models -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Models\bin\Debug\net9.0\PlanningCenter.Api.Client.Models.dll
+  PlanningCenter.Api.Client -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\bin\Debug\net9.0\PlanningCenter.Api.Client.dll
+  PlanningCenter.Api.Client.Tests -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\bin\Debug\net9.0\PlanningCenter.Api.Client.Tests.dll
+Test run for C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\bin\Debug\net9.0\PlanningCenter.Api.Client.Tests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 17.14.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.

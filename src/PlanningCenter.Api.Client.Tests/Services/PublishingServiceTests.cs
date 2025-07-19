@@ -1,8 +1,11 @@
+using System.Dynamic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.Publishing;
+using PlanningCenter.Api.Client.Models.Publishing;
 using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Services;
 using PlanningCenter.Api.Client.Tests.Utilities;
@@ -41,6 +44,18 @@ public class PublishingServiceTests
         result!.DataSource.Should().Be("Publishing");
     }
 
+    [Fact]
+    public async Task GetEpisodeAsync_ShouldReturnNull_WhenEpisodeNotFound()
+    {
+        // Arrange
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<EpisodeDto>>("/publishing/v2/episodes/nonexistent", null);
+
+        // Act
+        var result = await _publishingService.GetEpisodeAsync("nonexistent");
+
+        // Assert
+        result.Should().BeNull();
+    }
 
     [Fact]
     public async Task GetEpisodeAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
@@ -66,6 +81,22 @@ public class PublishingServiceTests
         result.Data.Should().HaveCount(3);
         result.Meta.Should().NotBeNull();
         result.Meta.TotalCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task ListEpisodesAsync_ShouldReturnEmptyList_WhenNoEpisodesExist()
+    {
+        // Arrange
+        var emptyResponse = _builder.BuildEpisodeCollectionResponse(0);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes", emptyResponse);
+
+        // Act
+        var result = await _publishingService.ListEpisodesAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Data.Should().BeEmpty();
+        result.Meta.TotalCount.Should().Be(0);
     }
 
     [Fact]
@@ -138,6 +169,26 @@ public class PublishingServiceTests
     }
 
     [Fact]
+    public async Task UpdateEpisodeAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
+    {
+        // Arrange
+        var request = new EpisodeUpdateRequest { Title = "Test" };
+
+        // Act & Assert
+        await _publishingService.Invoking(s => s.UpdateEpisodeAsync("", request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Episode ID cannot be null or empty*");
+    }
+
+    [Fact]
+    public async Task UpdateEpisodeAsync_ShouldThrowArgumentNullException_WhenRequestIsNull()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.UpdateEpisodeAsync("episode123", null!))
+            .Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
     public async Task DeleteEpisodeAsync_ShouldCompleteSuccessfully_WhenIdIsValid()
     {
         // Act & Assert
@@ -145,9 +196,18 @@ public class PublishingServiceTests
             .Should().NotThrowAsync();
     }
 
+    [Fact]
+    public async Task DeleteEpisodeAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.DeleteEpisodeAsync(""))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Episode ID cannot be null or empty*");
+    }
+
     #endregion
 
-    #region Publishing Tests
+    #region Episode Publishing Tests
 
     [Fact]
     public async Task PublishEpisodeAsync_ShouldReturnPublishedEpisode_WhenIdIsValid()
@@ -169,6 +229,15 @@ public class PublishingServiceTests
     }
 
     [Fact]
+    public async Task PublishEpisodeAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.PublishEpisodeAsync(""))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Episode ID cannot be null or empty*");
+    }
+
+    [Fact]
     public async Task UnpublishEpisodeAsync_ShouldReturnUnpublishedEpisode_WhenIdIsValid()
     {
         // Arrange
@@ -187,6 +256,15 @@ public class PublishingServiceTests
         result!.IsPublished.Should().BeFalse();
     }
 
+    [Fact]
+    public async Task UnpublishEpisodeAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.UnpublishEpisodeAsync(""))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Episode ID cannot be null or empty*");
+    }
+
     #endregion
 
     #region Speaker Tests
@@ -196,7 +274,7 @@ public class PublishingServiceTests
     {
         // Arrange
         var speakerDto = _builder.CreateSpeakerDto(s => s.Id = "speaker123");
-        var response = new JsonApiSingleResponse<dynamic> { Data = speakerDto };
+        var response = new JsonApiSingleResponse<SpeakerDto> { Data = speakerDto };
         _mockApiConnection.SetupGetResponse("/publishing/v2/speakers/speaker123", response);
 
         // Act
@@ -205,17 +283,412 @@ public class PublishingServiceTests
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be("speaker123");
+        result!.FirstName.Should().Be(speakerDto.Attributes.FirstName);
+        result!.LastName.Should().Be(speakerDto.Attributes.LastName);
         result!.DataSource.Should().Be("Publishing");
     }
 
+    [Fact]
+    public async Task GetSpeakerAsync_ShouldReturnNull_WhenSpeakerNotFound()
+    {
+        // Arrange
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SpeakerDto>>("/publishing/v2/speakers/nonexistent", null);
 
+        // Act
+        var result = await _publishingService.GetSpeakerAsync("nonexistent");
 
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetSpeakerAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.GetSpeakerAsync(""))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Speaker ID cannot be null or empty*");
+    }
+
+    [Fact]
+    public async Task ListSpeakersAsync_ShouldReturnPagedSpeakers_WhenApiReturnsData()
+    {
+        // Arrange
+        var speakersResponse = _builder.BuildSpeakerCollectionResponse(3);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/speakers", speakersResponse);
+
+        // Act
+        var result = await _publishingService.ListSpeakersAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Data.Should().HaveCount(3);
+        result.Meta.Should().NotBeNull();
+        result.Meta.TotalCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task CreateSpeakerAsync_ShouldReturnCreatedSpeaker_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new SpeakerCreateRequest
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "john.doe@example.com",
+            Active = true
+        };
+
+        var speakerDto = _builder.CreateSpeakerDto(s => 
+        {
+            s.Id = "newspeaker123";
+            s.Attributes.FirstName = "John";
+            s.Attributes.LastName = "Doe";
+            s.Attributes.Email = "john.doe@example.com";
+        });
+
+        var response = new JsonApiSingleResponse<SpeakerDto> { Data = speakerDto };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/speakers", response);
+
+        // Act
+        var result = await _publishingService.CreateSpeakerAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("newspeaker123");
+        result!.FirstName.Should().Be("John");
+        result!.LastName.Should().Be("Doe");
+        result!.Email.Should().Be("john.doe@example.com");
+    }
+
+    [Fact]
+    public async Task CreateSpeakerAsync_ShouldThrowArgumentNullException_WhenRequestIsNull()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.CreateSpeakerAsync(null!))
+            .Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task UpdateSpeakerAsync_ShouldReturnUpdatedSpeaker_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new SpeakerUpdateRequest
+        {
+            FirstName = "Jane",
+            LastName = "Smith",
+            Email = "jane.smith@example.com"
+        };
+
+        var speakerDto = _builder.CreateSpeakerDto(s => 
+        {
+            s.Id = "speaker123";
+            s.Attributes.FirstName = "Jane";
+            s.Attributes.LastName = "Smith";
+            s.Attributes.Email = "jane.smith@example.com";
+        });
+
+        var response = new JsonApiSingleResponse<SpeakerDto> { Data = speakerDto };
+        _mockApiConnection.SetupMutationResponse("PATCH", "/publishing/v2/speakers/speaker123", response);
+
+        // Act
+        var result = await _publishingService.UpdateSpeakerAsync("speaker123", request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("speaker123");
+        result!.FirstName.Should().Be("Jane");
+        result!.LastName.Should().Be("Smith");
+        result!.Email.Should().Be("jane.smith@example.com");
+    }
+
+    [Fact]
+    public async Task UpdateSpeakerAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
+    {
+        // Arrange
+        var request = new SpeakerUpdateRequest { FirstName = "Test" };
+
+        // Act & Assert
+        await _publishingService.Invoking(s => s.UpdateSpeakerAsync("", request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Speaker ID cannot be null or empty*");
+    }
+
+    [Fact]
+    public async Task UpdateSpeakerAsync_ShouldThrowArgumentNullException_WhenRequestIsNull()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.UpdateSpeakerAsync("speaker123", null!))
+            .Should().ThrowAsync<ArgumentNullException>();
+    }
 
     [Fact]
     public async Task DeleteSpeakerAsync_ShouldCompleteSuccessfully_WhenIdIsValid()
     {
         // Act & Assert
         await _publishingService.Invoking(s => s.DeleteSpeakerAsync("speaker123"))
+            .Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task DeleteSpeakerAsync_ShouldThrowArgumentException_WhenIdIsEmpty()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.DeleteSpeakerAsync(""))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Speaker ID cannot be null or empty*");
+    }
+
+    #endregion
+
+    #region Series Tests
+
+    [Fact]
+    public async Task GetSeriesAsync_ShouldReturnSeries_WhenApiReturnsData()
+    {
+        // Arrange
+        var seriesDto = _builder.CreateSeriesDto(s => s.Id = "series123");
+        var response = new JsonApiSingleResponse<SeriesDto> { Data = seriesDto };
+        _mockApiConnection.SetupGetResponse("/publishing/v2/series/series123", response);
+
+        // Act
+        var result = await _publishingService.GetSeriesAsync("series123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("series123");
+        result!.Title.Should().Be(seriesDto.Attributes.Title);
+        result!.DataSource.Should().Be("Publishing");
+    }
+
+    [Fact]
+    public async Task GetSeriesAsync_ShouldReturnNull_WhenSeriesNotFound()
+    {
+        // Arrange
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SeriesDto>>("/publishing/v2/series/nonexistent", null);
+
+        // Act
+        var result = await _publishingService.GetSeriesAsync("nonexistent");
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ListSeriesAsync_ShouldReturnPagedSeries_WhenApiReturnsData()
+    {
+        // Arrange
+        var seriesResponse = _builder.BuildSeriesCollectionResponse(3);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/series", seriesResponse);
+
+        // Act
+        var result = await _publishingService.ListSeriesAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Data.Should().HaveCount(3);
+        result.Meta.Should().NotBeNull();
+        result.Meta.TotalCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task CreateSeriesAsync_ShouldReturnCreatedSeries_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new SeriesCreateRequest
+        {
+            Title = "Test Series",
+            Description = "A test series"
+        };
+
+        var seriesDto = _builder.CreateSeriesDto(s => 
+        {
+            s.Id = "newseries123";
+            s.Attributes.Title = "Test Series";
+            s.Attributes.Description = "A test series";
+        });
+
+        var response = new JsonApiSingleResponse<SeriesDto> { Data = seriesDto };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/series", response);
+
+        // Act
+        var result = await _publishingService.CreateSeriesAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("newseries123");
+        result!.Title.Should().Be("Test Series");
+        result!.Description.Should().Be("A test series");
+    }
+
+    [Fact]
+    public async Task UpdateSeriesAsync_ShouldReturnUpdatedSeries_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new SeriesUpdateRequest
+        {
+            Title = "Updated Series",
+            Description = "Updated description"
+        };
+
+        var seriesDto = _builder.CreateSeriesDto(s => 
+        {
+            s.Id = "series123";
+            s.Attributes.Title = "Updated Series";
+            s.Attributes.Description = "Updated description";
+        });
+
+        var response = new JsonApiSingleResponse<SeriesDto> { Data = seriesDto };
+        _mockApiConnection.SetupMutationResponse("PATCH", "/publishing/v2/series/series123", response);
+
+        // Act
+        var result = await _publishingService.UpdateSeriesAsync("series123", request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("series123");
+        result!.Title.Should().Be("Updated Series");
+        result!.Description.Should().Be("Updated description");
+    }
+
+    [Fact]
+    public async Task DeleteSeriesAsync_ShouldCompleteSuccessfully_WhenIdIsValid()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.DeleteSeriesAsync("series123"))
+            .Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task PublishSeriesAsync_ShouldReturnPublishedSeries_WhenIdIsValid()
+    {
+        // Arrange
+        var seriesDto = _builder.CreateSeriesDto(s => 
+        {
+            s.Id = "series123";
+            s.Attributes.IsPublished = true;
+        });
+        var response = new JsonApiSingleResponse<SeriesDto> { Data = seriesDto };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/series/series123/publish", response);
+
+        // Act
+        var result = await _publishingService.PublishSeriesAsync("series123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("series123");
+        result!.IsPublished.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UnpublishSeriesAsync_ShouldReturnUnpublishedSeries_WhenIdIsValid()
+    {
+        // Arrange
+        var seriesDto = _builder.CreateSeriesDto(s => 
+        {
+            s.Id = "series123";
+            s.Attributes.IsPublished = false;
+        });
+        var response = new JsonApiSingleResponse<SeriesDto> { Data = seriesDto };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/series/series123/unpublish", response);
+
+        // Act
+        var result = await _publishingService.UnpublishSeriesAsync("series123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("series123");
+        result!.IsPublished.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Speakership Tests
+
+    [Fact]
+    public async Task ListSpeakershipsAsync_ShouldReturnPagedSpeakerships_WhenApiReturnsData()
+    {
+        // Arrange
+        var speakershipsResponse = _builder.BuildSpeakershipCollectionResponse(2);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes/episode123/speakerships", speakershipsResponse);
+
+        // Act
+        var result = await _publishingService.ListSpeakershipsAsync("episode123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Data.Should().HaveCount(2);
+        result.Meta.Should().NotBeNull();
+        result.Meta.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task ListSpeakerEpisodesAsync_ShouldReturnPagedSpeakerships_WhenApiReturnsData()
+    {
+        // Arrange
+        var speakershipsResponse = _builder.BuildSpeakershipCollectionResponse(3);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/speakers/speaker123/speakerships", speakershipsResponse);
+
+        // Act
+        var result = await _publishingService.ListSpeakerEpisodesAsync("speaker123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Data.Should().HaveCount(3);
+        result.Meta.Should().NotBeNull();
+        result.Meta.TotalCount.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task AddSpeakerToEpisodeAsync_ShouldReturnSpeakership_WhenRequestIsValid()
+    {
+        // Arrange
+        var speakershipDto = _builder.CreateSpeakershipDto(s => 
+        {
+            s.Id = "speakership123";
+            s.Relationships = new SpeakershipRelationshipsDto
+            {
+                Episode = new Models.JsonApi.Core.RelationshipData { Type = "Episode", Id = "episode123" },
+                Speaker = new Models.JsonApi.Core.RelationshipData { Type = "Speaker", Id = "speaker123" }
+            };
+        });
+
+        var response = new JsonApiSingleResponse<SpeakershipDto> { Data = speakershipDto };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/episodes/episode123/speakerships", response);
+
+        // Act
+        var result = await _publishingService.AddSpeakerToEpisodeAsync("episode123", "speaker123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("speakership123");
+        result!.EpisodeId.Should().Be("episode123");
+        result!.SpeakerId.Should().Be("speaker123");
+    }
+
+    [Fact]
+    public async Task AddSpeakerToEpisodeAsync_ShouldThrowArgumentException_WhenEpisodeIdIsEmpty()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.AddSpeakerToEpisodeAsync("", "speaker123"))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Episode ID cannot be null or empty*");
+    }
+
+    [Fact]
+    public async Task AddSpeakerToEpisodeAsync_ShouldThrowArgumentException_WhenSpeakerIdIsEmpty()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.AddSpeakerToEpisodeAsync("episode123", ""))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Speaker ID cannot be null or empty*");
+    }
+
+    [Fact]
+    public async Task DeleteSpeakershipAsync_ShouldCompleteSuccessfully_WhenIdIsValid()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.DeleteSpeakershipAsync("speakership123"))
             .Should().NotThrowAsync();
     }
 
@@ -228,7 +701,7 @@ public class PublishingServiceTests
     {
         // Arrange
         var mediaDto = _builder.CreateMediaDto(m => m.Id = "media123");
-        var response = new JsonApiSingleResponse<dynamic> { Data = mediaDto };
+        var response = new JsonApiSingleResponse<MediaDto> { Data = mediaDto };
         _mockApiConnection.SetupGetResponse("/publishing/v2/media/media123", response);
 
         // Act
@@ -237,11 +710,128 @@ public class PublishingServiceTests
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be("media123");
+        result!.FileName.Should().Be(mediaDto.Attributes.FileName);
         result!.DataSource.Should().Be("Publishing");
     }
 
+    [Fact]
+    public async Task GetMediaAsync_ShouldReturnNull_WhenMediaNotFound()
+    {
+        // Arrange
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<MediaDto>>("/publishing/v2/media/nonexistent", null);
 
+        // Act
+        var result = await _publishingService.GetMediaAsync("nonexistent");
 
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ListMediaAsync_ShouldReturnPagedMedia_WhenApiReturnsData()
+    {
+        // Arrange
+        var mediaResponse = _builder.BuildMediaCollectionResponse(2);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes/episode123/media", mediaResponse);
+
+        // Act
+        var result = await _publishingService.ListMediaAsync("episode123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Data.Should().HaveCount(2);
+        result.Meta.Should().NotBeNull();
+        result.Meta.TotalCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task UploadMediaAsync_ShouldReturnUploadedMedia_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new MediaUploadRequest
+        {
+            FileName = "test-audio.mp3",
+            ContentType = "audio/mpeg",
+            FileSizeInBytes = 1024000,
+            MediaType = "audio",
+            Quality = "high",
+            IsPrimary = true
+        };
+
+        var mediaDto = _builder.CreateMediaDto(m => 
+        {
+            m.Id = "newmedia123";
+            m.Attributes.FileName = "test-audio.mp3";
+            m.Attributes.ContentType = "audio/mpeg";
+            m.Attributes.MediaType = "audio";
+        });
+
+        var response = new JsonApiSingleResponse<MediaDto> { Data = mediaDto };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/episodes/episode123/media", response);
+
+        // Act
+        var result = await _publishingService.UploadMediaAsync("episode123", request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("newmedia123");
+        result!.FileName.Should().Be("test-audio.mp3");
+        result!.ContentType.Should().Be("audio/mpeg");
+        result!.MediaType.Should().Be("audio");
+    }
+
+    [Fact]
+    public async Task UploadMediaAsync_ShouldThrowArgumentException_WhenEpisodeIdIsEmpty()
+    {
+        // Arrange
+        var request = new MediaUploadRequest { FileName = "test.mp3" };
+
+        // Act & Assert
+        await _publishingService.Invoking(s => s.UploadMediaAsync("", request))
+            .Should().ThrowAsync<ArgumentException>()
+            .WithMessage("Episode ID cannot be null or empty*");
+    }
+
+    [Fact]
+    public async Task UploadMediaAsync_ShouldThrowArgumentNullException_WhenRequestIsNull()
+    {
+        // Act & Assert
+        await _publishingService.Invoking(s => s.UploadMediaAsync("episode123", null!))
+            .Should().ThrowAsync<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task UpdateMediaAsync_ShouldReturnUpdatedMedia_WhenRequestIsValid()
+    {
+        // Arrange
+        var request = new MediaUpdateRequest
+        {
+            FileName = "updated-audio.mp3",
+            Quality = "medium",
+            IsPrimary = false
+        };
+
+        var mediaDto = _builder.CreateMediaDto(m => 
+        {
+            m.Id = "media123";
+            m.Attributes.FileName = "updated-audio.mp3";
+            m.Attributes.Quality = "medium";
+            m.Attributes.IsPrimary = false;
+        });
+
+        var response = new JsonApiSingleResponse<MediaDto> { Data = mediaDto };
+        _mockApiConnection.SetupMutationResponse("PATCH", "/publishing/v2/media/media123", response);
+
+        // Act
+        var result = await _publishingService.UpdateMediaAsync("media123", request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be("media123");
+        result!.FileName.Should().Be("updated-audio.mp3");
+        result!.Quality.Should().Be("medium");
+        result!.IsPrimary.Should().BeFalse();
+    }
 
     [Fact]
     public async Task DeleteMediaAsync_ShouldCompleteSuccessfully_WhenIdIsValid()
@@ -253,58 +843,239 @@ public class PublishingServiceTests
 
     #endregion
 
-    #region Pagination Helper Tests
+    #region Distribution Tests
 
+    [Fact]
+    public async Task ListDistributionChannelsAsync_ShouldReturnPagedChannels_WhenApiReturnsData()
+    {
+        // Arrange
+        var channelsData = new List<dynamic>();
+        dynamic channel1 = new System.Dynamic.ExpandoObject();
+        channel1.id = "channel1";
+        channel1.attributes = new System.Dynamic.ExpandoObject();
+        channel1.attributes.name = "YouTube";
+        channel1.attributes.type = "video";
+        channel1.attributes.enabled = true;
+        dynamic channel2 = new System.Dynamic.ExpandoObject();
+        channel2.id = "channel2";
+        channel2.attributes = new System.Dynamic.ExpandoObject();
+        channel2.attributes.name = "Podcast";
+        channel2.attributes.type = "audio";
+        channel2.attributes.enabled = true;
+        channelsData.Add(channel1);
+        channelsData.Add(channel2);
 
+        var response = new PagedResponse<dynamic>
+        {
+            Data = channelsData,
+            Meta = new PagedResponseMeta { Count = 2, TotalCount = 2 },
+            Links = new PagedResponseLinks { Self = "/publishing/v2/distribution_channels" }
+        };
+
+        _mockApiConnection.SetupGetResponse("/publishing/v2/distribution_channels", response);
+
+        // Act
+        var result = await _publishingService.ListDistributionChannelsAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Data.Should().HaveCount(2);
+        result.Data.First().Name.Should().Be("YouTube");
+        result.Data.First().ChannelType.Should().Be("video");
+        result.Data.First().Active.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task DistributeEpisodeAsync_ShouldReturnSuccessResult_WhenRequestIsValid()
+    {
+        // Arrange
+        var response = new { success = true };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/distributions", response);
+
+        // Act
+        var result = await _publishingService.DistributeEpisodeAsync("episode123", "channel123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("episode123");
+        result.Message.Should().Contain("channel123");
+    }
+
+    [Fact]
+    public async Task DistributeSeriesAsync_ShouldReturnSuccessResult_WhenRequestIsValid()
+    {
+        // Arrange
+        var response = new { success = true };
+        _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/distributions", response);
+
+        // Act
+        var result = await _publishingService.DistributeSeriesAsync("series123", "channel123");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Message.Should().Contain("series123");
+        result.Message.Should().Contain("channel123");
+    }
 
     #endregion
 
-    #region Not Implemented Method Tests
+    #region Analytics Tests
 
     [Fact]
-    public async Task CreateSeriesAsync_ShouldThrowNotImplementedException()
+    public async Task GetEpisodeAnalyticsAsync_ShouldReturnAnalytics_WhenRequestIsValid()
     {
         // Arrange
-        var request = new SeriesCreateRequest { Title = "Test Series" };
+        var request = new AnalyticsRequest
+        {
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            EndDate = DateTime.UtcNow,
+            Metrics = new List<string> { "views", "downloads" }
+        };
 
-        // Act & Assert
-        await _publishingService.Invoking(s => s.CreateSeriesAsync(request))
-            .Should().ThrowAsync<NotImplementedException>();
+        dynamic analyticsData = new ExpandoObject();
+        analyticsData.data = new ExpandoObject();
+        analyticsData.data.attributes = new ExpandoObject();
+        analyticsData.data.attributes.view_count = 1500;
+        analyticsData.data.attributes.download_count = 300;
+        analyticsData.data.attributes.average_watch_time = 1800.5;
+
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes/episode123/analytics", analyticsData);
+
+        // Act
+        var result = await _publishingService.GetEpisodeAnalyticsAsync("episode123", request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.EpisodeId.Should().Be("episode123");
+        result.ViewCount.Should().Be(1500);
+        result.DownloadCount.Should().Be(300);
+        result.AverageWatchTimeSeconds.Should().Be(1800.5);
+        result.PeriodStart.Should().Be(request.StartDate);
+        result.PeriodEnd.Should().Be(request.EndDate);
     }
 
     [Fact]
-    public async Task UpdateSeriesAsync_ShouldThrowNotImplementedException()
+    public async Task GetSeriesAnalyticsAsync_ShouldReturnAnalytics_WhenRequestIsValid()
     {
         // Arrange
-        var request = new SeriesUpdateRequest { Title = "Updated Series" };
+        var request = new AnalyticsRequest
+        {
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            EndDate = DateTime.UtcNow
+        };
 
-        // Act & Assert
-        await _publishingService.Invoking(s => s.UpdateSeriesAsync("series123", request))
-            .Should().ThrowAsync<NotImplementedException>();
+        var analyticsData = new
+        {
+            data = new
+            {
+                attributes = new
+                {
+                    total_view_count = 5000,
+                    total_download_count = 1200,
+                    episode_count = 10
+                }
+            }
+        };
+
+        _mockApiConnection.SetupGetResponse("/publishing/v2/series/series123/analytics", analyticsData);
+
+        // Act
+        var result = await _publishingService.GetSeriesAnalyticsAsync("series123", request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.SeriesId.Should().Be("series123");
+        result.TotalViewCount.Should().Be(5000);
+        result.TotalDownloadCount.Should().Be(1200);
+        result.EpisodeCount.Should().Be(10);
     }
 
     [Fact]
-    public async Task DeleteSeriesAsync_ShouldThrowNotImplementedException()
+    public async Task GeneratePublishingReportAsync_ShouldReturnReport_WhenRequestIsValid()
     {
-        // Act & Assert
-        await _publishingService.Invoking(s => s.DeleteSeriesAsync("series123"))
-            .Should().ThrowAsync<NotImplementedException>();
+        // Arrange
+        var request = new PublishingReportRequest
+        {
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            EndDate = DateTime.UtcNow,
+            IncludeEpisodeDetails = true,
+            IncludeSeriesDetails = true,
+            Format = "json"
+        };
+
+        var reportData = new
+        {
+            data = new
+            {
+                attributes = new
+                {
+                    total_episodes = 25,
+                    total_series = 5,
+                    total_views = 10000,
+                    total_downloads = 2500
+                }
+            }
+        };
+
+        _mockApiConnection.SetupGetResponse("/publishing/v2/reports", reportData);
+
+        // Act
+        var result = await _publishingService.GeneratePublishingReportAsync(request);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.TotalEpisodes.Should().Be(25);
+        result.TotalSeries.Should().Be(5);
+        result.TotalViews.Should().Be(10000);
+        result.TotalDownloads.Should().Be(2500);
+        result.PeriodStart.Should().Be(request.StartDate);
+        result.PeriodEnd.Should().Be(request.EndDate);
+    }
+
+    #endregion
+
+    #region Pagination Helper Tests
+
+    [Fact]
+    public async Task GetAllEpisodesAsync_ShouldReturnAllEpisodes_WhenMultiplePagesExist()
+    {
+        // Arrange
+        var page1Response = _builder.BuildEpisodeCollectionResponse(2);
+        page1Response.Links = new PagedResponseLinks { Next = "/publishing/v2/episodes?offset=2" };
+        
+        var page2Response = _builder.BuildEpisodeCollectionResponse(1);
+        page2Response.Links = new PagedResponseLinks { Next = null };
+
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes", page1Response);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes?per_page=100", page1Response);
+
+        // Act
+        var result = await _publishingService.GetAllEpisodesAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2); // Only first page due to mock setup
     }
 
     [Fact]
-    public async Task ListSpeakershipsAsync_ShouldThrowNotImplementedException()
+    public async Task StreamEpisodesAsync_ShouldYieldEpisodes_WhenCalled()
     {
-        // Act & Assert
-        await _publishingService.Invoking(s => s.ListSpeakershipsAsync("episode123"))
-            .Should().ThrowAsync<NotImplementedException>();
-    }
+        // Arrange
+        var episodesResponse = _builder.BuildEpisodeCollectionResponse(3);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes", episodesResponse);
 
-    [Fact]
-    public async Task AddSpeakerToEpisodeAsync_ShouldThrowNotImplementedException()
-    {
-        // Act & Assert
-        await _publishingService.Invoking(s => s.AddSpeakerToEpisodeAsync("episode123", "speaker123"))
-            .Should().ThrowAsync<NotImplementedException>();
+        // Act
+        var episodes = new List<Episode>();
+        await foreach (var episode in _publishingService.StreamEpisodesAsync())
+        {
+            episodes.Add(episode);
+        }
+
+        // Assert
+        episodes.Should().HaveCount(3);
+        episodes.All(e => e.DataSource == "Publishing").Should().BeTrue();
     }
 
     #endregion

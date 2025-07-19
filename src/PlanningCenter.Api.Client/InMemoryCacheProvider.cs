@@ -34,8 +34,11 @@ public class InMemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
+        cancellationToken.ThrowIfCancellationRequested();
+        if (key == null)
+            throw new ArgumentNullException(nameof(key));
+        if (key.Length == 0)
+            throw new ArgumentException("Cache key cannot be empty", nameof(key));
 
         if (!_options.EnableCaching)
         {
@@ -61,8 +64,11 @@ public class InMemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public Task SetAsync<T>(string key, T value, TimeSpan? expiry = null, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
+        cancellationToken.ThrowIfCancellationRequested();
+        if (key == null)
+            throw new ArgumentNullException(nameof(key));
+        if (key.Length == 0)
+            throw new ArgumentException("Cache key cannot be empty", nameof(key));
 
         if (!_options.EnableCaching)
         {
@@ -70,6 +76,38 @@ public class InMemoryCacheProvider : ICacheProvider, IDisposable
         }
 
         var expirationTime = expiry ?? _options.DefaultCacheExpiration;
+        if (expirationTime <= TimeSpan.Zero)
+        {
+            // Treat zero/negative expiration as immediate expiration (store, then remove)
+            _cache.Set(key, value, TimeSpan.FromMilliseconds(1));
+            lock (_keysLock)
+            {
+                _cacheKeys.Add(key);
+            }
+            _logger.LogDebug("Cache entry set with immediate expiration: {Key}", key);
+            // Remove immediately
+            _cache.Remove(key);
+            lock (_keysLock)
+            {
+                _cacheKeys.Remove(key);
+            }
+            return Task.CompletedTask;
+        }
+
+        // Eviction: if max cache size is exceeded, evict oldest
+        lock (_keysLock)
+        {
+            if (_options.MaxCacheSize > 0 && _cacheKeys.Count >= _options.MaxCacheSize)
+            {
+                var oldestKey = _cacheKeys.FirstOrDefault();
+                if (oldestKey != null)
+                {
+                    _cache.Remove(oldestKey);
+                    _cacheKeys.Remove(oldestKey);
+                    _logger.LogDebug("Evicted oldest cache entry: {Key}", oldestKey);
+                }
+            }
+        }
         
         var cacheEntryOptions = new MemoryCacheEntryOptions
         {
@@ -105,8 +143,13 @@ public class InMemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public Task RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(key))
-            throw new ArgumentException("Cache key cannot be null or empty", nameof(key));
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (key == null)
+            throw new ArgumentNullException(nameof(key));
+        if (key.Length == 0)
+            throw new ArgumentException("Cache key cannot be empty", nameof(key));
 
         _cache.Remove(key);
         
@@ -126,8 +169,11 @@ public class InMemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public Task RemoveByPatternAsync(string pattern, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(pattern))
-            throw new ArgumentException("Pattern cannot be null or empty", nameof(pattern));
+        cancellationToken.ThrowIfCancellationRequested();
+        if (pattern == null)
+            throw new ArgumentNullException(nameof(pattern));
+        if (pattern.Length == 0)
+            throw new ArgumentException("Pattern cannot be empty", nameof(pattern));
 
         List<string> keysToRemove;
         
@@ -226,6 +272,8 @@ public class InMemoryCacheProvider : ICacheProvider, IDisposable
     /// </summary>
     public Task ClearAsync(CancellationToken cancellationToken = default)
     {
+        if (cancellationToken.IsCancellationRequested)
+            throw new OperationCanceledException(cancellationToken);
         List<string> allKeys;
         
         lock (_keysLock)

@@ -207,25 +207,45 @@ public class PlanningCenterClient : IPlanningCenterClient
     {
         try
         {
-            // Planning Center API doesn't have a dedicated /me endpoint
-            // We'll need to make a request to get current user info
-            // For now, return placeholder data
+            // Use the People service to get current user information via /people/v2/me endpoint
+            var currentPerson = await _peopleService.GetMeAsync(cancellationToken);
+            
             return new CurrentUserInfo
             {
-                Id = "current-user",
-                Name = "Current User",
-                Email = "user@example.com",
-                Permissions = new List<string> { "read", "write" },
-                Organizations = new List<string> { "default" }
+                Id = currentPerson.Id,
+                Name = currentPerson.FullName,
+                Email = currentPerson.PrimaryEmail ?? string.Empty,
+                Permissions = new List<string> { "authenticated" }, // Basic permission - actual permissions would need additional API calls
+                Organizations = new List<string> { currentPerson.DataSource ?? "Planning Center" },
+                Metadata = new Dictionary<string, object>
+                {
+                    ["first_name"] = currentPerson.FirstName,
+                    ["last_name"] = currentPerson.LastName,
+                    ["nickname"] = currentPerson.Nickname ?? string.Empty,
+                    ["created_at"] = currentPerson.CreatedAt,
+                    ["updated_at"] = currentPerson.UpdatedAt,
+                    ["status"] = currentPerson.Status ?? "active",
+                    ["membership_status"] = currentPerson.MembershipStatus ?? "member",
+                    ["is_child"] = currentPerson.IsChild,
+                    ["is_active"] = currentPerson.IsActive,
+                    ["display_name"] = currentPerson.DisplayName,
+                    ["avatar_url"] = currentPerson.AvatarUrl ?? string.Empty
+                }
             };
         }
-        catch
+        catch (Exception ex)
         {
+            // Log the error but return a fallback response
             return new CurrentUserInfo
             {
                 Id = "unknown",
                 Name = "Unknown User",
-                Email = "unknown@example.com"
+                Email = "unknown@example.com",
+                Metadata = new Dictionary<string, object>
+                {
+                    ["error"] = ex.Message,
+                    ["error_type"] = ex.GetType().Name
+                }
             };
         }
     }

@@ -397,7 +397,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SeriesDto>>(
                 $"{BaseEndpoint}/series/{id}", cancellationToken);
 
             if (response?.Data == null)
@@ -429,7 +429,7 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<SeriesDto>>(
                 $"{BaseEndpoint}/series{queryString}", cancellationToken);
 
             if (response?.Data == null)
@@ -443,7 +443,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 };
             }
 
-            var series = response.Data.Select<dynamic, Series>(dto => PublishingMapper.MapToDomain((SeriesDto)dto)).ToList();
+            var series = response.Data.Select(PublishingMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<Series>
             {
@@ -464,17 +464,83 @@ public class PublishingService : ServiceBase, IPublishingService
 
     public async Task<Series> CreateSeriesAsync(SeriesCreateRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Series operations not yet implemented");
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        Logger.LogDebug("Creating series with title: {Title}", request.Title);
+
+        try
+        {
+            var jsonApiRequest = PublishingMapper.MapCreateRequestToJsonApi(request);
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SeriesDto>>(
+                $"{BaseEndpoint}/series", jsonApiRequest, cancellationToken);
+
+            if (response?.Data == null)
+            {
+                throw new PlanningCenterApiGeneralException("Failed to create series - no data returned");
+            }
+
+            var series = PublishingMapper.MapToDomain(response.Data);
+
+            Logger.LogInformation("Successfully created series: {SeriesId}", series.Id);
+            return series;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating series");
+            throw;
+        }
     }
 
     public async Task<Series> UpdateSeriesAsync(string id, SeriesUpdateRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Series operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("Series ID cannot be null or empty", nameof(id));
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        Logger.LogDebug("Updating series: {SeriesId}", id);
+
+        try
+        {
+            var jsonApiRequest = PublishingMapper.MapUpdateRequestToJsonApi(id, request);
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SeriesDto>>(
+                $"{BaseEndpoint}/series/{id}", jsonApiRequest, cancellationToken);
+
+            if (response?.Data == null)
+            {
+                throw new PlanningCenterApiGeneralException($"Failed to update series {id} - no data returned");
+            }
+
+            var series = PublishingMapper.MapToDomain(response.Data);
+
+            Logger.LogInformation("Successfully updated series: {SeriesId}", id);
+            return series;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error updating series: {SeriesId}", id);
+            throw;
+        }
     }
 
     public async Task DeleteSeriesAsync(string id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Series operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("Series ID cannot be null or empty", nameof(id));
+
+        Logger.LogDebug("Deleting series: {SeriesId}", id);
+
+        try
+        {
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/series/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted series: {SeriesId}", id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting series: {SeriesId}", id);
+            throw;
+        }
     }
 
     public async Task<Speaker?> GetSpeakerAsync(string id, CancellationToken cancellationToken = default)
@@ -486,7 +552,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SpeakerDto>>(
                 $"{BaseEndpoint}/speakers/{id}", cancellationToken);
 
             if (response?.Data == null)
@@ -518,7 +584,7 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<SpeakerDto>>(
                 $"{BaseEndpoint}/speakers{queryString}", cancellationToken);
 
             if (response?.Data == null)
@@ -532,7 +598,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 };
             }
 
-            var speakers = response.Data.Select<dynamic, Speaker>(dto => PublishingMapper.MapToDomain((SpeakerDto)dto)).ToList();
+            var speakers = response.Data.Select(PublishingMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<Speaker>
             {
@@ -584,7 +650,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 }
             };
 
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SpeakerDto>>(
                 $"{BaseEndpoint}/speakers", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -592,7 +658,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 throw new PlanningCenterApiGeneralException("Failed to create speaker - no data returned");
             }
 
-            var speaker = PublishingMapper.MapToDomain((SpeakerDto)response.Data);
+            var speaker = PublishingMapper.MapToDomain(response.Data);
             Logger.LogInformation("Successfully created speaker: {SpeakerId}", speaker.Id);
             return speaker;
         }
@@ -639,7 +705,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 }
             };
 
-            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SpeakerDto>>(
                 $"{BaseEndpoint}/speakers/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -679,22 +745,139 @@ public class PublishingService : ServiceBase, IPublishingService
 
     public async Task<IPagedResponse<Speakership>> ListSpeakershipsAsync(string episodeId, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Speakership operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(episodeId))
+            throw new ArgumentException("Episode ID cannot be null or empty", nameof(episodeId));
+
+        Logger.LogDebug("Listing speakerships for episode: {EpisodeId}", episodeId);
+
+        try
+        {
+            var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var response = await ApiConnection.GetAsync<PagedResponse<SpeakershipDto>>(
+                $"{BaseEndpoint}/episodes/{episodeId}/speakerships{queryString}", cancellationToken);
+
+            if (response?.Data == null)
+            {
+                Logger.LogWarning("No speakerships returned for episode: {EpisodeId}", episodeId);
+                return new PagedResponse<Speakership>
+                {
+                    Data = new List<Speakership>(),
+                    Meta = new PagedResponseMeta { TotalCount = 0 },
+                    Links = new PagedResponseLinks()
+                };
+            }
+
+            var speakerships = response.Data.Select(PublishingMapper.MapToDomain).ToList();
+            
+            var pagedResponse = new PagedResponse<Speakership>
+            {
+                Data = speakerships,
+                Meta = response.Meta,
+                Links = response.Links
+            };
+
+            Logger.LogInformation("Successfully retrieved {Count} speakerships for episode: {EpisodeId}", speakerships.Count, episodeId);
+            return pagedResponse;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error listing speakerships for episode: {EpisodeId}", episodeId);
+            throw;
+        }
     }
 
     public async Task<IPagedResponse<Speakership>> ListSpeakerEpisodesAsync(string speakerId, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Speakership operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(speakerId))
+            throw new ArgumentException("Speaker ID cannot be null or empty", nameof(speakerId));
+
+        Logger.LogDebug("Listing episodes for speaker: {SpeakerId}", speakerId);
+
+        try
+        {
+            var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var response = await ApiConnection.GetAsync<PagedResponse<SpeakershipDto>>(
+                $"{BaseEndpoint}/speakers/{speakerId}/speakerships{queryString}", cancellationToken);
+
+            if (response?.Data == null)
+            {
+                Logger.LogWarning("No speakerships returned for speaker: {SpeakerId}", speakerId);
+                return new PagedResponse<Speakership>
+                {
+                    Data = new List<Speakership>(),
+                    Meta = new PagedResponseMeta { TotalCount = 0 },
+                    Links = new PagedResponseLinks()
+                };
+            }
+
+            var speakerships = response.Data.Select(PublishingMapper.MapToDomain).ToList();
+            
+            var pagedResponse = new PagedResponse<Speakership>
+            {
+                Data = speakerships,
+                Meta = response.Meta,
+                Links = response.Links
+            };
+
+            Logger.LogInformation("Successfully retrieved {Count} speakerships for speaker: {SpeakerId}", speakerships.Count, speakerId);
+            return pagedResponse;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error listing speakerships for speaker: {SpeakerId}", speakerId);
+            throw;
+        }
     }
 
     public async Task<Speakership> AddSpeakerToEpisodeAsync(string episodeId, string speakerId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Speakership operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(episodeId))
+            throw new ArgumentException("Episode ID cannot be null or empty", nameof(episodeId));
+        if (string.IsNullOrWhiteSpace(speakerId))
+            throw new ArgumentException("Speaker ID cannot be null or empty", nameof(speakerId));
+
+        Logger.LogDebug("Adding speaker {SpeakerId} to episode {EpisodeId}", speakerId, episodeId);
+
+        try
+        {
+            var jsonApiRequest = PublishingMapper.MapSpeakershipCreateToJsonApi(episodeId, speakerId);
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SpeakershipDto>>(
+                $"{BaseEndpoint}/episodes/{episodeId}/speakerships", jsonApiRequest, cancellationToken);
+
+            if (response?.Data == null)
+            {
+                throw new PlanningCenterApiGeneralException($"Failed to add speaker {speakerId} to episode {episodeId} - no data returned");
+            }
+
+            var speakership = PublishingMapper.MapToDomain(response.Data);
+
+            Logger.LogInformation("Successfully added speaker {SpeakerId} to episode {EpisodeId}: {SpeakershipId}", speakerId, episodeId, speakership.Id);
+            return speakership;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error adding speaker {SpeakerId} to episode {EpisodeId}", speakerId, episodeId);
+            throw;
+        }
     }
 
     public async Task DeleteSpeakershipAsync(string id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Speakership operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("Speakership ID cannot be null or empty", nameof(id));
+
+        Logger.LogDebug("Deleting speakership: {SpeakershipId}", id);
+
+        try
+        {
+            await ApiConnection.DeleteAsync($"{BaseEndpoint}/speakerships/{id}", cancellationToken);
+            Logger.LogInformation("Successfully deleted speakership: {SpeakershipId}", id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error deleting speakership: {SpeakershipId}", id);
+            throw;
+        }
     }
 
     public async Task<Media?> GetMediaAsync(string id, CancellationToken cancellationToken = default)
@@ -706,7 +889,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<MediaDto>>(
                 $"{BaseEndpoint}/media/{id}", cancellationToken);
 
             if (response?.Data == null)
@@ -741,7 +924,7 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<MediaDto>>(
                 $"{BaseEndpoint}/episodes/{episodeId}/media{queryString}", cancellationToken);
 
             if (response?.Data == null)
@@ -755,7 +938,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 };
             }
 
-            var media = response.Data.Select<dynamic, Media>(dto => PublishingMapper.MapToDomain((MediaDto)dto)).ToList();
+            var media = response.Data.Select(PublishingMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<Media>
             {
@@ -809,7 +992,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 }
             };
 
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<MediaDto>>(
                 $"{BaseEndpoint}/episodes/{episodeId}/media", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -817,7 +1000,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 throw new PlanningCenterApiGeneralException($"Failed to upload media to episode {episodeId} - no data returned");
             }
 
-            var media = PublishingMapper.MapToDomain((MediaDto)response.Data);
+            var media = PublishingMapper.MapToDomain(response.Data);
             Logger.LogInformation("Successfully uploaded media: {MediaId} to episode: {EpisodeId}", media.Id, episodeId);
             return media;
         }
@@ -854,7 +1037,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 }
             };
 
-            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<MediaDto>>(
                 $"{BaseEndpoint}/media/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -894,42 +1077,387 @@ public class PublishingService : ServiceBase, IPublishingService
 
     public async Task<Series> PublishSeriesAsync(string id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Series publishing operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("Series ID cannot be null or empty", nameof(id));
+
+        Logger.LogDebug("Publishing series: {SeriesId}", id);
+
+        try
+        {
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SeriesDto>>(
+                $"{BaseEndpoint}/series/{id}/publish", null!, cancellationToken);
+
+            if (response?.Data == null)
+            {
+                throw new PlanningCenterApiGeneralException($"Failed to publish series {id} - no data returned");
+            }
+
+            var series = PublishingMapper.MapToDomain(response.Data);
+
+            Logger.LogInformation("Successfully published series: {SeriesId}", id);
+            return series;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error publishing series: {SeriesId}", id);
+            throw;
+        }
     }
 
     public async Task<Series> UnpublishSeriesAsync(string id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Series publishing operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(id))
+            throw new ArgumentException("Series ID cannot be null or empty", nameof(id));
+
+        Logger.LogDebug("Unpublishing series: {SeriesId}", id);
+
+        try
+        {
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SeriesDto>>(
+                $"{BaseEndpoint}/series/{id}/unpublish", null!, cancellationToken);
+
+            if (response?.Data == null)
+            {
+                throw new PlanningCenterApiGeneralException($"Failed to unpublish series {id} - no data returned");
+            }
+
+            var series = PublishingMapper.MapToDomain(response.Data);
+
+            Logger.LogInformation("Successfully unpublished series: {SeriesId}", id);
+            return series;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error unpublishing series: {SeriesId}", id);
+            throw;
+        }
     }
 
     public async Task<IPagedResponse<DistributionChannel>> ListDistributionChannelsAsync(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Distribution operations not yet implemented");
+        Logger.LogDebug("Listing distribution channels");
+
+        try
+        {
+            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+                $"{BaseEndpoint}/distribution_channels", cancellationToken);
+
+            if (response?.Data == null)
+            {
+                Logger.LogWarning("No distribution channels returned from API");
+                return new PagedResponse<DistributionChannel>
+                {
+                    Data = new List<DistributionChannel>(),
+                    Meta = new PagedResponseMeta { TotalCount = 0 },
+                    Links = new PagedResponseLinks()
+                };
+            }
+
+            // Basic mapping - would need proper DTO and mapper in full implementation
+            var channels = response.Data.Select(dto => {
+                // Safely access dynamic properties with null checks and type handling
+                string? id = null;
+                try { id = dto.id?.ToString(); } catch { /* Property doesn't exist */ }
+                
+                dynamic? attributes = null;
+                try { attributes = dto.attributes; } catch { /* Property doesn't exist */ }
+                
+                string name = "Unknown Channel";
+                string type = "unknown";
+                bool enabled = false;
+                
+                if (attributes != null)
+                {
+                    try 
+                    { 
+                        // Make sure we properly extract the name property
+                        if (attributes.name != null)
+                        {
+                            name = attributes.name.ToString();
+                        }
+                    } 
+                    catch { /* Property doesn't exist */ }
+                    
+                    try { type = attributes.type?.ToString() ?? type; } catch { /* Property doesn't exist */ }
+                    try { enabled = attributes.enabled ?? enabled; } catch { /* Property doesn't exist */ }
+                }
+                
+                return new DistributionChannel
+                {
+                    Id = id ?? string.Empty,
+                    Name = name,
+                    ChannelType = type,
+                    Active = enabled,
+                    DataSource = "Publishing"
+                };
+            }).ToList();
+            
+            var pagedResponse = new PagedResponse<DistributionChannel>
+            {
+                Data = channels,
+                Meta = response.Meta,
+                Links = response.Links
+            };
+
+            Logger.LogInformation("Successfully retrieved {Count} distribution channels", channels.Count);
+            return pagedResponse;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error listing distribution channels");
+            throw;
+        }
     }
 
     public async Task<DistributionResult> DistributeEpisodeAsync(string episodeId, string channelId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Distribution operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(episodeId))
+            throw new ArgumentException("Episode ID cannot be null or empty", nameof(episodeId));
+        if (string.IsNullOrWhiteSpace(channelId))
+            throw new ArgumentException("Channel ID cannot be null or empty", nameof(channelId));
+
+        Logger.LogDebug("Distributing episode {EpisodeId} to channel {ChannelId}", episodeId, channelId);
+
+        try
+        {
+            var requestData = new
+            {
+                data = new
+                {
+                    type = "Distribution",
+                    attributes = new
+                    {
+                        episode_id = episodeId,
+                        channel_id = channelId
+                    }
+                }
+            };
+
+            var response = await ApiConnection.PostAsync<dynamic>(
+                $"{BaseEndpoint}/distributions", requestData, cancellationToken);
+
+            var result = new DistributionResult
+            {
+                Success = true,
+                Message = $"Episode {episodeId} successfully distributed to channel {channelId}",
+                DistributedAt = DateTime.UtcNow
+            };
+
+            Logger.LogInformation("Successfully distributed episode {EpisodeId} to channel {ChannelId}", episodeId, channelId);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error distributing episode {EpisodeId} to channel {ChannelId}", episodeId, channelId);
+            
+            return new DistributionResult
+            {
+                Success = false,
+                Message = $"Failed to distribute episode: {ex.Message}",
+                DistributedAt = DateTime.UtcNow
+            };
+        }
     }
 
     public async Task<DistributionResult> DistributeSeriesAsync(string seriesId, string channelId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Distribution operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(seriesId))
+            throw new ArgumentException("Series ID cannot be null or empty", nameof(seriesId));
+        if (string.IsNullOrWhiteSpace(channelId))
+            throw new ArgumentException("Channel ID cannot be null or empty", nameof(channelId));
+
+        Logger.LogDebug("Distributing series {SeriesId} to channel {ChannelId}", seriesId, channelId);
+
+        try
+        {
+            var requestData = new
+            {
+                data = new
+                {
+                    type = "Distribution",
+                    attributes = new
+                    {
+                        series_id = seriesId,
+                        channel_id = channelId
+                    }
+                }
+            };
+
+            var response = await ApiConnection.PostAsync<dynamic>(
+                $"{BaseEndpoint}/distributions", requestData, cancellationToken);
+
+            var result = new DistributionResult
+            {
+                Success = true,
+                Message = $"Series {seriesId} successfully distributed to channel {channelId}",
+                DistributedAt = DateTime.UtcNow
+            };
+
+            Logger.LogInformation("Successfully distributed series {SeriesId} to channel {ChannelId}", seriesId, channelId);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error distributing series {SeriesId} to channel {ChannelId}", seriesId, channelId);
+            
+            return new DistributionResult
+            {
+                Success = false,
+                Message = $"Failed to distribute series: {ex.Message}",
+                DistributedAt = DateTime.UtcNow
+            };
+        }
     }
 
     public async Task<EpisodeAnalytics> GetEpisodeAnalyticsAsync(string episodeId, AnalyticsRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Analytics operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(episodeId))
+            throw new ArgumentException("Episode ID cannot be null or empty", nameof(episodeId));
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        Logger.LogDebug("Getting analytics for episode {EpisodeId} from {StartDate} to {EndDate}", episodeId, request.StartDate, request.EndDate);
+
+        try
+        {
+            var queryParams = new Dictionary<string, string>
+            {
+                ["start_date"] = request.StartDate.ToString("yyyy-MM-dd"),
+                ["end_date"] = request.EndDate.ToString("yyyy-MM-dd")
+            };
+
+            if (request.Metrics.Any())
+            {
+                queryParams["metrics"] = string.Join(",", request.Metrics);
+            }
+
+            if (!string.IsNullOrEmpty(request.GroupBy))
+            {
+                queryParams["group_by"] = request.GroupBy;
+            }
+
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+            
+            var response = await ApiConnection.GetAsync<dynamic>(
+                $"{BaseEndpoint}/episodes/{episodeId}/analytics?{queryString}", cancellationToken);
+
+            // Basic analytics implementation - would need proper DTO and mapping in full implementation
+            var analytics = new EpisodeAnalytics
+            {
+                EpisodeId = episodeId,
+                ViewCount = response?.data?.attributes?.view_count ?? 0,
+                DownloadCount = response?.data?.attributes?.download_count ?? 0,
+                AverageWatchTimeSeconds = response?.data?.attributes?.average_watch_time ?? 0.0,
+                PeriodStart = request.StartDate,
+                PeriodEnd = request.EndDate
+            };
+
+            Logger.LogInformation("Successfully retrieved analytics for episode {EpisodeId}", episodeId);
+            return analytics;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error getting analytics for episode {EpisodeId}", episodeId);
+            throw;
+        }
     }
 
     public async Task<SeriesAnalytics> GetSeriesAnalyticsAsync(string seriesId, AnalyticsRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Analytics operations not yet implemented");
+        if (string.IsNullOrWhiteSpace(seriesId))
+            throw new ArgumentException("Series ID cannot be null or empty", nameof(seriesId));
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        Logger.LogDebug("Getting analytics for series {SeriesId} from {StartDate} to {EndDate}", seriesId, request.StartDate, request.EndDate);
+
+        try
+        {
+            var queryParams = new Dictionary<string, string>
+            {
+                ["start_date"] = request.StartDate.ToString("yyyy-MM-dd"),
+                ["end_date"] = request.EndDate.ToString("yyyy-MM-dd")
+            };
+
+            if (request.Metrics.Any())
+            {
+                queryParams["metrics"] = string.Join(",", request.Metrics);
+            }
+
+            if (!string.IsNullOrEmpty(request.GroupBy))
+            {
+                queryParams["group_by"] = request.GroupBy;
+            }
+
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+            
+            var response = await ApiConnection.GetAsync<dynamic>(
+                $"{BaseEndpoint}/series/{seriesId}/analytics?{queryString}", cancellationToken);
+
+            // Basic analytics implementation - would need proper DTO and mapping in full implementation
+            var analytics = new SeriesAnalytics
+            {
+                SeriesId = seriesId,
+                TotalViewCount = response?.data?.attributes?.total_view_count ?? 0,
+                TotalDownloadCount = response?.data?.attributes?.total_download_count ?? 0,
+                EpisodeCount = response?.data?.attributes?.episode_count ?? 0,
+                PeriodStart = request.StartDate,
+                PeriodEnd = request.EndDate
+            };
+
+            Logger.LogInformation("Successfully retrieved analytics for series {SeriesId}", seriesId);
+            return analytics;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error getting analytics for series {SeriesId}", seriesId);
+            throw;
+        }
     }
 
     public async Task<PublishingReport> GeneratePublishingReportAsync(PublishingReportRequest request, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException("Reporting operations not yet implemented");
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+
+        Logger.LogDebug("Generating publishing report from {StartDate} to {EndDate}", request.StartDate, request.EndDate);
+
+        try
+        {
+            var queryParams = new Dictionary<string, string>
+            {
+                ["start_date"] = request.StartDate.ToString("yyyy-MM-dd"),
+                ["end_date"] = request.EndDate.ToString("yyyy-MM-dd"),
+                ["format"] = request.Format,
+                ["include_episode_details"] = request.IncludeEpisodeDetails.ToString().ToLower(),
+                ["include_series_details"] = request.IncludeSeriesDetails.ToString().ToLower()
+            };
+
+            var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
+            
+            var response = await ApiConnection.GetAsync<dynamic>(
+                $"{BaseEndpoint}/reports?{queryString}", cancellationToken);
+
+            // Basic report implementation - would need proper DTO and mapping in full implementation
+            var report = new PublishingReport
+            {
+                TotalEpisodes = response?.data?.attributes?.total_episodes ?? 0,
+                TotalSeries = response?.data?.attributes?.total_series ?? 0,
+                TotalViews = response?.data?.attributes?.total_views ?? 0,
+                TotalDownloads = response?.data?.attributes?.total_downloads ?? 0,
+                PeriodStart = request.StartDate,
+                PeriodEnd = request.EndDate,
+                GeneratedAt = DateTime.UtcNow
+            };
+
+            Logger.LogInformation("Successfully generated publishing report for period {StartDate} to {EndDate}", request.StartDate, request.EndDate);
+            return report;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error generating publishing report");
+            throw;
+        }
     }
 
     #endregion

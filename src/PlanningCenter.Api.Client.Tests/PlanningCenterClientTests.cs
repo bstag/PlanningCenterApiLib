@@ -400,17 +400,22 @@ public class PlanningCenterClientTests
     {
         // Arrange
         var client = new PlanningCenterClient(_mockPeopleService.Object, _mockApiConnection.Object);
-        var expectedUser = new CurrentUserInfo
+        var currentPerson = new Person
         {
             Id = "12345",
-            Name = "John Doe",
-            Email = "john.doe@example.com",
-            Permissions = new List<string> { "people:read", "people:write" },
-            Organizations = new List<string> { "org1", "org2" }
+            FirstName = "John",
+            LastName = "Doe",
+            PrimaryEmail = "john.doe@example.com",
+            Nickname = "Johnny",
+            Status = "active",
+            MembershipStatus = "member",
+            CreatedAt = DateTime.UtcNow.AddYears(-2),
+            UpdatedAt = DateTime.UtcNow.AddDays(-1),
+            DataSource = "People"
         };
 
-        _mockApiConnection.Setup(a => a.GetAsync<CurrentUserInfo>("/me", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedUser);
+        _mockPeopleService.Setup(s => s.GetMeAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(currentPerson);
 
         // Act
         var result = await client.GetCurrentUserAsync();
@@ -420,8 +425,50 @@ public class PlanningCenterClientTests
         result.Id.Should().Be("12345");
         result.Name.Should().Be("John Doe");
         result.Email.Should().Be("john.doe@example.com");
-        result.Permissions.Should().Contain("people:read");
-        result.Organizations.Should().HaveCount(2);
+        result.Permissions.Should().Contain("authenticated");
+        result.Organizations.Should().Contain("People");
+        result.Metadata.Should().ContainKey("first_name");
+        result.Metadata["first_name"].Should().Be("John");
+        result.Metadata.Should().ContainKey("last_name");
+        result.Metadata["last_name"].Should().Be("Doe");
+        result.Metadata.Should().ContainKey("nickname");
+        result.Metadata["nickname"].Should().Be("Johnny");
+        result.Metadata.Should().ContainKey("status");
+        result.Metadata["status"].Should().Be("active");
+        result.Metadata.Should().ContainKey("membership_status");
+        result.Metadata["membership_status"].Should().Be("member");
+        result.Metadata.Should().ContainKey("is_child");
+        result.Metadata["is_child"].Should().Be(false);
+        result.Metadata.Should().ContainKey("is_active");
+        result.Metadata["is_active"].Should().Be(true);
+        result.Metadata.Should().ContainKey("display_name");
+        result.Metadata["display_name"].Should().Be("Johnny");
+        result.Metadata.Should().ContainKey("avatar_url");
+        result.Metadata["avatar_url"].Should().Be(string.Empty);
+    }
+
+    [Fact]
+    public async Task GetCurrentUserAsync_WithPeopleServiceException_ShouldReturnFallbackUserInfo()
+    {
+        // Arrange
+        var client = new PlanningCenterClient(_mockPeopleService.Object, _mockApiConnection.Object);
+        var expectedException = new PlanningCenterApiAuthenticationException("Authentication failed");
+
+        _mockPeopleService.Setup(s => s.GetMeAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(expectedException);
+
+        // Act
+        var result = await client.GetCurrentUserAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be("unknown");
+        result.Name.Should().Be("Unknown User");
+        result.Email.Should().Be("unknown@example.com");
+        result.Metadata.Should().ContainKey("error");
+        result.Metadata["error"].Should().Be("Authentication failed");
+        result.Metadata.Should().ContainKey("error_type");
+        result.Metadata["error_type"].Should().Be("PlanningCenterApiAuthenticationException");
     }
 
     #endregion

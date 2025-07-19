@@ -36,7 +36,8 @@ public class ApiConnectionTests : IDisposable
             RequestTimeout = TimeSpan.FromSeconds(30),
             MaxRetryAttempts = 3,
             RetryBaseDelay = TimeSpan.FromMilliseconds(100),
-            EnableDetailedLogging = false
+            EnableDetailedLogging = false,
+            PersonalAccessToken = "test-token"
         };
 
         var optionsWrapper = Options.Create(_options);

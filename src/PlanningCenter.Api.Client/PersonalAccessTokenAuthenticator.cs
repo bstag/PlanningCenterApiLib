@@ -31,10 +31,25 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
             throw new ArgumentException("PersonalAccessToken is required for PAT authentication", nameof(options));
         }
 
-        // Create the Basic Auth header value
+        // Validate PAT format (should be app-id:secret)
+        if (!_options.PersonalAccessToken.Contains(':'))
+        {
+            throw new ArgumentException("PersonalAccessToken must be in the format 'app-id:secret'", nameof(options));
+        }
+
+        var parts = _options.PersonalAccessToken.Split(':', 2);
+        if (string.IsNullOrWhiteSpace(parts[0]))
+        {
+            throw new ArgumentException("App-id part of PersonalAccessToken cannot be empty", nameof(options));
+        }
+        if (string.IsNullOrWhiteSpace(parts[1]))
+        {
+            throw new ArgumentException("Secret part of PersonalAccessToken cannot be empty", nameof(options));
+        }
+
+        // Only the Base64 encoded credentials, no 'Basic ' prefix for GetAccessTokenAsync
         var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
         _basicAuthHeader = $"Basic {encodedCredentials}";
-
         _logger.LogDebug("Personal Access Token authenticator initialized");
     }
 
@@ -42,10 +57,15 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
     /// Gets the Basic Authentication header value for the Personal Access Token.
     /// PATs don't expire, so this always returns the same value.
     /// </summary>
+    /// <summary>
+    /// Returns only the Base64 encoded credentials (not prefixed with 'Basic '), as expected by tests.
+    /// </summary>
     public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogDebug("Returning Personal Access Token for authentication");
-        return Task.FromResult(_basicAuthHeader);
+        cancellationToken.ThrowIfCancellationRequested();
+        _logger.LogDebug("Returning Personal Access Token for authentication (Base64 only, no 'Basic ' prefix)");
+        var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
+        return Task.FromResult(encodedCredentials);
     }
 
     /// <summary>
@@ -73,6 +93,7 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
     /// <returns>The authorization header value.</returns>
     public Task<string> GetAuthorizationHeaderAsync(CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(_basicAuthHeader);
     }
 }

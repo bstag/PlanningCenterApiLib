@@ -41,22 +41,13 @@ public static class PerformanceMonitor
 
         try
         {
-            var result = await operation();
-            stopwatch.Stop();
-
-            logger.LogInformation("Operation {OperationName} completed successfully in {ElapsedMs}ms [CorrelationId: {CorrelationId}]",
-                operationName, stopwatch.ElapsedMilliseconds, correlationId);
-
-            return result;
+            return await operation();
         }
-        catch (Exception ex)
+        finally
         {
             stopwatch.Stop();
-            
-            logger.LogError(ex, "Operation {OperationName} failed after {ElapsedMs}ms [CorrelationId: {CorrelationId}]",
+            logger.LogInformation("Operation {OperationName} finished in {ElapsedMs}ms [CorrelationId: {CorrelationId}]",
                 operationName, stopwatch.ElapsedMilliseconds, correlationId);
-            
-            throw;
         }
     }
 

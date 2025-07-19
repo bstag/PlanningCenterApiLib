@@ -1,0 +1,557 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  PlanningCenter.Api.Client.Models -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Models\bin\Debug\net9.0\PlanningCenter.Api.Client.Models.dll
+  PlanningCenter.Api.Client -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\bin\Debug\net9.0\PlanningCenter.Api.Client.dll
+  PlanningCenter.Api.Client.IntegrationTests -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.IntegrationTests\bin\Debug\net9.0\PlanningCenter.Api.Client.IntegrationTests.dll
+Test run for C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.IntegrationTests\bin\Debug\net9.0\PlanningCenter.Api.Client.IntegrationTests.dll (.NETCoreApp,Version=v9.0)
+  PlanningCenter.Api.Client.Tests -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\bin\Debug\net9.0\PlanningCenter.Api.Client.Tests.dll
+Test run for C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\bin\Debug\net9.0\PlanningCenter.Api.Client.Tests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 17.14.1 (x64)
+
+VSTest version 17.14.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+No test matches the given testcase filter `FullyQualifiedName!~IntegrationTest` in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.IntegrationTests\bin\Debug\net9.0\PlanningCenter.Api.Client.IntegrationTests.dll
+
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithAdditionalContext_ShouldIncludeContextInLog [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithNullLogger_ShouldThrowArgumentNullException [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithEmptyAdditionalContext_ShouldNotThrow [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.CreateErrorContext_WithMinimalParameters_ShouldCreateBasicContext [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.CreateErrorContext_WithAllParameters_ShouldCreateCompleteContext [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithPlanningCenterApiRateLimitException_ShouldLogRateLimitWarning [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithPlanningCenterApiAuthenticationException_ShouldLogAuthError [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithNullAdditionalContext_ShouldNotThrow [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithOperationCanceledException_ShouldLogCancellationWarning [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithGenericException_ShouldLogGeneralError [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithPlanningCenterApiServerException_ShouldLogServerError [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithPlanningCenterApiAuthorizationException_ShouldLogAuthzError [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithPlanningCenterApiValidationException_ShouldLogValidationError [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithNullException_ShouldThrowArgumentNullException [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithNullOperationName_ShouldThrowArgumentNullException [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithTaskCanceledException_ShouldLogCancellationWarning [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithHttpRequestException_ShouldLogNetworkError [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithPlanningCenterApiException_ShouldLogApiError [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithEmptyOperationName_ShouldThrowArgumentException [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests.Handle_WithPlanningCenterApiNotFoundException_ShouldLogNotFoundWarning [1 ms]
+  Error Message:
+   System.ArgumentException : Type matchers may not be used as the type for 'Callback' or 'Returns' parameters, because no argument will never have that precise type. Consider using type 'object' instead.
+  Stack Trace:
+     at Moq.MethodCall.SetCallbackBehavior(Delegate callback) in /_/src/Moq/MethodCall.cs:line 183
+   at Moq.Language.Flow.SetupPhrase.Callback[T1,T2,T3,T4,T5](Action`5 callback) in /_/src/Moq/Language/Flow/SetupPhrase.cs:line 78
+   at PlanningCenter.Api.Client.Tests.Exceptions.GlobalExceptionHandlerTests..ctor() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Exceptions\GlobalExceptionHandlerTests.cs:line 24
+   at System.RuntimeType.CreateInstanceDefaultCtor(Boolean publicOnly, Boolean wrapExceptions)
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.ListCategoriesAsync_ShouldReturnPagedCategories_WhenApiReturnsData [55 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'object' does not contain a definition for 'id'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.RegistrationsService.<>c.<ListCategoriesAsync>b__39_0(Object dto) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1613
+   at System.Linq.Enumerable.ListSelectIterator`2.Fill(ReadOnlySpan`1 source, Span`1 destination, Func`2 func)
+   at System.Linq.Enumerable.ListSelectIterator`2.ToList()
+   at PlanningCenter.Api.Client.Services.RegistrationsService.ListCategoriesAsync(QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1613
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.ListCategoriesAsync_ShouldReturnPagedCategories_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 763
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetRegistrationCountAsync_ShouldReturnCount_WhenApiReturnsData [15 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /registrations/v2/signups/signup123/registrationswhere[status]=confirmed
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.RegistrationsService.ListRegistrationsAsync(String signupId, QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 252
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetRegistrationCountAsync(String signupId, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 657
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetRegistrationCountAsync_ShouldReturnCount_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 1009
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.StreamSignupsAsync_ShouldYieldAllSignups_WhenMultiplePagesExist [37 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /registrations/v2/signupsper_page=100
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.RegistrationsService.ListSignupsAsync(QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 77
+   at PlanningCenter.Api.Client.Services.RegistrationsService.StreamSignupsAsync(QueryParameters parameters, PaginationOptions options, CancellationToken cancellationToken)+MoveNext() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 774
+   at PlanningCenter.Api.Client.Services.RegistrationsService.StreamSignupsAsync(QueryParameters parameters, PaginationOptions options, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.StreamSignupsAsync_ShouldYieldAllSignups_WhenMultiplePagesExist() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 1087
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.StreamSignupsAsync_ShouldYieldAllSignups_WhenMultiplePagesExist() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 1087
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetCategoryAsync_ShouldReturnCategory_WhenApiReturnsData [21 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'object' does not contain a definition for 'attributes'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetCategoryAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1565
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetCategoryAsync_ShouldReturnCategory_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 719
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetSelectionTypeAsync_ShouldReturnSelectionType_WhenApiReturnsData [17 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'object' does not contain a definition for 'attributes'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetSelectionTypeAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 826
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetSelectionTypeAsync_ShouldReturnSelectionType_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 456
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetPersonAsync_ShouldReturnPerson_WhenApiReturnsData [66 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'birthdate'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetPersonAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1851
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetPersonAsync_ShouldReturnPerson_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 921
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetAllSignupsAsync_ShouldReturnAllSignups_WhenMultiplePagesExist [5 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /registrations/v2/signupsper_page=100
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.RegistrationsService.ListSignupsAsync(QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 77
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetAllSignupsAsync(QueryParameters parameters, PaginationOptions options, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 726
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetAllSignupsAsync_ShouldReturnAllSignups_WhenMultiplePagesExist() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 1055
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.StreamEpisodesAsync_ShouldYieldEpisodes_WhenCalled [12 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /publishing/v2/episodesper_page=100
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.PublishingService.ListEpisodesAsync(QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 78
+   at PlanningCenter.Api.Client.Services.PublishingService.StreamEpisodesAsync(QueryParameters parameters, PaginationOptions options, CancellationToken cancellationToken)+MoveNext() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 359
+   at PlanningCenter.Api.Client.Services.PublishingService.StreamEpisodesAsync(QueryParameters parameters, PaginationOptions options, CancellationToken cancellationToken)+System.Threading.Tasks.Sources.IValueTaskSource<System.Boolean>.GetResult()
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.StreamEpisodesAsync_ShouldYieldEpisodes_WhenCalled() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 1071
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.StreamEpisodesAsync_ShouldYieldEpisodes_WhenCalled() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 1071
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetSeriesAsync_ShouldReturnNull_WhenSeriesNotFound [1 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /publishing/v2/series/nonexistent
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.PublishingService.GetSeriesAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 400
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetSeriesAsync_ShouldReturnNull_WhenSeriesNotFound() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 471
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetCampusAsync_ShouldReturnCampus_WhenApiReturnsData [35 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'timezone'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetCampusAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1742
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetCampusAsync_ShouldReturnCampus_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 853
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GenerateRegistrationReportAsync_ShouldReturnReport_WhenRequestIsValid [5 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /registrations/v2/signups/signup123/registrationswhere[status]=confirmed
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.RegistrationsService.ListRegistrationsAsync(String signupId, QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 252
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetRegistrationCountAsync(String signupId, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 657
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GenerateRegistrationReportAsync(RegistrationReportRequest request, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 620
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GenerateRegistrationReportAsync_ShouldReturnReport_WhenRequestIsValid() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 990
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.GetApiLimitsAsync_ShouldReturnApiLimitsInfo [187 ms]
+  Error Message:
+   Expected result.RateLimit to be 1000, but found 100 (difference of -900).
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+   at FluentAssertions.Numeric.NumericAssertions`2.Be(T expected, String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.GetApiLimitsAsync_ShouldReturnApiLimitsInfo() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\PlanningCenterClientTests.cs:line 392
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.GetAccessTokenAsync_WithInvalidJsonResponse_ShouldThrowGeneralException [117 ms]
+  Error Message:
+   Expected a <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiGeneralException> to be thrown, but found <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiAuthenticationException>:
+PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiAuthenticationException: Failed to parse token response
+ ---> System.Text.Json.JsonException: 'i' is an invalid start of a value. Path: $ | LineNumber: 0 | BytePositionInLine: 0.
+ ---> System.Text.Json.JsonReaderException: 'i' is an invalid start of a value. LineNumber: 0 | BytePositionInLine: 0.
+   at System.Text.Json.ThrowHelper.ThrowJsonReaderException(Utf8JsonReader& json, ExceptionResource resource, Byte nextByte, ReadOnlySpan`1 bytes)
+   at System.Text.Json.Utf8JsonReader.ConsumeValue(Byte marker)
+   at System.Text.Json.Utf8JsonReader.ReadFirstToken(Byte first)
+   at System.Text.Json.Utf8JsonReader.ReadSingleSegment()
+   at System.Text.Json.Utf8JsonReader.Read()
+   at System.Text.Json.Serialization.JsonConverter`1.ReadCore(Utf8JsonReader& reader, T& value, JsonSerializerOptions options, ReadStack& state)
+   --- End of inner exception stack trace ---
+   at System.Text.Json.ThrowHelper.ReThrowWithPath(ReadStack& state, JsonReaderException ex)
+   at System.Text.Json.Serialization.JsonConverter`1.ReadCore(Utf8JsonReader& reader, T& value, JsonSerializerOptions options, ReadStack& state)
+   at System.Text.Json.Serialization.Metadata.JsonTypeInfo`1.Deserialize(Utf8JsonReader& reader, ReadStack& state)
+   at System.Text.Json.JsonSerializer.ReadFromSpan[TValue](ReadOnlySpan`1 utf8Json, JsonTypeInfo`1 jsonTypeInfo, Nullable`1 actualByteCount)
+   at System.Text.Json.JsonSerializer.ReadFromSpan[TValue](ReadOnlySpan`1 json, JsonTypeInfo`1 jsonTypeInfo)
+   at System.Text.Json.JsonSerializer.Deserialize[TValue](String json, JsonSerializerOptions options)
+   at PlanningCenter.Api.Client.OAuthAuthenticator.ProcessTokenResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 268
+   --- End of inner exception stack trace ---
+   at PlanningCenter.Api.Client.OAuthAuthenticator.ProcessTokenResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 291
+   at PlanningCenter.Api.Client.OAuthAuthenticator.GetTokenUsingClientCredentialsAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 259
+   at PlanningCenter.Api.Client.OAuthAuthenticator.RefreshTokenInternalAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 165
+   at PlanningCenter.Api.Client.OAuthAuthenticator.GetAccessTokenAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 83
+   at PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.<GetAccessTokenAsync_WithInvalidJsonResponse_ShouldThrowGeneralException>b__16_0() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Authentication\OAuthAuthenticatorTests.cs:line 252
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.InvokeWithInterceptionAsync(Func`1 action).
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+   at FluentAssertions.Specialized.DelegateAssertionsBase`2.ThrowInternal[TException](Exception exception, String because, Object[] becauseArgs)
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.ThrowAsync[TException](String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.GetAccessTokenAsync_WithInvalidJsonResponse_ShouldThrowGeneralException() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Authentication\OAuthAuthenticatorTests.cs:line 253
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.CheckHealthAsync_ShouldReturnHealthCheckResult [9 ms]
+  Error Message:
+   Expected result.ResponseTimeMs to be 150.0, but found 0.1889 (difference of -149.8111).
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+   at FluentAssertions.Numeric.NumericAssertions`2.Be(T expected, String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.CheckHealthAsync_ShouldReturnHealthCheckResult() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\PlanningCenterClientTests.cs:line 367
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.GetAccessTokenAsync_WithServerError_ShouldThrowServerException [9 ms]
+  Error Message:
+   Expected a <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiServerException> to be thrown, but found <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiAuthenticationException>:
+PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiAuthenticationException: Token acquisition failed: InternalServerError
+   at PlanningCenter.Api.Client.OAuthAuthenticator.GetTokenUsingClientCredentialsAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 255
+   at PlanningCenter.Api.Client.OAuthAuthenticator.RefreshTokenInternalAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 165
+   at PlanningCenter.Api.Client.OAuthAuthenticator.GetAccessTokenAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 83
+   at PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.<GetAccessTokenAsync_WithServerError_ShouldThrowServerException>b__15_0() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Authentication\OAuthAuthenticatorTests.cs:line 241
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.InvokeWithInterceptionAsync(Func`1 action).
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+   at FluentAssertions.Specialized.DelegateAssertionsBase`2.ThrowInternal[TException](Exception exception, String because, Object[] becauseArgs)
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.ThrowAsync[TException](String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.GetAccessTokenAsync_WithServerError_ShouldThrowServerException() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Authentication\OAuthAuthenticatorTests.cs:line 242
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.CheckHealthAsync_WithApiException_ShouldPropagateException [7 ms]
+  Error Message:
+   Expected a <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiServerException> to be thrown, but no exception was thrown.
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message)
+   at FluentAssertions.Specialized.DelegateAssertionsBase`2.ThrowInternal[TException](Exception exception, String because, Object[] becauseArgs)
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.ThrowAsync[TException](String because, Object[] becauseArgs)
+   at FluentAssertions.ExceptionAssertionsExtensions.WithMessage[TException](Task`1 task, String expectedWildcardPattern, String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.CheckHealthAsync_WithApiException_ShouldPropagateException() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\PlanningCenterClientTests.cs:line 490
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetSeriesAnalyticsAsync_ShouldReturnAnalytics_WhenRequestIsValid [10 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'object' does not contain a definition for 'data'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.PublishingService.GetSeriesAnalyticsAsync(String seriesId, AnalyticsRequest request, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 1398
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetSeriesAnalyticsAsync_ShouldReturnAnalytics_WhenRequestIsValid() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 985
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetEmergencyContactAsync_ShouldReturnContact_WhenApiReturnsData [21 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'object' does not contain a definition for 'id'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetEmergencyContactAsync(String attendeeId, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1398
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetEmergencyContactAsync_ShouldReturnContact_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 620
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetSpeakerAsync_ShouldReturnNull_WhenSpeakerNotFound [1 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /publishing/v2/speakers/nonexistent
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.PublishingService.GetSpeakerAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 555
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetSpeakerAsync_ShouldReturnNull_WhenSpeakerNotFound() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 298
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.ListCampusesAsync_ShouldReturnPagedCampuses_WhenApiReturnsData [27 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'description'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.RegistrationsService.<>c.<ListCampusesAsync>b__43_0(Object dto) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1797
+   at System.Linq.Enumerable.ListSelectIterator`2.Fill(ReadOnlySpan`1 source, Span`1 destination, Func`2 func)
+   at System.Linq.Enumerable.ListSelectIterator`2.ToList()
+   at PlanningCenter.Api.Client.Services.RegistrationsService.ListCampusesAsync(QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 1797
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.ListCampusesAsync_ShouldReturnPagedCampuses_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 889
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetWaitlistCountAsync_ShouldReturnCount_WhenApiReturnsData [3 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /registrations/v2/signups/signup123/attendeeswhere[on_waitlist]=true
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.RegistrationsService.ListAttendeesAsync(String signupId, QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 373
+   at PlanningCenter.Api.Client.Services.RegistrationsService.GetWaitlistCountAsync(String signupId, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\RegistrationsService.cs:line 685
+   at PlanningCenter.Api.Client.Tests.Services.RegistrationsServiceTests.GetWaitlistCountAsync_ShouldReturnCount_WhenApiReturnsData() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\RegistrationsServiceTests.cs:line 1023
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetEpisodeAsync_ShouldReturnNull_WhenEpisodeNotFound [1 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /publishing/v2/episodes/nonexistent
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.PublishingService.GetEpisodeAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 41
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetEpisodeAsync_ShouldReturnNull_WhenEpisodeNotFound() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 54
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.GetApiLimitsAsync_WithApiException_ShouldPropagateException [8 ms]
+  Error Message:
+   Expected a <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiAuthenticationException> to be thrown, but no exception was thrown.
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message)
+   at FluentAssertions.Specialized.DelegateAssertionsBase`2.ThrowInternal[TException](Exception exception, String because, Object[] becauseArgs)
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.ThrowAsync[TException](String because, Object[] becauseArgs)
+   at FluentAssertions.ExceptionAssertionsExtensions.WithMessage[TException](Task`1 task, String expectedWildcardPattern, String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.GetApiLimitsAsync_WithApiException_ShouldPropagateException() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\PlanningCenterClientTests.cs:line 505
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetAllEpisodesAsync_ShouldReturnAllEpisodes_WhenMultiplePagesExist [4 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /publishing/v2/episodesper_page=100
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.PublishingService.ListEpisodesAsync(QueryParameters parameters, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 78
+   at PlanningCenter.Api.Client.Services.PublishingService.GetAllEpisodesAsync(QueryParameters parameters, PaginationOptions options, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 311
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetAllEpisodesAsync_ShouldReturnAllEpisodes_WhenMultiplePagesExist() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 1055
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.CheckHealthAsync_WithCancellation_ShouldRespectCancellationToken [8 ms]
+  Error Message:
+   Expected a <System.OperationCanceledException> to be thrown, but no exception was thrown.
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message)
+   at FluentAssertions.Specialized.DelegateAssertionsBase`2.ThrowInternal[TException](Exception exception, String because, Object[] becauseArgs)
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.ThrowAsync[TException](String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.PlanningCenterClientTests.CheckHealthAsync_WithCancellation_ShouldRespectCancellationToken() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\PlanningCenterClientTests.cs:line 525
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GeneratePublishingReportAsync_ShouldReturnReport_WhenRequestIsValid [8 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'object' does not contain a definition for 'data'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Services.PublishingService.GeneratePublishingReportAsync(PublishingReportRequest request, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 1442
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GeneratePublishingReportAsync_ShouldReturnReport_WhenRequestIsValid() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 1025
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetMediaAsync_ShouldReturnNull_WhenMediaNotFound [1 ms]
+  Error Message:
+   System.InvalidOperationException : No GET stub configured for /publishing/v2/media/nonexistent
+  Stack Trace:
+     at PlanningCenter.Api.Client.Tests.Utilities.MockApiConnection.GetAsync[T](String endpoint, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Utilities\MockApiConnection.cs:line 66
+   at PlanningCenter.Api.Client.Services.PublishingService.GetMediaAsync(String id, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\Services\PublishingService.cs:line 892
+   at PlanningCenter.Api.Client.Tests.Services.PublishingServiceTests.GetMediaAsync_ShouldReturnNull_WhenMediaNotFound() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Services\PublishingServiceTests.cs:line 724
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.GetAccessTokenAsync_WithMissingAccessToken_ShouldThrowGeneralException [10 ms]
+  Error Message:
+   Expected a <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiGeneralException> to be thrown, but found <PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiAuthenticationException>:
+PlanningCenter.Api.Client.Models.Exceptions.PlanningCenterApiAuthenticationException: Missing access_token in token response
+   at PlanningCenter.Api.Client.OAuthAuthenticator.ProcessTokenResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 273
+   at PlanningCenter.Api.Client.OAuthAuthenticator.GetTokenUsingClientCredentialsAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 259
+   at PlanningCenter.Api.Client.OAuthAuthenticator.RefreshTokenInternalAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 165
+   at PlanningCenter.Api.Client.OAuthAuthenticator.GetAccessTokenAsync(CancellationToken cancellationToken) in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\OAuthAuthenticator.cs:line 83
+   at PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.<GetAccessTokenAsync_WithMissingAccessToken_ShouldThrowGeneralException>b__17_0() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Authentication\OAuthAuthenticatorTests.cs:line 270
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.InvokeWithInterceptionAsync(Func`1 action).
+  Stack Trace:
+     at FluentAssertions.Execution.XUnit2TestFramework.Throw(String message)
+   at FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)
+   at FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(Func`1 failReasonFunc)
+   at FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)
+   at FluentAssertions.Specialized.DelegateAssertionsBase`2.ThrowInternal[TException](Exception exception, String because, Object[] becauseArgs)
+   at FluentAssertions.Specialized.AsyncFunctionAssertions`2.ThrowAsync[TException](String because, Object[] becauseArgs)
+   at FluentAssertions.ExceptionAssertionsExtensions.WithMessage[TException](Task`1 task, String expectedWildcardPattern, String because, Object[] becauseArgs)
+   at PlanningCenter.Api.Client.Tests.Authentication.OAuthAuthenticatorTests.GetAccessTokenAsync_WithMissingAccessToken_ShouldThrowGeneralException() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\Authentication\OAuthAuthenticatorTests.cs:line 271
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.ApiConnectionTests.GetAsync_WithValidResponse_ShouldReturnDeserializedObject [12 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'Should'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Tests.ApiConnectionTests.GetAsync_WithValidResponse_ShouldReturnDeserializedObject() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\ApiConnectionTests.cs:line 113
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.ApiConnectionTests.PutAsync_WithValidData_ShouldReturnDeserializedObject [2 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'Should'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Tests.ApiConnectionTests.PutAsync_WithValidData_ShouldReturnDeserializedObject() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\ApiConnectionTests.cs:line 253
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.ApiConnectionTests.PostAsync_WithValidData_ShouldReturnDeserializedObject [2 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'Should'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Tests.ApiConnectionTests.PostAsync_WithValidData_ShouldReturnDeserializedObject() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\ApiConnectionTests.cs:line 217
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.ApiConnectionTests.PatchAsync_WithValidData_ShouldReturnDeserializedObject [3 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'Should'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Tests.ApiConnectionTests.PatchAsync_WithValidData_ShouldReturnDeserializedObject() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\ApiConnectionTests.cs:line 276
+--- End of stack trace from previous location ---
+  Failed PlanningCenter.Api.Client.Tests.ApiConnectionTests.GetAsync_WithTransientFailure_ShouldRetryAndSucceed [480 ms]
+  Error Message:
+   Microsoft.CSharp.RuntimeBinder.RuntimeBinderException : 'System.Dynamic.ExpandoObject' does not contain a definition for 'Should'
+  Stack Trace:
+     at CallSite.Target(Closure, CallSite, Object)
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at PlanningCenter.Api.Client.Tests.ApiConnectionTests.GetAsync_WithTransientFailure_ShouldRetryAndSucceed() in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\ApiConnectionTests.cs:line 443
+--- End of stack trace from previous location ---
+
+Failed!  - Failed:    53, Passed:   617, Skipped:     0, Total:   670, Duration: 3 s - PlanningCenter.Api.Client.Tests.dll (net9.0)

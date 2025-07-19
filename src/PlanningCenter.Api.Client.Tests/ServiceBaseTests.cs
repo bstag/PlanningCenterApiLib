@@ -25,6 +25,7 @@ public class ServiceBaseTests
         _mockApiConnection = new MockApiConnection();
         _mockLogger = new Mock<ILogger<TestService>>();
         _testService = new TestService(_mockApiConnection, _mockLogger.Object);
+        _mockLogger.Reset();
     }
 
     #region Constructor Tests
@@ -262,6 +263,10 @@ public class ServiceBaseTests
 
     private void VerifyLoggerWasCalled(LogLevel logLevel, Times times)
     {
+        // This method verifies that the logger was called with the specified log level.
+        // The mock should be reset in the test constructor to ensure a clean state for each test.
+        
+        // Verify that the logger was called with the specified log level
         _mockLogger.Verify(
             x => x.Log(
                 logLevel,
@@ -279,7 +284,7 @@ public class ServiceBaseTests
     /// <summary>
     /// Test implementation of ServiceBase to expose protected methods for testing.
     /// </summary>
-    private class TestService : ServiceBase
+    public class TestService : ServiceBase
     {
         public TestService(IApiConnection apiConnection, ILogger<TestService> logger) 
             : base(logger, apiConnection)
