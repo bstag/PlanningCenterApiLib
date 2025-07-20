@@ -9,20 +9,20 @@ public class EmergencyContactDto : IResourceObject
     public string Type { get; set; } = "EmergencyContact";
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public EmergencyContactAttributes Attributes { get; set; }
+    public EmergencyContactAttributes? Attributes { get; set; }
 
     [JsonPropertyName("links")]
-    public ResourceLinks Links { get; set; }
+    public ResourceLinks? Links { get; set; }
 }
 
 public class EmergencyContactAttributes
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonPropertyName("phone_number")]
-    public string PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
 }

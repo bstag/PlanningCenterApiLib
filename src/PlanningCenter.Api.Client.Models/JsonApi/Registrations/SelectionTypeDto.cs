@@ -10,38 +10,38 @@ public class SelectionTypeDto : IResourceObject
     public string Type { get; set; } = "SelectionType";
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public SelectionTypeAttributes Attributes { get; set; }
+    public SelectionTypeAttributes? Attributes { get; set; }
 
     [JsonPropertyName("links")]
-    public ResourceLinks Links { get; set; }
+    public ResourceLinks? Links { get; set; }
 }
 
 public class SelectionTypeAttributes
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonPropertyName("publicly_available")]
-    public bool PubliclyAvailable { get; set; }
+    public bool? PubliclyAvailable { get; set; }
 
     [JsonPropertyName("price_cents")]
-    public int PriceCents { get; set; }
+    public int? PriceCents { get; set; }
 
     [JsonPropertyName("price_currency")]
-    public string PriceCurrency { get; set; }
+    public string? PriceCurrency { get; set; }
 
     [JsonPropertyName("price_currency_symbol")]
-    public string PriceCurrencySymbol { get; set; }
+    public string? PriceCurrencySymbol { get; set; }
 
     [JsonPropertyName("price_formatted")]
-    public string PriceFormatted { get; set; }
+    public string? PriceFormatted { get; set; }
 
     [JsonPropertyName("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? CreatedAt { get; set; }
 
     [JsonPropertyName("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 }

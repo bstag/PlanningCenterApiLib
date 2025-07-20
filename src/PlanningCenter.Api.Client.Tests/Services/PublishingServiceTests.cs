@@ -48,7 +48,7 @@ public class PublishingServiceTests
     public async Task GetEpisodeAsync_ShouldReturnNull_WhenEpisodeNotFound()
     {
         // Arrange
-        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<EpisodeDto>>("/publishing/v2/episodes/nonexistent", null);
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<EpisodeDto>>("/publishing/v2/episodes/nonexistent", new JsonApiSingleResponse<EpisodeDto>());
 
         // Act
         var result = await _publishingService.GetEpisodeAsync("nonexistent");
@@ -292,7 +292,7 @@ public class PublishingServiceTests
     public async Task GetSpeakerAsync_ShouldReturnNull_WhenSpeakerNotFound()
     {
         // Arrange
-        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SpeakerDto>>("/publishing/v2/speakers/nonexistent", null);
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SpeakerDto>>("/publishing/v2/speakers/nonexistent", new JsonApiSingleResponse<SpeakerDto>());
 
         // Act
         var result = await _publishingService.GetSpeakerAsync("nonexistent");
@@ -465,7 +465,7 @@ public class PublishingServiceTests
     public async Task GetSeriesAsync_ShouldReturnNull_WhenSeriesNotFound()
     {
         // Arrange
-        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SeriesDto>>("/publishing/v2/series/nonexistent", null);
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SeriesDto>>("/publishing/v2/series/nonexistent", new JsonApiSingleResponse<SeriesDto>());
 
         // Act
         var result = await _publishingService.GetSeriesAsync("nonexistent");
@@ -718,7 +718,7 @@ public class PublishingServiceTests
     public async Task GetMediaAsync_ShouldReturnNull_WhenMediaNotFound()
     {
         // Arrange
-        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<MediaDto>>("/publishing/v2/media/nonexistent", null);
+        _mockApiConnection.SetupGetResponse<JsonApiSingleResponse<MediaDto>>("/publishing/v2/media/nonexistent", new JsonApiSingleResponse<MediaDto>());
 
         // Act
         var result = await _publishingService.GetMediaAsync("nonexistent");
@@ -1048,15 +1048,16 @@ public class PublishingServiceTests
         var page2Response = _builder.BuildEpisodeCollectionResponse(1);
         page2Response.Links = new PagedResponseLinks { Next = null };
 
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes", page1Response);
         _mockApiConnection.SetupGetResponse("/publishing/v2/episodes?per_page=100", page1Response);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes?offset=2&per_page=100", page2Response);
+
 
         // Act
         var result = await _publishingService.GetAllEpisodesAsync();
 
         // Assert
         result.Should().NotBeNull();
-        result.Should().HaveCount(2); // Only first page due to mock setup
+        result.Should().HaveCount(3);
     }
 
     [Fact]
@@ -1064,7 +1065,7 @@ public class PublishingServiceTests
     {
         // Arrange
         var episodesResponse = _builder.BuildEpisodeCollectionResponse(3);
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes", episodesResponse);
+        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes?per_page=100", episodesResponse);
 
         // Act
         var episodes = new List<Episode>();

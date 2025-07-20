@@ -10,13 +10,13 @@ public class SignupTimeDto : IResourceObject
     public string Type { get; set; } = "SignupTime";
 
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public SignupTimeAttributes Attributes { get; set; }
+    public SignupTimeAttributes? Attributes { get; set; }
 
     [JsonPropertyName("links")]
-    public ResourceLinks Links { get; set; }
+    public ResourceLinks? Links { get; set; }
 }
 
 public class SignupTimeAttributes

@@ -107,10 +107,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var result = await _apiConnection.GetAsync<TestDto>("/test/endpoint");
 
         // Assert
         result.Should().NotBeNull();
+        result.Id.Should().Be("123");
+        result.Name.Should().Be("Test");
         VerifyHttpRequest(HttpMethod.Get, "/test/endpoint");
     }
 
@@ -211,10 +213,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.PostAsync<dynamic>("/test/endpoint", requestData);
+        var result = await _apiConnection.PostAsync<TestDto>("/test/endpoint", requestData);
 
         // Assert
         result.Should().NotBeNull();
+        result.Id.Should().Be("456");
+        result.Name.Should().Be("Test");
         VerifyHttpRequest(HttpMethod.Post, "/test/endpoint");
     }
 
@@ -247,10 +251,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.PutAsync<dynamic>("/test/endpoint/456", requestData);
+        var result = await _apiConnection.PutAsync<TestDto>("/test/endpoint/456", requestData);
 
         // Assert
         result.Should().NotBeNull();
+        result.Id.Should().Be("456");
+        result.Name.Should().Be("Updated Test");
         VerifyHttpRequest(HttpMethod.Put, "/test/endpoint/456");
     }
 
@@ -270,10 +276,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.PatchAsync<dynamic>("/test/endpoint/456", requestData);
+        var result = await _apiConnection.PatchAsync<TestDto>("/test/endpoint/456", requestData);
 
         // Assert
         result.Should().NotBeNull();
+        result.Id.Should().Be("456");
+        result.Name.Should().Be("Patched Test");
         VerifyHttpRequest(HttpMethod.Patch, "/test/endpoint/456");
     }
 
@@ -414,6 +422,9 @@ public class ApiConnectionTests : IDisposable
     {
         // Arrange
         var callCount = 0;
+        var expectedData = new { Id = "123", Name = "Test" };
+        var jsonResponse = JsonSerializer.Serialize(expectedData);
+
         _mockHttpMessageHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .Returns(() =>
@@ -430,17 +441,19 @@ public class ApiConnectionTests : IDisposable
                 // Second call succeeds
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent("{}")
+                    Content = new StringContent(jsonResponse)
                 });
             });
 
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var result = await _apiConnection.GetAsync<TestDto>("/test/endpoint");
 
         // Assert
         result.Should().NotBeNull();
+        result.Id.Should().Be("123");
+        result.Name.Should().Be("Test");
         callCount.Should().Be(2); // Should have retried once
     }
 
@@ -511,4 +524,10 @@ public class ApiConnectionTests : IDisposable
     }
 
     #endregion
+
+    private class TestDto
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+    }
 }
