@@ -626,29 +626,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var jsonApiRequest = new JsonApiRequest<dynamic>
-            {
-                Data = new
-                {
-                    type = "Speaker",
-                    attributes = new
-                    {
-                        first_name = request.FirstName,
-                        last_name = request.LastName,
-                        display_name = request.DisplayName,
-                        title = request.Title,
-                        biography = request.Biography,
-                        email = request.Email,
-                        phone_number = request.PhoneNumber,
-                        website_url = request.WebsiteUrl,
-                        photo_url = request.PhotoUrl,
-                        organization = request.Organization,
-                        location = request.Location,
-                        specialties = request.Specialties,
-                        active = request.Active
-                    }
-                }
-            };
+            var jsonApiRequest = PublishingMapper.MapCreateRequestToJsonApi(request);
 
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SpeakerDto>>(
                 $"{BaseEndpoint}/speakers", jsonApiRequest, cancellationToken);
@@ -680,30 +658,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var jsonApiRequest = new JsonApiRequest<dynamic>
-            {
-                Data = new
-                {
-                    type = "Speaker",
-                    id = id,
-                    attributes = new
-                    {
-                        first_name = request.FirstName,
-                        last_name = request.LastName,
-                        display_name = request.DisplayName,
-                        title = request.Title,
-                        biography = request.Biography,
-                        email = request.Email,
-                        phone_number = request.PhoneNumber,
-                        website_url = request.WebsiteUrl,
-                        photo_url = request.PhotoUrl,
-                        organization = request.Organization,
-                        location = request.Location,
-                        specialties = request.Specialties,
-                        active = request.Active
-                    }
-                }
-            };
+            var jsonApiRequest = PublishingMapper.MapUpdateRequestToJsonApi(id, request);
 
             var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SpeakerDto>>(
                 $"{BaseEndpoint}/speakers/{id}", jsonApiRequest, cancellationToken);
@@ -968,29 +923,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var jsonApiRequest = new JsonApiRequest<dynamic>
-            {
-                Data = new
-                {
-                    type = "Media",
-                    attributes = new
-                    {
-                        file_name = request.FileName,
-                        content_type = request.ContentType,
-                        file_size_in_bytes = request.FileSizeInBytes,
-                        media_type = request.MediaType,
-                        quality = request.Quality,
-                        is_primary = request.IsPrimary
-                    },
-                    relationships = new
-                    {
-                        episode = new
-                        {
-                            data = new { type = "Episode", id = episodeId }
-                        }
-                    }
-                }
-            };
+            var jsonApiRequest = PublishingMapper.MapMediaUploadToJsonApi(episodeId, request);
 
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<MediaDto>>(
                 $"{BaseEndpoint}/episodes/{episodeId}/media", jsonApiRequest, cancellationToken);
@@ -1022,20 +955,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var jsonApiRequest = new JsonApiRequest<dynamic>
-            {
-                Data = new
-                {
-                    type = "Media",
-                    id = id,
-                    attributes = new
-                    {
-                        file_name = request.FileName,
-                        quality = request.Quality,
-                        is_primary = request.IsPrimary
-                    }
-                }
-            };
+            var jsonApiRequest = PublishingMapper.MapMediaUpdateToJsonApi(id, request);
 
             var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<MediaDto>>(
                 $"{BaseEndpoint}/media/{id}", jsonApiRequest, cancellationToken);
@@ -1139,7 +1059,7 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<ChannelDto>>(
                 $"{BaseEndpoint}/distribution_channels", cancellationToken);
 
             if (response?.Data == null)
@@ -1153,44 +1073,7 @@ public class PublishingService : ServiceBase, IPublishingService
                 };
             }
 
-            // Basic mapping - would need proper DTO and mapper in full implementation
-            var channels = response.Data.Select(dto => {
-                // Safely access dynamic properties with null checks and type handling
-                string? id = null;
-                try { id = dto.id?.ToString(); } catch { /* Property doesn't exist */ }
-                
-                dynamic? attributes = null;
-                try { attributes = dto.attributes; } catch { /* Property doesn't exist */ }
-                
-                string name = "Unknown Channel";
-                string type = "unknown";
-                bool enabled = false;
-                
-                if (attributes != null)
-                {
-                    try 
-                    { 
-                        // Make sure we properly extract the name property
-                        if (attributes.name != null)
-                        {
-                            name = attributes.name.ToString();
-                        }
-                    } 
-                    catch { /* Property doesn't exist */ }
-                    
-                    try { type = attributes.type?.ToString() ?? type; } catch { /* Property doesn't exist */ }
-                    try { enabled = attributes.enabled ?? enabled; } catch { /* Property doesn't exist */ }
-                }
-                
-                return new DistributionChannel
-                {
-                    Id = id ?? string.Empty,
-                    Name = name,
-                    ChannelType = type,
-                    Active = enabled,
-                    DataSource = "Publishing"
-                };
-            }).ToList();
+            var channels = response.Data.Select(PublishingMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<DistributionChannel>
             {
@@ -1220,23 +1103,19 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var requestData = new
+            var jsonApiRequest = PublishingMapper.MapDistributionCreateToJsonApi(episodeId, null, channelId);
+
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<DistributionDto>>(
+                $"{BaseEndpoint}/distributions", jsonApiRequest, cancellationToken);
+
+            if (response?.Data != null)
             {
-                data = new
-                {
-                    type = "Distribution",
-                    attributes = new
-                    {
-                        episode_id = episodeId,
-                        channel_id = channelId
-                    }
-                }
-            };
+                var result = PublishingMapper.MapToDomain(response.Data);
+                Logger.LogInformation("Successfully distributed episode {EpisodeId} to channel {ChannelId}", episodeId, channelId);
+                return result;
+            }
 
-            var response = await ApiConnection.PostAsync<dynamic>(
-                $"{BaseEndpoint}/distributions", requestData, cancellationToken);
-
-            var result = new DistributionResult
+            var fallbackResult = new DistributionResult
             {
                 Success = true,
                 Message = $"Episode {episodeId} successfully distributed to channel {channelId}",
@@ -1244,7 +1123,7 @@ public class PublishingService : ServiceBase, IPublishingService
             };
 
             Logger.LogInformation("Successfully distributed episode {EpisodeId} to channel {ChannelId}", episodeId, channelId);
-            return result;
+            return fallbackResult;
         }
         catch (Exception ex)
         {
@@ -1270,23 +1149,19 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var requestData = new
+            var jsonApiRequest = PublishingMapper.MapDistributionCreateToJsonApi(null, seriesId, channelId);
+
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<DistributionDto>>(
+                $"{BaseEndpoint}/distributions", jsonApiRequest, cancellationToken);
+
+            if (response?.Data != null)
             {
-                data = new
-                {
-                    type = "Distribution",
-                    attributes = new
-                    {
-                        series_id = seriesId,
-                        channel_id = channelId
-                    }
-                }
-            };
+                var result = PublishingMapper.MapToDomain(response.Data);
+                Logger.LogInformation("Successfully distributed series {SeriesId} to channel {ChannelId}", seriesId, channelId);
+                return result;
+            }
 
-            var response = await ApiConnection.PostAsync<dynamic>(
-                $"{BaseEndpoint}/distributions", requestData, cancellationToken);
-
-            var result = new DistributionResult
+            var fallbackResult = new DistributionResult
             {
                 Success = true,
                 Message = $"Series {seriesId} successfully distributed to channel {channelId}",
@@ -1294,7 +1169,7 @@ public class PublishingService : ServiceBase, IPublishingService
             };
 
             Logger.LogInformation("Successfully distributed series {SeriesId} to channel {ChannelId}", seriesId, channelId);
-            return result;
+            return fallbackResult;
         }
         catch (Exception ex)
         {
@@ -1338,16 +1213,23 @@ public class PublishingService : ServiceBase, IPublishingService
 
             var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
             
-            var response = await ApiConnection.GetAsync<dynamic>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<EpisodeAnalyticsDto>>(
                 $"{BaseEndpoint}/episodes/{episodeId}/analytics?{queryString}", cancellationToken);
 
-            // Basic analytics implementation - would need proper DTO and mapping in full implementation
+            if (response?.Data != null)
+            {
+                var analytics = PublishingMapper.MapToDomain(response.Data);
+                Logger.LogInformation("Successfully retrieved analytics for episode {EpisodeId}", episodeId);
+                return analytics;
+            }
+
+            // Fallback analytics implementation
             var analytics = new EpisodeAnalytics
             {
                 EpisodeId = episodeId,
-                ViewCount = response?.data?.attributes?.view_count ?? 0,
-                DownloadCount = response?.data?.attributes?.download_count ?? 0,
-                AverageWatchTimeSeconds = response?.data?.attributes?.average_watch_time ?? 0.0,
+                ViewCount = 0,
+                DownloadCount = 0,
+                AverageWatchTimeSeconds = 0.0,
                 PeriodStart = request.StartDate,
                 PeriodEnd = request.EndDate
             };
@@ -1391,16 +1273,23 @@ public class PublishingService : ServiceBase, IPublishingService
 
             var queryString = string.Join("&", queryParams.Select(kvp => $"{kvp.Key}={Uri.EscapeDataString(kvp.Value)}"));
             
-            var response = await ApiConnection.GetAsync<dynamic>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SeriesAnalyticsDto>>(
                 $"{BaseEndpoint}/series/{seriesId}/analytics?{queryString}", cancellationToken);
 
-            // Basic analytics implementation - would need proper DTO and mapping in full implementation
+            if (response?.Data != null)
+            {
+                var analytics = PublishingMapper.MapToDomain(response.Data);
+                Logger.LogInformation("Successfully retrieved analytics for series {SeriesId}", seriesId);
+                return analytics;
+            }
+
+            // Fallback analytics implementation
             var analytics = new SeriesAnalytics
             {
                 SeriesId = seriesId,
-                TotalViewCount = response?.data?.attributes?.total_view_count ?? 0,
-                TotalDownloadCount = response?.data?.attributes?.total_download_count ?? 0,
-                EpisodeCount = response?.data?.attributes?.episode_count ?? 0,
+                TotalViewCount = 0,
+                TotalDownloadCount = 0,
+                EpisodeCount = 0,
                 PeriodStart = request.StartDate,
                 PeriodEnd = request.EndDate
             };
@@ -1441,10 +1330,10 @@ public class PublishingService : ServiceBase, IPublishingService
             // Basic report implementation - would need proper DTO and mapping in full implementation
             var report = new PublishingReport
             {
-                TotalEpisodes = response?.data?.attributes?.total_episodes ?? 0,
-                TotalSeries = response?.data?.attributes?.total_series ?? 0,
-                TotalViews = response?.data?.attributes?.total_views ?? 0,
-                TotalDownloads = response?.data?.attributes?.total_downloads ?? 0,
+                TotalEpisodes = 0, // Would be mapped from proper DTO
+                TotalSeries = 0, // Would be mapped from proper DTO  
+                TotalViews = 0, // Would be mapped from proper DTO
+                TotalDownloads = 0, // Would be mapped from proper DTO
                 PeriodStart = request.StartDate,
                 PeriodEnd = request.EndDate,
                 GeneratedAt = DateTime.UtcNow

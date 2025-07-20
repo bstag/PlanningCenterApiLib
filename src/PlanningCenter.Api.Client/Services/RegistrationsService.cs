@@ -813,7 +813,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             // Note: This would use actual SelectionTypeDto in a complete implementation
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SelectionTypeDto>>(
                 $"{BaseEndpoint}/selection_types/{id}", cancellationToken);
 
             if (response?.Data == null)
@@ -822,12 +822,16 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 return null;
             }
 
-            // This would use RegistrationsMapper.MapToDomain(response.Data) with proper SelectionTypeDto
             var selectionType = new SelectionType
             {
                 Id = id,
-                Name = response.Data.attributes?.name?.ToString() ?? "Unknown Selection Type",
-                SignupId = response.Data.relationships?.signup?.data?.id?.ToString() ?? string.Empty,
+                Name = response.Data.Attributes?.Name ?? "Unknown Selection Type",
+                PriceCents = response.Data.Attributes?.PriceCents,
+                PriceCurrency = response.Data.Attributes?.PriceCurrency,
+                PriceFormatted = response.Data.Attributes?.PriceFormatted,
+                PubliclyAvailable = response.Data.Attributes?.PubliclyAvailable ?? false,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
                 DataSource = "Registrations"
             };
 
@@ -856,7 +860,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<SelectionTypeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/selection_types{queryString}", cancellationToken);
 
             if (response?.Data == null)
@@ -870,11 +874,16 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 };
             }
 
-            // This would use RegistrationsMapper.MapToDomain for each item with proper SelectionTypeDto
             var selectionTypes = response.Data.Select(dto => new SelectionType
             {
-                Id = dto.id?.ToString() ?? string.Empty,
-                Name = dto.attributes?.name?.ToString() ?? "Unknown Selection Type",
+                Id = dto.Id,
+                Name = dto.Attributes?.Name ?? "Unknown Selection Type",
+                PriceCents = dto.Attributes?.PriceCents,
+                PriceCurrency = dto.Attributes?.PriceCurrency,
+                PriceFormatted = dto.Attributes?.PriceFormatted,
+                PubliclyAvailable = dto.Attributes?.PubliclyAvailable ?? false,
+                CreatedAt = dto.Attributes?.CreatedAt?.DateTime,
+                UpdatedAt = dto.Attributes?.UpdatedAt?.DateTime,
                 SignupId = signupId,
                 DataSource = "Registrations"
             }).ToList();
@@ -908,7 +917,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SelectionTypeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/selection_types", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -918,19 +927,14 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var selectionType = new SelectionType
             {
-                Id = response.Data?.id?.ToString() ?? string.Empty,
-                Name = request.Name,
-                Description = request.Description,
-                Category = request.Category,
-                Cost = request.Cost,
-                Currency = request.Currency,
-                Required = request.Required,
-                AllowMultiple = request.AllowMultiple,
-                MaxSelections = request.MaxSelections,
-                MinSelections = request.MinSelections,
-                SelectionLimit = request.SelectionLimit,
-                SortOrder = request.SortOrder,
-                Active = request.Active,
+                Id = response.Data.Id,
+                Name = response.Data.Attributes?.Name ?? request.Name,
+                PriceCents = response.Data.Attributes?.PriceCents,
+                PriceCurrency = response.Data.Attributes?.PriceCurrency,
+                PriceFormatted = response.Data.Attributes?.PriceFormatted,
+                PubliclyAvailable = response.Data.Attributes?.PubliclyAvailable ?? false,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
                 SignupId = signupId,
                 DataSource = "Registrations"
             };
@@ -957,7 +961,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(id, request);
-            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SelectionTypeDto>>(
                 $"{BaseEndpoint}/selection_types/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -968,18 +972,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var selectionType = new SelectionType
             {
                 Id = id,
-                Name = request.Name ?? "Updated Selection Type",
-                Description = request.Description,
-                Category = request.Category,
-                Cost = request.Cost,
-                Currency = request.Currency,
-                Required = request.Required ?? false,
-                AllowMultiple = request.AllowMultiple ?? false,
-                MaxSelections = request.MaxSelections,
-                MinSelections = request.MinSelections,
-                SelectionLimit = request.SelectionLimit,
-                SortOrder = request.SortOrder ?? 0,
-                Active = request.Active ?? true,
+                Name = response.Data.Attributes?.Name ?? request.Name ?? "Updated Selection Type",
+                PriceCents = response.Data.Attributes?.PriceCents,
+                PriceCurrency = response.Data.Attributes?.PriceCurrency,
+                PriceFormatted = response.Data.Attributes?.PriceFormatted,
+                PubliclyAvailable = response.Data.Attributes?.PubliclyAvailable ?? false,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
                 DataSource = "Registrations"
             };
 
@@ -1021,7 +1020,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
         try
         {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SignupLocationDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", cancellationToken);
 
             if (response?.Data == null)
@@ -1032,26 +1031,19 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var signupLocation = new SignupLocation
             {
-                Id = response.Data?.id?.ToString() ?? string.Empty,
+                Id = response.Data.Id,
                 SignupId = signupId,
-                Name = response.Data?.attributes?.name?.ToString() ?? "Unknown Location",
-                Description = response.Data?.attributes?.description?.ToString(),
-                StreetAddress = response.Data?.attributes?.street_address?.ToString(),
-                City = response.Data?.attributes?.city?.ToString(),
-                State = response.Data?.attributes?.state?.ToString(),
-                PostalCode = response.Data?.attributes?.postal_code?.ToString(),
-                Country = response.Data?.attributes?.country?.ToString(),
-                FormattedAddress = response.Data?.attributes?.formatted_address?.ToString(),
-                Latitude = response.Data?.attributes?.latitude != null ? (double?)response.Data?.attributes?.latitude : null,
-                Longitude = response.Data?.attributes?.longitude != null ? (double?)response.Data?.attributes?.longitude : null,
-                PhoneNumber = response.Data?.attributes?.phone_number?.ToString(),
-                WebsiteUrl = response.Data?.attributes?.website_url?.ToString(),
-                Directions = response.Data?.attributes?.directions?.ToString(),
-                ParkingInfo = response.Data?.attributes?.parking_info?.ToString(),
-                AccessibilityInfo = response.Data?.attributes?.accessibility_info?.ToString(),
-                Capacity = response.Data?.attributes?.capacity,
-                Notes = response.Data?.attributes?.notes?.ToString(),
-                Timezone = response.Data?.attributes?.timezone?.ToString(),
+                Name = response.Data.Attributes?.Name ?? "Unknown Location",
+                FormattedAddress = response.Data.Attributes?.FormattedAddress,
+                FullFormattedAddress = response.Data.Attributes?.FullFormattedAddress,
+                Latitude = response.Data.Attributes?.Latitude,
+                Longitude = response.Data.Attributes?.Longitude,
+                LocationType = response.Data.Attributes?.LocationType,
+                Url = response.Data.Attributes?.Url,
+                Subpremise = response.Data.Attributes?.Subpremise,
+                AddressData = response.Data.Attributes?.AddressData,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
                 DataSource = "Registrations"
             };
 
@@ -1083,7 +1075,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
 
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SignupLocationDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1093,25 +1085,19 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var signupLocation = new SignupLocation
             {
-                Id = response.Data?.id?.ToString() ?? string.Empty,
+                Id = response.Data.Id,
                 SignupId = signupId,
-                Name = request.Name,
-                Description = request.Description,
-                StreetAddress = request.StreetAddress,
-                City = request.City,
-                State = request.State,
-                PostalCode = request.PostalCode,
-                Country = request.Country,
-                Latitude = request.Latitude,
-                Longitude = request.Longitude,
-                PhoneNumber = request.PhoneNumber,
-                WebsiteUrl = request.WebsiteUrl,
-                Directions = request.Directions,
-                ParkingInfo = request.ParkingInfo,
-                AccessibilityInfo = request.AccessibilityInfo,
-                Capacity = request.Capacity,
-                Notes = request.Notes,
-                Timezone = request.Timezone,
+                Name = response.Data.Attributes?.Name ?? request.Name,
+                FormattedAddress = response.Data.Attributes?.FormattedAddress,
+                FullFormattedAddress = response.Data.Attributes?.FullFormattedAddress,
+                Latitude = response.Data.Attributes?.Latitude,
+                Longitude = response.Data.Attributes?.Longitude,
+                LocationType = response.Data.Attributes?.LocationType,
+                Url = response.Data.Attributes?.Url,
+                Subpremise = response.Data.Attributes?.Subpremise,
+                AddressData = response.Data.Attributes?.AddressData,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
                 DataSource = "Registrations"
             };
 
@@ -1138,7 +1124,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(signupId, request);
 
-            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SignupLocationDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/location", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1148,7 +1134,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var signupLocation = new SignupLocation
             {
-                Id = response.Data?.id?.ToString() ?? string.Empty,
+                Id = response.Data?.Id ?? string.Empty,
                 SignupId = signupId,
                 Name = request.Name ?? "Updated Location",
                 Description = request.Description,
@@ -1190,7 +1176,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<SignupTimeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/signup_times{queryString}", cancellationToken);
 
             if (response?.Data == null)
@@ -1204,34 +1190,16 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 };
             }
 
-            var signupTimes = response.Data.Select(dto => {
-                // Safely access dynamic properties with null checks
-                string? id = null;
-                try { id = dto.id?.ToString(); } catch { /* Property doesn't exist */ }
-
-                return new SignupTime
-                {
-                    Id = id ?? string.Empty,
-                    SignupId = signupId,
-                    Name = dto.attributes?.name?.ToString() ?? "Unknown Time Slot",
-                    Description = dto.attributes?.description?.ToString(),
-                    StartTime = dto.attributes?.start_time ?? DateTime.MinValue,
-                    EndTime = dto.attributes?.end_time,
-                    AllDay = dto.attributes?.all_day ?? false,
-                    Timezone = dto.attributes?.timezone?.ToString(),
-                    TimeType = dto.attributes?.time_type?.ToString(),
-                    Capacity = dto.attributes?.capacity,
-                    RegistrationCount = dto.attributes?.registration_count ?? 0,
-                    Required = dto.attributes?.required ?? false,
-                    SortOrder = dto.attributes?.sort_order ?? 0,
-                    Active = dto.attributes?.active ?? true,
-                    Location = dto.attributes?.location?.ToString(),
-                    Room = dto.attributes?.room?.ToString(),
-                    Instructor = dto.attributes?.instructor?.ToString(),
-                    Cost = dto.attributes?.cost,
-                    Notes = dto.attributes?.notes?.ToString(),
-                    DataSource = "Registrations"
-                };
+            var signupTimes = response.Data.Select(dto => new SignupTime
+            {
+                Id = dto.Id,
+                SignupId = signupId,
+                StartTime = dto.Attributes?.StartsAt.DateTime ?? DateTime.MinValue,
+                EndTime = dto.Attributes?.EndsAt?.DateTime,
+                AllDay = dto.Attributes?.AllDay ?? false,
+                CreatedAt = dto.Attributes?.CreatedAt.DateTime,
+                UpdatedAt = dto.Attributes?.UpdatedAt.DateTime,
+                DataSource = "Registrations"
             }).ToList();
             
             var pagedResponse = new PagedResponse<SignupTime>
@@ -1264,7 +1232,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
 
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<SignupTimeDto>>(
                 $"{BaseEndpoint}/signups/{signupId}/signup_times", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1274,7 +1242,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var signupTime = new SignupTime
             {
-                Id = response.Data.id?.ToString() ?? string.Empty,
+                Id = response.Data.Id,
                 SignupId = signupId,
                 Name = request.Name,
                 Description = request.Description,
@@ -1318,7 +1286,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(id, request);
 
-            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<SignupTimeDto>>(
                 $"{BaseEndpoint}/signup_times/{id}", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1386,7 +1354,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
         try
         {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<EmergencyContactDto>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", cancellationToken);
 
             if (response?.Data == null)
@@ -1397,25 +1365,25 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var emergencyContact = new EmergencyContact
             {
-                Id = response.Data.id?.ToString() ?? string.Empty,
+                Id = response.Data.Id,
                 AttendeeId = attendeeId,
-                FirstName = response.Data.attributes?.first_name?.ToString() ?? "Unknown",
-                LastName = response.Data.attributes?.last_name?.ToString() ?? "Contact",
-                Relationship = response.Data.attributes?.relationship?.ToString(),
-                PrimaryPhone = response.Data.attributes?.primary_phone?.ToString(),
-                SecondaryPhone = response.Data.attributes?.secondary_phone?.ToString(),
-                Email = response.Data.attributes?.email?.ToString(),
-                StreetAddress = response.Data.attributes?.street_address?.ToString(),
-                City = response.Data.attributes?.city?.ToString(),
-                State = response.Data.attributes?.state?.ToString(),
-                PostalCode = response.Data.attributes?.postal_code?.ToString(),
-                Country = response.Data.attributes?.country?.ToString(),
-                IsPrimary = response.Data.attributes?.is_primary ?? false,
-                Priority = response.Data.attributes?.priority ?? 1,
-                Notes = response.Data.attributes?.notes?.ToString(),
-                PreferredContactMethod = response.Data.attributes?.preferred_contact_method?.ToString(),
-                BestTimeToContact = response.Data.attributes?.best_time_to_contact?.ToString(),
-                CanAuthorizeMedicalTreatment = response.Data.attributes?.can_authorize_medical_treatment ?? false,
+                FirstName = response.Data.Attributes?.FirstName ?? "Unknown",
+                LastName = response.Data.Attributes?.LastName ?? "Contact",
+                Relationship = response.Data.Attributes?.Relationship,
+                PrimaryPhone = response.Data.Attributes?.PrimaryPhone,
+                SecondaryPhone = response.Data.Attributes?.SecondaryPhone,
+                Email = response.Data.Attributes?.Email,
+                StreetAddress = response.Data.Attributes?.StreetAddress,
+                City = response.Data.Attributes?.City,
+                State = response.Data.Attributes?.State,
+                PostalCode = response.Data.Attributes?.PostalCode,
+                Country = response.Data.Attributes?.Country,
+                IsPrimary = response.Data.Attributes?.IsPrimary ?? false,
+                Priority = response.Data.Attributes?.Priority ?? 1,
+                Notes = response.Data.Attributes?.Notes,
+                PreferredContactMethod = response.Data.Attributes?.PreferredContactMethod,
+                BestTimeToContact = response.Data.Attributes?.BestTimeToContact,
+                CanAuthorizeMedicalTreatment = response.Data.Attributes?.CanAuthorizeMedicalTreatment ?? false,
                 DataSource = "Registrations"
             };
 
@@ -1447,7 +1415,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
 
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<EmergencyContactDto>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1457,7 +1425,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var emergencyContact = new EmergencyContact
             {
-                Id = response.Data.id?.ToString() ?? string.Empty,
+                Id = response.Data.Id,
                 AttendeeId = attendeeId,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
@@ -1502,7 +1470,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         {
             var jsonApiRequest = RegistrationsMapper.MapUpdateRequestToJsonApi(attendeeId, request);
 
-            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<EmergencyContactDto>>(
                 $"{BaseEndpoint}/attendees/{attendeeId}/emergency_contact", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1512,7 +1480,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
             var emergencyContact = new EmergencyContact
             {
-                Id = response.Data.id?.ToString() ?? string.Empty,
+                Id = response.Data.Id,
                 AttendeeId = attendeeId,
                 FirstName = request.FirstName ?? "Updated",
                 LastName = request.LastName ?? "Contact",
@@ -1553,7 +1521,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
 
         try
         {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<CategoryDto>>(
                 $"{BaseEndpoint}/categories/{id}", cancellationToken);
 
             if (response?.Data == null)
@@ -1562,17 +1530,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 return null;
             }
 
-            var category = new Category
-            {
-                Id = id,
-                Name = response.Data.attributes?.name?.ToString() ?? "Unknown Category",
-                Description = response.Data.attributes?.description?.ToString(),
-                Color = response.Data.attributes?.color?.ToString(),
-                SortOrder = response.Data.attributes?.sort_order ?? 0,
-                Active = response.Data.attributes?.active ?? true,
-                SignupCount = response.Data.attributes?.signup_count ?? 0,
-                DataSource = "Registrations"
-            };
+            var category = RegistrationsMapper.MapToDomain(response.Data);
 
             Logger.LogInformation("Successfully retrieved category: {CategoryId}", id);
             return category;
@@ -1596,7 +1554,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<CategoryDto>>(
                 $"{BaseEndpoint}/categories{queryString}", cancellationToken);
 
             if (response?.Data == null)
@@ -1610,17 +1568,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 };
             }
 
-            var categories = response.Data.Select(dto => new Category
-            {
-                Id = dto?.id?.ToString() ?? string.Empty,
-                Name = dto?.attributes?.name?.ToString() ?? "Unknown Category",
-                Description = dto?.attributes?.description?.ToString(),
-                Color = dto?.attributes?.color?.ToString(),
-                SortOrder = dto?.attributes?.sort_order ?? 0,
-                Active = dto?.attributes?.active ?? true,
-                SignupCount = dto?.attributes?.signup_count ?? 0,
-                DataSource = "Registrations"
-            }).ToList();
+            var categories = response.Data.Select(RegistrationsMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<Category>
             {
@@ -1650,7 +1598,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         {
             var jsonApiRequest = RegistrationsMapper.MapCreateRequestToJsonApi(request);
 
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<CategoryDto>>(
                 $"{BaseEndpoint}/categories", jsonApiRequest, cancellationToken);
 
             if (response?.Data == null)
@@ -1658,16 +1606,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 throw new PlanningCenterApiGeneralException("Failed to create category - no data returned");
             }
 
-            var category = new Category
-            {
-                Id = response.Data?.id?.ToString() ?? string.Empty,
-                Name = request.Name,
-                Description = request.Description,
-                Color = request.Color,
-                SortOrder = request.SortOrder,
-                Active = request.Active,
-                DataSource = "Registrations"
-            };
+            var category = RegistrationsMapper.MapToDomain(response.Data);
 
             Logger.LogInformation("Successfully created category: {CategoryId}", category.Id);
             return category;
@@ -1739,24 +1678,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 return null;
             }
 
-            var campus = new Models.Registrations.Campus
-            {
-                Id = id,
-                Name = response.Data.attributes?.name?.ToString() ?? "Unknown Campus",
-                Description = response.Data.attributes?.description?.ToString(),
-                Timezone = response.Data.attributes?.timezone?.ToString(),
-                Address = response.Data.attributes?.address?.ToString(),
-                City = response.Data.attributes?.city?.ToString(),
-                State = response.Data.attributes?.state?.ToString(),
-                PostalCode = response.Data.attributes?.postal_code?.ToString(),
-                Country = response.Data.attributes?.country?.ToString(),
-                PhoneNumber = response.Data.attributes?.phone_number?.ToString(),
-                WebsiteUrl = response.Data.attributes?.website_url?.ToString(),
-                Active = response.Data.attributes?.active ?? true,
-                SortOrder = response.Data.attributes?.sort_order ?? 0,
-                SignupCount = response.Data.attributes?.signup_count ?? 0,
-                DataSource = "Registrations"
-            };
+            var campus = RegistrationsMapper.MapToDomain(response.Data);
 
             Logger.LogInformation("Successfully retrieved campus: {CampusId}", id);
             return campus;
@@ -1780,7 +1702,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<CampusDto>>(
                 $"{BaseEndpoint}/campuses{queryString}", cancellationToken);
 
             if (response?.Data == null)
@@ -1794,24 +1716,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 };
             }
 
-            var campuses = response.Data.Select(dto => new Models.Registrations.Campus
-            {
-                Id = dto.id?.ToString() ?? string.Empty,
-                Name = dto.attributes?.name?.ToString() ?? "Unknown Campus",
-                Description = dto.attributes?.description?.ToString(),
-                Timezone = dto.attributes?.timezone?.ToString(),
-                Address = dto.attributes?.address?.ToString(),
-                City = dto.attributes?.city?.ToString(),
-                State = dto.attributes?.state?.ToString(),
-                PostalCode = dto.attributes?.postal_code?.ToString(),
-                Country = dto.attributes?.country?.ToString(),
-                PhoneNumber = dto.attributes?.phone_number?.ToString(),
-                WebsiteUrl = dto.attributes?.website_url?.ToString(),
-                Active = dto.attributes?.active ?? true,
-                SortOrder = dto.attributes?.sort_order ?? 0,
-                SignupCount = dto.attributes?.signup_count ?? 0,
-                DataSource = "Registrations"
-            }).ToList();
+            var campuses = response.Data.Select(RegistrationsMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<Models.Registrations.Campus>
             {
@@ -1851,18 +1756,18 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var person = new Person
             {
                 Id = id,
-                FirstName = response.Data.attributes?.first_name?.ToString() ?? "Unknown",
-                LastName = response.Data.attributes?.last_name?.ToString() ?? "Person",
-                PrimaryEmail = response.Data.attributes?.email?.ToString(),
-                Birthdate = response.Data.attributes?.birthdate,
-                Gender = response.Data.attributes?.gender?.ToString(),
-                CreatedAt = response.Data.attributes?.created_at ?? DateTime.MinValue,
-                UpdatedAt = response.Data.attributes?.updated_at ?? DateTime.MinValue,
+                FirstName = response.Data.Attributes?.FirstName ?? "Unknown",
+                LastName = response.Data.Attributes?.LastName ?? "Person",
+                PrimaryEmail = response.Data.Attributes?.Email,
+                Birthdate = response.Data.Attributes?.Birthdate,
+                Gender = response.Data.Attributes?.Gender,
+                CreatedAt = response.Data.Attributes?.CreatedAt ?? DateTime.MinValue,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt ?? DateTime.MinValue,
                 DataSource = "Registrations"
             };
 
             // Add phone number to the PhoneNumbers collection if available
-            var phoneNumber = response.Data.attributes?.phone_number?.ToString();
+            var phoneNumber = response.Data.Attributes?.PhoneNumber;
             if (!string.IsNullOrWhiteSpace(phoneNumber))
             {
                 person.PhoneNumbers.Add(new PhoneNumber

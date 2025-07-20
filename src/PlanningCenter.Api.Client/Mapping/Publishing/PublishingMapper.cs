@@ -3,6 +3,7 @@ using PlanningCenter.Api.Client.Models.JsonApi.Publishing;
 using PlanningCenter.Api.Client.Models.Publishing;
 using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Models.JsonApi;
+using PlanningCenter.Api.Client.Models;
 
 namespace PlanningCenter.Api.Client.Mapping.Publishing;
 
@@ -249,6 +250,63 @@ public static class PublishingMapper
         };
     }
 
+    /// <summary>
+    /// Maps a SpeakerCreateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<SpeakerCreateDto> MapCreateRequestToJsonApi(SpeakerCreateRequest request)
+    {
+        var dto = new SpeakerCreateDto
+        {
+            Type = "Speaker",
+            Attributes = new SpeakerCreateAttributesDto
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                DisplayName = request.DisplayName,
+                Title = request.Title,
+                Biography = request.Biography,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber,
+                WebsiteUrl = request.WebsiteUrl,
+                PhotoUrl = request.PhotoUrl,
+                Organization = request.Organization,
+                Location = request.Location,
+                Active = request.Active
+            }
+        };
+
+        return new JsonApiRequest<SpeakerCreateDto> { Data = dto };
+    }
+
+    /// <summary>
+    /// Maps a SpeakerUpdateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<SpeakerUpdateDto> MapUpdateRequestToJsonApi(string id, SpeakerUpdateRequest request)
+    {
+        var dto = new SpeakerUpdateDto
+        {
+            Type = "Speaker",
+            Id = id,
+            Attributes = new SpeakerUpdateAttributesDto
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                DisplayName = request.DisplayName,
+                Title = request.Title,
+                Biography = request.Biography,
+                Email = request.Email,
+                PhoneNumber = request.PhoneNumber,
+                WebsiteUrl = request.WebsiteUrl,
+                PhotoUrl = request.PhotoUrl,
+                Organization = request.Organization,
+                Location = request.Location,
+                Active = request.Active
+            }
+        };
+
+        return new JsonApiRequest<SpeakerUpdateDto> { Data = dto };
+    }
+
     #endregion
 
     #region Media Mapping
@@ -273,6 +331,52 @@ public static class PublishingMapper
             UpdatedAt = dto.Attributes.UpdatedAt,
             DataSource = "Publishing"
         };
+    }
+
+    /// <summary>
+    /// Maps a MediaUploadRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<MediaCreateDto> MapMediaUploadToJsonApi(string episodeId, MediaUploadRequest request)
+    {
+        var dto = new MediaCreateDto
+        {
+            Type = "Media",
+            Attributes = new MediaCreateAttributesDto
+            {
+                FileName = request.FileName,
+                ContentType = request.ContentType,
+                FileSizeInBytes = request.FileSizeInBytes,
+                MediaType = request.MediaType,
+                Quality = request.Quality,
+                IsPrimary = request.IsPrimary
+            },
+            Relationships = new MediaCreateRelationshipsDto
+            {
+                Episode = new RelationshipData { Type = "Episode", Id = episodeId }
+            }
+        };
+
+        return new JsonApiRequest<MediaCreateDto> { Data = dto };
+    }
+
+    /// <summary>
+    /// Maps a MediaUpdateRequest to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<MediaUpdateDto> MapMediaUpdateToJsonApi(string id, MediaUpdateRequest request)
+    {
+        var dto = new MediaUpdateDto
+        {
+            Type = "Media",
+            Id = id,
+            Attributes = new MediaUpdateAttributesDto
+            {
+                FileName = request.FileName,
+                Quality = request.Quality,
+                IsPrimary = request.IsPrimary
+            }
+        };
+
+        return new JsonApiRequest<MediaUpdateDto> { Data = dto };
     }
 
     #endregion
@@ -320,6 +424,103 @@ public static class PublishingMapper
         };
 
         return new JsonApiRequest<SpeakershipCreateDto> { Data = dto };
+    }
+
+    #endregion
+
+    #region Analytics Mapping
+
+    /// <summary>
+    /// Maps an EpisodeAnalyticsDto to an EpisodeAnalytics domain model.
+    /// </summary>
+    public static EpisodeAnalytics MapToDomain(EpisodeAnalyticsDto dto)
+    {
+        return new EpisodeAnalytics
+        {
+            EpisodeId = dto.Attributes.EpisodeId,
+            ViewCount = dto.Attributes.ViewCount,
+            DownloadCount = dto.Attributes.DownloadCount,
+            AverageWatchTimeSeconds = dto.Attributes.AverageWatchTimeSeconds,
+            PeriodStart = dto.Attributes.PeriodStart,
+            PeriodEnd = dto.Attributes.PeriodEnd,
+            AdditionalData = dto.Attributes.AdditionalData
+        };
+    }
+
+    /// <summary>
+    /// Maps a SeriesAnalyticsDto to a SeriesAnalytics domain model.
+    /// </summary>
+    public static SeriesAnalytics MapToDomain(SeriesAnalyticsDto dto)
+    {
+        return new SeriesAnalytics
+        {
+            SeriesId = dto.Attributes.SeriesId,
+            TotalViewCount = dto.Attributes.TotalViewCount,
+            TotalDownloadCount = dto.Attributes.TotalDownloadCount,
+            EpisodeCount = dto.Attributes.EpisodeCount,
+            PeriodStart = dto.Attributes.PeriodStart,
+            PeriodEnd = dto.Attributes.PeriodEnd,
+            AdditionalData = dto.Attributes.AdditionalData
+        };
+    }
+
+    #endregion
+
+    #region Distribution Mapping
+
+    /// <summary>
+    /// Maps a DistributionDto to a DistributionResult domain model.
+    /// </summary>
+    public static DistributionResult MapToDomain(DistributionDto dto)
+    {
+        return new DistributionResult
+        {
+            Success = dto.Attributes.Success,
+            Message = dto.Attributes.Message,
+            DistributedAt = dto.Attributes.DistributedAt,
+            ExternalUrl = dto.Attributes.ExternalUrl,
+            Metadata = dto.Attributes.Metadata
+        };
+    }
+
+    /// <summary>
+    /// Maps distribution parameters to a JSON:API request.
+    /// </summary>
+    public static JsonApiRequest<DistributionCreateDto> MapDistributionCreateToJsonApi(string? episodeId, string? seriesId, string channelId)
+    {
+        var dto = new DistributionCreateDto
+        {
+            Type = "Distribution",
+            Attributes = new DistributionCreateAttributesDto
+            {
+                EpisodeId = episodeId,
+                SeriesId = seriesId,
+                ChannelId = channelId
+            }
+        };
+
+        return new JsonApiRequest<DistributionCreateDto> { Data = dto };
+    }
+
+    #endregion
+
+    #region Channel Mapping
+
+    /// <summary>
+    /// Maps a ChannelDto to a DistributionChannel domain model.
+    /// </summary>
+    public static DistributionChannel MapToDomain(ChannelDto dto)
+    {
+        return new DistributionChannel
+        {
+            Id = dto.Id,
+            Name = dto.Attributes?.Name ?? "Unknown Channel",
+            ChannelType = "unknown", // Would need to be determined from attributes
+            Active = dto.Attributes?.Published ?? false,
+            Description = dto.Attributes?.Description,
+            Url = dto.Attributes?.Url,
+            DataSource = "Publishing"
+        };
     }
 
     #endregion

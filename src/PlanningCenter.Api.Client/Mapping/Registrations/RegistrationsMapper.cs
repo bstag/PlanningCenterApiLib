@@ -613,4 +613,59 @@ public static class RegistrationsMapper
     }
 
     #endregion
+
+    #region Category Mapping
+
+    /// <summary>
+    /// Maps a CategoryDto to a Category domain model.
+    /// </summary>
+    public static Category MapToDomain(CategoryDto dto)
+    {
+        return new Category
+        {
+            Id = dto.Id,
+            Name = dto.Attributes?.Name ?? "Unknown Category",
+            Description = dto.Attributes?.Description,
+            Color = dto.Attributes?.Color,
+            SortOrder = dto.Attributes?.SortOrder ?? 0,
+            Active = dto.Attributes?.Active ?? true,
+            SignupCount = dto.Attributes?.SignupCount ?? 0,
+            CreatedAt = dto.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+            UpdatedAt = dto.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
+            DataSource = "Registrations"
+        };
+    }
+
+    #endregion
+
+    #region Campus Mapping
+
+    /// <summary>
+    /// Maps a CampusDto to a Campus domain model.
+    /// </summary>
+    public static Models.Registrations.Campus MapToDomain(CampusDto dto)
+    {
+        return new Models.Registrations.Campus
+        {
+            Id = dto.Id,
+            Name = dto.Attributes?.Name ?? "Unknown Campus",
+            Description = dto.Attributes?.Description,
+            Timezone = dto.Attributes?.Timezone,
+            Address = dto.Attributes?.Address,
+            City = dto.Attributes?.City,
+            State = dto.Attributes?.State,
+            PostalCode = dto.Attributes?.PostalCode,
+            Country = dto.Attributes?.Country,
+            PhoneNumber = dto.Attributes?.PhoneNumber,
+            WebsiteUrl = dto.Attributes?.WebsiteUrl,
+            Active = dto.Attributes?.Active ?? true,
+            SortOrder = dto.Attributes?.SortOrder,
+            SignupCount = dto.Attributes?.SignupCount,
+            CreatedAt = dto.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+            UpdatedAt = dto.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
+            DataSource = "Registrations"
+        };
+    }
+
+    #endregion
 }

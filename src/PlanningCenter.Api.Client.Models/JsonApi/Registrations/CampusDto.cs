@@ -24,6 +24,15 @@ public class CampusAttributes
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("timezone")]
+    public string? Timezone { get; set; }
+
+    [JsonPropertyName("address")]
+    public string? Address { get; set; }
+
     [JsonPropertyName("street")]
     public string? Street { get; set; }
 
@@ -33,11 +42,29 @@ public class CampusAttributes
     [JsonPropertyName("state")]
     public string? State { get; set; }
 
+    [JsonPropertyName("postal_code")]
+    public string? PostalCode { get; set; }
+
     [JsonPropertyName("zip")]
     public string? Zip { get; set; }
 
     [JsonPropertyName("country")]
     public string? Country { get; set; }
+
+    [JsonPropertyName("phone_number")]
+    public string? PhoneNumber { get; set; }
+
+    [JsonPropertyName("website_url")]
+    public string? WebsiteUrl { get; set; }
+
+    [JsonPropertyName("active")]
+    public bool Active { get; set; } = true;
+
+    [JsonPropertyName("sort_order")]
+    public int SortOrder { get; set; }
+
+    [JsonPropertyName("signup_count")]
+    public int SignupCount { get; set; }
 
     [JsonPropertyName("full_formatted_address")]
     public string? FullFormattedAddress { get; set; }

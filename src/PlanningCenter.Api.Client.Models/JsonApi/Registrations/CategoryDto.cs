@@ -24,6 +24,21 @@ public class CategoryAttributes
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("color")]
+    public string? Color { get; set; }
+
+    [JsonPropertyName("sort_order")]
+    public int SortOrder { get; set; }
+
+    [JsonPropertyName("active")]
+    public bool Active { get; set; } = true;
+
+    [JsonPropertyName("signup_count")]
+    public int SignupCount { get; set; }
+
     [JsonPropertyName("created_at")]
     public DateTimeOffset? CreatedAt { get; set; }
 
