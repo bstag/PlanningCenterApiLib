@@ -74,8 +74,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/signups";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SignupDto>>(
-                $"{BaseEndpoint}/signups{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -249,8 +254,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/signups/{signupId}/registrations";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<RegistrationDto>>(
-                $"{BaseEndpoint}/signups/{signupId}/registrations{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -370,8 +380,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/signups/{signupId}/attendees";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<AttendeeDto>>(
-                $"{BaseEndpoint}/signups/{signupId}/attendees{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -858,8 +873,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/signups/{signupId}/selection_types";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SelectionTypeDto>>(
-                $"{BaseEndpoint}/signups/{signupId}/selection_types{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -1158,8 +1178,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/signups/{signupId}/signup_times";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SignupTimeDto>>(
-                $"{BaseEndpoint}/signups/{signupId}/signup_times{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -1536,8 +1561,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/categories";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<CategoryDto>>(
-                $"{BaseEndpoint}/categories{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -1684,8 +1714,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/campuses";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<CampusDto>>(
-                $"{BaseEndpoint}/campuses{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -1796,8 +1831,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/people/{personId}/attendees";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<AttendeeDto>>(
-                $"{BaseEndpoint}/people/{personId}/attendees{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -1839,8 +1879,13 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/people/{personId}/signups";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SignupDto>>(
-                $"{BaseEndpoint}/people/{personId}/signups{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {

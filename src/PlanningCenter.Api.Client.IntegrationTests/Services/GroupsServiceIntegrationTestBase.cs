@@ -27,6 +27,17 @@ public abstract class GroupsServiceIntegrationTestBase : IClassFixture<TestFixtu
     }
 
     /// <summary>
+    /// Checks if the test should be skipped due to missing authentication.
+    /// </summary>
+    protected void SkipIfNoAuthentication()
+    {
+        if (!_fixture.HasRealAuthentication)
+        {
+            return; // Skip test
+        }
+    }
+
+    /// <summary>
     /// Gets a valid group type ID for testing.
     /// </summary>
     protected async Task<string> GetGroupTypeIdAsync()

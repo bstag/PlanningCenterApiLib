@@ -77,9 +77,14 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/subscriptions";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             
             var response = await ApiConnection.GetAsync<PagedResponse<WebhookSubscriptionDto>>(
-                $"{BaseEndpoint}/subscriptions{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -602,8 +607,13 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/available_events";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<AvailableEventDto>>(
-                $"{BaseEndpoint}/available_events{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -724,8 +734,13 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/subscriptions/{subscriptionId}/events";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<WebhookEventDto>>(
-                $"{BaseEndpoint}/subscriptions/{subscriptionId}/events{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {

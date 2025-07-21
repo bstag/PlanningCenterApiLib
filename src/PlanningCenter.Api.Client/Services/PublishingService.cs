@@ -74,9 +74,14 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/episodes";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             
             var response = await ApiConnection.GetAsync<PagedResponse<EpisodeDto>>(
-                $"{BaseEndpoint}/episodes{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -429,8 +434,13 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/series";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SeriesDto>>(
-                $"{BaseEndpoint}/series{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -584,8 +594,13 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/speakers";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SpeakerDto>>(
-                $"{BaseEndpoint}/speakers{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -708,8 +723,13 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/episodes/{episodeId}/speakerships";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SpeakershipDto>>(
-                $"{BaseEndpoint}/episodes/{episodeId}/speakerships{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -751,8 +771,13 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/speakers/{speakerId}/speakerships";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<SpeakershipDto>>(
-                $"{BaseEndpoint}/speakers/{speakerId}/speakerships{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -879,8 +904,13 @@ public class PublishingService : ServiceBase, IPublishingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/episodes/{episodeId}/media";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<MediaDto>>(
-                $"{BaseEndpoint}/episodes/{episodeId}/media{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {

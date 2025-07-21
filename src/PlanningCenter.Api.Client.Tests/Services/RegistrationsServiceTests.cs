@@ -975,11 +975,11 @@ public class RegistrationsServiceTests
 
         // Setup registration count response
         var registrationResponse = CreateRegistrationCollectionResponse(25);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?filter[status]=confirmed", registrationResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?where[status]=confirmed", registrationResponse);
 
         // Setup waitlist count response
         var waitlistResponse = CreateAttendeeCollectionResponse(5);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?filter[on_waitlist]=true", waitlistResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?where[on_waitlist]=true", waitlistResponse);
 
         // Act
         var result = await _registrationsService.GenerateRegistrationReportAsync(request);
@@ -998,7 +998,7 @@ public class RegistrationsServiceTests
     {
         // Arrange
         var registrationResponse = CreateRegistrationCollectionResponse(15);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?filter[status]=confirmed", registrationResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?where[status]=confirmed", registrationResponse);
 
         // Act
         var result = await _registrationsService.GetRegistrationCountAsync("signup123");
@@ -1012,7 +1012,7 @@ public class RegistrationsServiceTests
     {
         // Arrange
         var waitlistResponse = CreateAttendeeCollectionResponse(8);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?filter[on_waitlist]=true", waitlistResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?where[on_waitlist]=true", waitlistResponse);
 
         // Act
         var result = await _registrationsService.GetWaitlistCountAsync("signup123");

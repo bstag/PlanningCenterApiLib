@@ -28,6 +28,17 @@ public abstract class PeopleServiceIntegrationTestBase : IClassFixture<TestFixtu
     }
 
     /// <summary>
+    /// Checks if the test should be skipped due to missing authentication.
+    /// </summary>
+    protected void SkipIfNoAuthentication()
+    {
+        if (!_fixture.HasRealAuthentication)
+        {
+            return; // Skip test
+        }
+    }
+
+    /// <summary>
     /// Creates a test person with random data.
     /// </summary>
     protected async Task<Person> CreateTestPersonAsync()

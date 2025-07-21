@@ -77,8 +77,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/donations";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<DonationDto>>(
-                $"{BaseEndpoint}/donations{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -249,8 +254,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/funds";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<FundDto>>(
-                $"{BaseEndpoint}/funds{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -399,8 +409,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/batches";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<BatchDto>>(
-                $"{BaseEndpoint}/batches{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -580,8 +595,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/pledges";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<PledgeDto>>(
-                $"{BaseEndpoint}/pledges{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -730,8 +750,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/recurring_donations";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<RecurringDonationDto>>(
-                $"{BaseEndpoint}/recurring_donations{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -880,8 +905,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/refunds";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<RefundDto>>(
-                $"{BaseEndpoint}/refunds{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -998,8 +1028,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/payment_sources";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<PaymentSourceDto>>(
-                $"{BaseEndpoint}/payment_sources{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -1085,8 +1120,13 @@ public class GivingService : ServiceBase, IGivingService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
+            var endpoint = $"{BaseEndpoint}/people/{personId}/donations";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
             var response = await ApiConnection.GetAsync<PagedResponse<DonationDto>>(
-                $"{BaseEndpoint}/people/{personId}/donations{queryString}", cancellationToken);
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
