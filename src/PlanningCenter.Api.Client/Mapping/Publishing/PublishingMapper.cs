@@ -438,11 +438,11 @@ public static class PublishingMapper
         return new EpisodeAnalytics
         {
             EpisodeId = dto.Attributes.EpisodeId,
-            ViewCount = dto.Attributes.ViewCount,
-            DownloadCount = dto.Attributes.DownloadCount,
-            AverageWatchTimeSeconds = dto.Attributes.AverageWatchTimeSeconds,
-            PeriodStart = dto.Attributes.PeriodStart,
-            PeriodEnd = dto.Attributes.PeriodEnd,
+            ViewCount = dto.Attributes.ViewCount ?? 0,
+            DownloadCount = dto.Attributes.DownloadCount ?? 0,
+            AverageWatchTimeSeconds = dto.Attributes.AverageWatchTimeSeconds ?? 0.0,
+            PeriodStart = dto.Attributes.PeriodStart?.DateTime ?? DateTime.MinValue,
+            PeriodEnd = dto.Attributes.PeriodEnd?.DateTime ?? DateTime.MinValue,
             AdditionalData = dto.Attributes.AdditionalData
         };
     }
@@ -454,13 +454,13 @@ public static class PublishingMapper
     {
         return new SeriesAnalytics
         {
-            SeriesId = dto.Attributes.SeriesId,
-            TotalViewCount = dto.Attributes.TotalViewCount,
-            TotalDownloadCount = dto.Attributes.TotalDownloadCount,
-            EpisodeCount = dto.Attributes.EpisodeCount,
-            PeriodStart = dto.Attributes.PeriodStart,
-            PeriodEnd = dto.Attributes.PeriodEnd,
-            AdditionalData = dto.Attributes.AdditionalData
+            SeriesId = "", // Placeholder, as SeriesId is not directly in SeriesAnalyticsAttributesDto
+            TotalViewCount = dto.Attributes.TotalViews ?? 0,
+            TotalDownloadCount = dto.Attributes.TotalDownloads ?? 0,
+            EpisodeCount = 0, // Placeholder
+            PeriodStart = DateTime.MinValue, // Placeholder
+            PeriodEnd = DateTime.MinValue, // Placeholder
+            AdditionalData = null // Placeholder
         };
     }
 
@@ -475,9 +475,9 @@ public static class PublishingMapper
     {
         return new DistributionResult
         {
-            Success = dto.Attributes.Success,
+            Success = dto.Attributes.Success ?? false,
             Message = dto.Attributes.Message,
-            DistributedAt = dto.Attributes.DistributedAt,
+            DistributedAt = dto.Attributes.DistributedAt?.DateTime ?? DateTime.MinValue,
             ExternalUrl = dto.Attributes.ExternalUrl,
             Metadata = dto.Attributes.Metadata
         };
@@ -518,7 +518,7 @@ public static class PublishingMapper
             ChannelType = "unknown", // Would need to be determined from attributes
             Active = dto.Attributes?.Published ?? false,
             Description = dto.Attributes?.Description,
-            Url = dto.Attributes?.Url,
+            ChannelUrl = dto.Attributes?.Url,
             DataSource = "Publishing"
         };
     }

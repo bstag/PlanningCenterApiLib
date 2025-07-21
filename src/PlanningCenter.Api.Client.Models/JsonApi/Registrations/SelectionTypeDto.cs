@@ -13,16 +13,49 @@ public class SelectionTypeDto : IResourceObject
     public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public SelectionTypeAttributes? Attributes { get; set; }
+    public SelectionTypeAttributesDto? Attributes { get; set; }
 
     [JsonPropertyName("links")]
     public ResourceLinks? Links { get; set; }
 }
 
-public class SelectionTypeAttributes
+public class SelectionTypeAttributesDto
 {
     [JsonPropertyName("name")]
     public string? Name { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("category")]
+    public string? Category { get; set; }
+
+    [JsonPropertyName("cost")]
+    public decimal? Cost { get; set; }
+
+    [JsonPropertyName("currency")]
+    public string? Currency { get; set; }
+
+    [JsonPropertyName("required")]
+    public bool Required { get; set; }
+
+    [JsonPropertyName("allow_multiple")]
+    public bool AllowMultiple { get; set; }
+
+    [JsonPropertyName("max_selections")]
+    public int MaxSelections { get; set; }
+
+    [JsonPropertyName("min_selections")]
+    public int MinSelections { get; set; }
+
+    [JsonPropertyName("selection_limit")]
+    public int SelectionLimit { get; set; }
+
+    [JsonPropertyName("sort_order")]
+    public int SortOrder { get; set; }
+
+    [JsonPropertyName("active")]
+    public bool Active { get; set; }
 
     [JsonPropertyName("publicly_available")]
     public bool? PubliclyAvailable { get; set; }

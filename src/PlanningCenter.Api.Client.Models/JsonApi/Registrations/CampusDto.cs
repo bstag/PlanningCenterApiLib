@@ -13,13 +13,13 @@ public class CampusDto : IResourceObject
     public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public CampusAttributes? Attributes { get; set; }
+    public CampusAttributesDto? Attributes { get; set; }
 
     [JsonPropertyName("links")]
     public ResourceLinks? Links { get; set; }
 }
 
-public class CampusAttributes
+public class CampusAttributesDto
 {
     [JsonPropertyName("name")]
     public string? Name { get; set; }

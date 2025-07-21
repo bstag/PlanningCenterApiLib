@@ -13,26 +13,10 @@ public class SignupTimeDto : IResourceObject
     public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public SignupTimeAttributes? Attributes { get; set; }
+    public SignupTimeAttributesDto? Attributes { get; set; }
 
     [JsonPropertyName("links")]
     public ResourceLinks? Links { get; set; }
 }
 
-public class SignupTimeAttributes
-{
-    [JsonPropertyName("starts_at")]
-    public DateTimeOffset StartsAt { get; set; }
 
-    [JsonPropertyName("ends_at")]
-    public DateTimeOffset? EndsAt { get; set; }
-
-    [JsonPropertyName("all_day")]
-    public bool AllDay { get; set; }
-
-    [JsonPropertyName("created_at")]
-    public DateTimeOffset CreatedAt { get; set; }
-
-    [JsonPropertyName("updated_at")]
-    public DateTimeOffset UpdatedAt { get; set; }
-}

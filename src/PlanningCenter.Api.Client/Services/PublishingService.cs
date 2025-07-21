@@ -1224,7 +1224,7 @@ public class PublishingService : ServiceBase, IPublishingService
             }
 
             // Fallback analytics implementation
-            var analytics = new EpisodeAnalytics
+            var fallbackAnalytics = new EpisodeAnalytics
             {
                 EpisodeId = episodeId,
                 ViewCount = 0,
@@ -1235,7 +1235,7 @@ public class PublishingService : ServiceBase, IPublishingService
             };
 
             Logger.LogInformation("Successfully retrieved analytics for episode {EpisodeId}", episodeId);
-            return analytics;
+            return fallbackAnalytics;
         }
         catch (Exception ex)
         {
@@ -1284,7 +1284,7 @@ public class PublishingService : ServiceBase, IPublishingService
             }
 
             // Fallback analytics implementation
-            var analytics = new SeriesAnalytics
+            var fallbackAnalytics = new SeriesAnalytics
             {
                 SeriesId = seriesId,
                 TotalViewCount = 0,
@@ -1295,7 +1295,7 @@ public class PublishingService : ServiceBase, IPublishingService
             };
 
             Logger.LogInformation("Successfully retrieved analytics for series {SeriesId}", seriesId);
-            return analytics;
+            return fallbackAnalytics;
         }
         catch (Exception ex)
         {

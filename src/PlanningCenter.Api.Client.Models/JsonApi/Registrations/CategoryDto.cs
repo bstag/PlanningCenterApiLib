@@ -13,13 +13,13 @@ public class CategoryDto : IResourceObject
     public string Id { get; set; } = string.Empty;
 
     [JsonPropertyName("attributes")]
-    public CategoryAttributes? Attributes { get; set; }
+    public CategoryAttributesDto? Attributes { get; set; }
 
     [JsonPropertyName("links")]
     public ResourceLinks? Links { get; set; }
 }
 
-public class CategoryAttributes
+public class CategoryAttributesDto
 {
     [JsonPropertyName("name")]
     public string? Name { get; set; }

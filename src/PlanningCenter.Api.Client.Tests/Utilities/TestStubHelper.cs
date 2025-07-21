@@ -9,6 +9,10 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using RegistrationsCampusDto = PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto;
+using PeopleCampusDto = PlanningCenter.Api.Client.Models.People.CampusDto;
+using PlanningCenter.Api.Client.Models.JsonApi.People;
+using PlanningCenter.Api.Client.Models.Core;
 
 namespace PlanningCenter.Api.Client.Tests.Utilities
 {
@@ -68,13 +72,13 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             mockApiConnection.SetupGetResponse("/registrations/v2/selection_types/type123", selectionTypeResponse);
 
             // Person stub
-            var personDto = CreatePersonDto();
+            var personDto = new PersonDto();
             var personResponse = new JsonApiSingleResponse<PersonDto> { Data = personDto };
             mockApiConnection.SetupGetResponse("/registrations/v2/people/person123", personResponse);
 
             // Campus stub
-            var campusDto = CreateCampusDto();
-            var campusResponse = new JsonApiSingleResponse<CampusDto> { Data = campusDto };
+            var campusDto = CreateRegistrationsCampusDto();
+            var campusResponse = new JsonApiSingleResponse<RegistrationsCampusDto> { Data = campusDto };
             mockApiConnection.SetupGetResponse("/registrations/v2/campuses/campus123", campusResponse);
 
             // Campuses list stub
@@ -176,9 +180,10 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
                 Meta = new PagedResponseMeta { TotalCount = 1, PerPage = 100, CurrentPage = 1, TotalPages = 1 }
             };
             mockApiConnection.SetupGetResponse("/registrations/v2/categories", categoriesResponse);
+            mockApiConnection.SetupGetResponse("/registrations/v2/categories/category123", categoryResponse);
 
             // Selection type stub
-            mockApiConnection.SetupGetResponse("/registrations/v2/selection_types/selectiontype123", selectionTypeResponse);
+            mockApiConnection.SetupGetResponse("/registrations/v2/selection_types/type123", selectionTypeResponse);
 
             // Attendees list stub
             var attendeesResponse = CreateAttendeesResponse();
@@ -198,23 +203,23 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             // Defensive: handle signups endpoint typo
             mockApiConnection.SetupGetResponse("/registrations/v2/signupsper_page=100", signupsResponse);
             // Defensive: handle episodes endpoint typo for publishing
-            mockApiConnection.SetupGetResponse<JsonApiSingleResponse<EpisodeDto>>("/publishing/v2/episodesper_page=100", null);
+            mockApiConnection.SetupGetResponse<JsonApiSingleResponse<EpisodeDto>>("/publishing/v2/episodesper_page=100", new JsonApiSingleResponse<EpisodeDto>());
             // Defensive: handle series nonexistent endpoint for publishing
-            mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SeriesDto>>("/publishing/v2/series/nonexistent", null);
+            mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SeriesDto>>("/publishing/v2/series/nonexistent", new JsonApiSingleResponse<SeriesDto>());
             // Defensive: handle speakers nonexistent endpoint for publishing
-            mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SpeakerDto>>("/publishing/v2/speakers/nonexistent", null);
+            mockApiConnection.SetupGetResponse<JsonApiSingleResponse<SpeakerDto>>("/publishing/v2/speakers/nonexistent", new JsonApiSingleResponse<SpeakerDto>());
             // Defensive: handle paged episodes endpoint for publishing
-            mockApiConnection.SetupGetResponse<PagedResponse<EpisodeDto>>("/publishing/v2/episodes?per_page=100", null);
+            mockApiConnection.SetupGetResponse<PagedResponse<EpisodeDto>>("/publishing/v2/episodes?per_page=100", new PagedResponse<EpisodeDto>());
             // Defensive: handle paged signups endpoint for registrations
             mockApiConnection.SetupGetResponse<PagedResponse<SignupDto>>("/registrations/v2/signups?per_page=100", signupsResponse);
             // Defensive: handle paged attendees endpoint typo
             mockApiConnection.SetupGetResponse<PagedResponse<AttendeeDto>>("/registrations/v2/signups/signup123/attendeeswhere[on_waitlist]=true", attendeesResponse);
             // Defensive: handle paged signups endpoint typo
-            mockApiConnection.SetupGetResponse<PagedResponse<SignupDto>>("/registrations/v2/signupsper_page=100", null);
+            mockApiConnection.SetupGetResponse<PagedResponse<SignupDto>>("/registrations/v2/signupsper_page=100", new PagedResponse<SignupDto>());
             // Defensive: handle paged registrations endpoint typo
-            mockApiConnection.SetupGetResponse<PagedResponse<RegistrationDto>>("/registrations/v2/signups/signup123/registrationswhere[status]=confirmed", null);
+            mockApiConnection.SetupGetResponse<PagedResponse<RegistrationDto>>("/registrations/v2/signups/signup123/registrationswhere[status]=confirmed", new PagedResponse<RegistrationDto>());
             // Defensive: handle paged attendees endpoint typo
-            mockApiConnection.SetupGetResponse<PagedResponse<AttendeeDto>>("/registrations/v2/signups/signup123/attendeeswhere[on_waitlist]=true", null);
+            mockApiConnection.SetupGetResponse<PagedResponse<AttendeeDto>>("/registrations/v2/signups/signup123/attendeeswhere[on_waitlist]=true", new PagedResponse<AttendeeDto>());
 
             // Defensive: handle campuses paged endpoint
             mockApiConnection.SetupGetResponse("/registrations/v2/campuses?per_page=100", campusesResponse);
@@ -241,17 +246,17 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             mockApiConnection.SetupGetResponse("/publishing/v2/episodesper_page=100", CreateEpisodesResponse());
 
             // Patch: Ensure campuses have id and description for dynamic binding
-            var campus = CreateCampusDto();
+            var campus = CreateRegistrationsCampusDto();
 
             // If campusesResponse.Data is a List<dynamic>, add the new campus
-            if (campusesResponse.Data is List<CampusDto> campusesList)
+            if (campusesResponse.Data is List<RegistrationsCampusDto> campusesList)
             {
                 campusesList.Add(campus);
             }
             else
             {
                 // If not, replace Data with a List<dynamic> containing the new campus
-                campusesResponse.Data = new List<CampusDto> { campus };
+                campusesResponse.Data = new List<RegistrationsCampusDto> { campus };
             }
 
             mockApiConnection.SetupGetResponse("/registrations/v2/campuses", campusesResponse);
@@ -284,11 +289,7 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/signups/signup123/selection_types", new JsonApiSingleResponse<SelectionTypeDto> { Data = selectionTypeMutationDto });
             mockApiConnection.SetupMutationResponse("PATCH", "/registrations/v2/signups/signup123/selection_types/selectiontype123", new JsonApiSingleResponse<SelectionTypeDto> { Data = selectionTypeMutationDto });
             mockApiConnection.SetupMutationResponse("DELETE", "/registrations/v2/signups/signup123/selection_types/selectiontype123", new JsonApiSingleResponse<dynamic>());
-            mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/attendees/attendee123/emergency_contact", new JsonApiSingleResponse<EmergencyContactDto> { Data = emergencyContactDto });
-            mockApiConnection.SetupMutationResponse("PATCH", "/registrations/v2/attendees/attendee123/emergency_contact", new JsonApiSingleResponse<EmergencyContactDto> { Data = emergencyContactDto });
-
-            mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/categories", new JsonApiSingleResponse<CategoryDto> { Data = categoryDto });
-            mockApiConnection.SetupMutationResponse("PATCH", "/registrations/v2/categories/category123", new JsonApiSingleResponse<CategoryDto> { Data = categoryDto });
+            
         }
 
         #region Helper methods to create test DTOs
@@ -316,11 +317,11 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             {
                 Id = "time123",
                 Type = "SignupTime",
-                Attributes = new SignupTimeAttributesDto
+                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.SignupTimeAttributesDto
                 {
                     Name = "Morning Session",
-                    StartsAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z"),
-                    EndsAt = DateTimeOffset.Parse("2023-01-01T12:00:00Z")
+                    StartsAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    EndsAt = DateTimeOffset.Parse("2023-01-01T12:00:00Z").DateTime
                 }
             };
             times.Add(time);
@@ -338,17 +339,29 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             {
                 Id = "type123",
                 Type = "SelectionType",
-                Attributes = new SelectionTypeAttributesDto
+                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.SelectionTypeAttributesDto
                 {
                     Name = "Test Selection Type",
-                    Description = "Test Description"
+                    Description = "Test Description",
+                    Category = "General",
+                    Cost = 10.00m,
+                    Currency = "USD",
+                    Required = true,
+                    AllowMultiple = false,
+                    MaxSelections = 1,
+                    MinSelections = 1,
+                    SelectionLimit = 100,
+                    SortOrder = 1,
+                    Active = true,
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
         }
 
-        private static PersonDto CreatePersonDto()
+        public static PersonDto CreatePersonDto(Action<PersonDto> customize)
         {
-            return new PersonDto
+            var dto = new PersonDto
             {
                 Id = "person123",
                 Type = "person",
@@ -356,23 +369,22 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
                 {
                     FirstName = "John",
                     LastName = "Doe",
-                    Email = "john.doe@example.com",
-                    PhoneNumber = "555-1234",
-                    Birthdate = "1990-01-01",
-                    Timezone = "America/New_York",
-                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z"),
-                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z")
+                    Birthdate = DateTime.Parse("1990-01-01"),
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
+            customize(dto);
+            return dto;
         }
 
-        private static PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto CreateCampusDto()
+        public static RegistrationsCampusDto CreateRegistrationsCampusDto()
         {
-            return new PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto
+            return new RegistrationsCampusDto
             {
                 Id = "campus123",
                 Type = "Campus",
-                Attributes = new CampusAttributesDto
+                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusAttributesDto
                 {
                     Name = "Main Campus",
                     Description = "Main campus location",
@@ -391,14 +403,14 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             };
         }
 
-        private static PagedResponse<PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto> CreateCampusesResponse()
+        private static PagedResponse<RegistrationsCampusDto> CreateCampusesResponse()
         {
-            var campuses = new List<PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto>
+            var campuses = new List<RegistrationsCampusDto>
             {
-                new PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto
+                new RegistrationsCampusDto
                 {
                     Id = "campus1",
-                    Attributes = new CampusAttributesDto
+                    Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusAttributesDto
                     {
                         Name = "Main Campus",
                         Description = "Main campus description"
@@ -406,7 +418,7 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
                 }
             };
 
-            return new PagedResponse<PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto>
+            return new PagedResponse<RegistrationsCampusDto>
             {
                 Data = campuses,
                 Meta = new PagedResponseMeta { TotalCount = 1, PerPage = 100, CurrentPage = 1, TotalPages = 1 }
@@ -419,11 +431,27 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             {
                 Id = "contact123",
                 Type = "EmergencyContact",
-                Attributes = new EmergencyContactAttributesDto
+                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.EmergencyContactAttributes
                 {
-                    Name = "Jane Doe",
+                    FirstName = "Jane",
+                    LastName = "Doe",
                     Relationship = "Spouse",
-                    PhoneNumber = "555-123-4567"
+                    PrimaryPhone = "555-123-4567",
+                    SecondaryPhone = "555-765-4321",
+                    Email = "jane.doe@example.com",
+                    StreetAddress = "456 Oak Ave",
+                    City = "Anytown",
+                    State = "NY",
+                    PostalCode = "12345",
+                    Country = "US",
+                    IsPrimary = true,
+                    Priority = 1,
+                    Notes = "Some notes",
+                    PreferredContactMethod = "Phone",
+                    BestTimeToContact = "Morning",
+                    CanAuthorizeMedicalTreatment = true,
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
         }
@@ -439,7 +467,7 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
                 Attributes = new RegistrationAttributesDto
                 {
                     Status = "confirmed",
-                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z")
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
             registrations.Add(registration);
@@ -475,7 +503,7 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             };
         }
 
-        private static PagedResponse<SignupDto> CreateSignupsResponse()
+        public static PagedResponse<SignupDto> CreateSignupsResponse()
         {
             var signups = new List<SignupDto>();
 
@@ -505,7 +533,7 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             {
                 Id = "registration123",
                 Type = "Registration",
-                Attributes = new RegistrationAttributesDto
+                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.RegistrationAttributesDto
                 {
                     FirstName = "John",
                     LastName = "Doe",
@@ -514,8 +542,8 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
                     Birthdate = "1990-01-01",
                     Gender = "Male",
                     Status = "confirmed",
-                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z"),
-                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z")
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
         }
@@ -526,7 +554,7 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             {
                 Id = "category123",
                 Type = "category",
-                Attributes = new CategoryAttributesDto
+                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.CategoryAttributesDto
                 {
                     Name = "Test Category",
                     Description = "Test category description",
@@ -534,8 +562,8 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
                     SortOrder = 1,
                     Active = true,
                     SignupCount = 10,
-                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z"),
-                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z")
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
         }
@@ -551,7 +579,7 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
                     FirstName = "John",
                     LastName = "Doe",
                     OnWaitlist = false,
-                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z")
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
         }
@@ -562,10 +590,33 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             {
                 Id = "location123",
                 Type = "Location",
-                Attributes = new SignupLocationAttributesDto
+                                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.SignupLocationAttributesDto
                 {
                     Name = "Main Building",
-                    Address = "123 Main St"
+                    Description = "Main building description",
+                    StreetAddress = "123 Main St",
+                    City = "Anytown",
+                    State = "NY",
+                    PostalCode = "12345",
+                    Country = "US",
+                    Latitude = "34.0522",
+                    Longitude = "-118.2437",
+                    PhoneNumber = "555-123-4567",
+                    WebsiteUrl = "https://example.com",
+                    Directions = "Some directions",
+                    ParkingInfo = "Parking available",
+                    AccessibilityInfo = "Wheelchair accessible",
+                    Capacity = 100,
+                    Notes = "Some notes",
+                    Timezone = "America/New_York",
+                    FormattedAddress = "123 Main St, Anytown, NY 12345, US",
+                    FullFormattedAddress = "123 Main St, Anytown, NY 12345, US",
+                    LocationType = "building",
+                    Url = "https://example.com/location",
+                    Subpremise = "Suite 100",
+                    AddressData = "{}",
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
         }
@@ -597,10 +648,13 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
         {
             return new SeriesAnalyticsDto
             {
-                Data = new SeriesAnalyticsDataDto
+                Id = "series123",
+                Type = "SeriesAnalytics",
+                Attributes = new SeriesAnalyticsAttributesDto
                 {
-                    Views = 42,
-                    Downloads = 5
+                    TotalViews = 42,
+                    TotalDownloads = 5,
+                    TotalPlays = 47
                 }
             };
         }
@@ -634,9 +688,25 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             {
                 Id = "time123",
                 Type = "SignupTime",
-                Attributes = new SignupTimeAttributesDto
+                Attributes = new PlanningCenter.Api.Client.Models.JsonApi.Registrations.SignupTimeAttributesDto
                 {
-                    Name = "Test Signup Time"
+                    Name = "Morning Session",
+                    StartsAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    EndsAt = DateTimeOffset.Parse("2023-01-01T12:00:00Z").DateTime,
+                    AllDay = false,
+                    Timezone = "America/New_York",
+                    TimeType = "session",
+                    Capacity = 100,
+                    Required = true,
+                    SortOrder = 1,
+                    Active = true,
+                    Location = "Room 101",
+                    Room = "Main Hall",
+                    Instructor = "John Doe",
+                    Cost = 10.00m,
+                    Notes = "Some notes",
+                    CreatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime,
+                    UpdatedAt = DateTimeOffset.Parse("2023-01-01T09:00:00Z").DateTime
                 }
             };
         }

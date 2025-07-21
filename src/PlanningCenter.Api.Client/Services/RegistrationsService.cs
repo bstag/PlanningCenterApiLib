@@ -826,12 +826,10 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             {
                 Id = id,
                 Name = response.Data.Attributes?.Name ?? "Unknown Selection Type",
-                PriceCents = response.Data.Attributes?.PriceCents,
-                PriceCurrency = response.Data.Attributes?.PriceCurrency,
-                PriceFormatted = response.Data.Attributes?.PriceFormatted,
-                PubliclyAvailable = response.Data.Attributes?.PubliclyAvailable ?? false,
-                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
-                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
+                Cost = response.Data.Attributes?.PriceCents / 100m, // Convert cents to decimal
+                Currency = response.Data.Attributes?.PriceCurrency ?? string.Empty,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
                 DataSource = "Registrations"
             };
 
@@ -878,12 +876,10 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             {
                 Id = dto.Id,
                 Name = dto.Attributes?.Name ?? "Unknown Selection Type",
-                PriceCents = dto.Attributes?.PriceCents,
-                PriceCurrency = dto.Attributes?.PriceCurrency,
-                PriceFormatted = dto.Attributes?.PriceFormatted,
-                PubliclyAvailable = dto.Attributes?.PubliclyAvailable ?? false,
-                CreatedAt = dto.Attributes?.CreatedAt?.DateTime,
-                UpdatedAt = dto.Attributes?.UpdatedAt?.DateTime,
+                Cost = dto.Attributes?.PriceCents / 100m, // Convert cents to decimal
+                Currency = dto.Attributes?.PriceCurrency ?? string.Empty,
+                CreatedAt = dto.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+                UpdatedAt = dto.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
                 SignupId = signupId,
                 DataSource = "Registrations"
             }).ToList();
@@ -929,12 +925,10 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             {
                 Id = response.Data.Id,
                 Name = response.Data.Attributes?.Name ?? request.Name,
-                PriceCents = response.Data.Attributes?.PriceCents,
-                PriceCurrency = response.Data.Attributes?.PriceCurrency,
-                PriceFormatted = response.Data.Attributes?.PriceFormatted,
-                PubliclyAvailable = response.Data.Attributes?.PubliclyAvailable ?? false,
-                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
-                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
+                Cost = response.Data.Attributes?.PriceCents / 100m, // Convert cents to decimal
+                Currency = response.Data.Attributes?.PriceCurrency ?? string.Empty,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
                 SignupId = signupId,
                 DataSource = "Registrations"
             };
@@ -973,12 +967,10 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             {
                 Id = id,
                 Name = response.Data.Attributes?.Name ?? request.Name ?? "Updated Selection Type",
-                PriceCents = response.Data.Attributes?.PriceCents,
-                PriceCurrency = response.Data.Attributes?.PriceCurrency,
-                PriceFormatted = response.Data.Attributes?.PriceFormatted,
-                PubliclyAvailable = response.Data.Attributes?.PubliclyAvailable ?? false,
-                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
-                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
+                Cost = request.Cost,
+                Currency = request.Currency ?? string.Empty,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
                 DataSource = "Registrations"
             };
 
@@ -1035,15 +1027,10 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 SignupId = signupId,
                 Name = response.Data.Attributes?.Name ?? "Unknown Location",
                 FormattedAddress = response.Data.Attributes?.FormattedAddress,
-                FullFormattedAddress = response.Data.Attributes?.FullFormattedAddress,
-                Latitude = response.Data.Attributes?.Latitude,
-                Longitude = response.Data.Attributes?.Longitude,
-                LocationType = response.Data.Attributes?.LocationType,
-                Url = response.Data.Attributes?.Url,
-                Subpremise = response.Data.Attributes?.Subpremise,
-                AddressData = response.Data.Attributes?.AddressData,
-                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
-                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
+                Latitude = double.TryParse(response.Data.Attributes?.Latitude, out var lat) ? lat : (double?)null,
+                Longitude = double.TryParse(response.Data.Attributes?.Longitude, out var lon) ? lon : (double?)null,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
                 DataSource = "Registrations"
             };
 
@@ -1089,15 +1076,10 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 SignupId = signupId,
                 Name = response.Data.Attributes?.Name ?? request.Name,
                 FormattedAddress = response.Data.Attributes?.FormattedAddress,
-                FullFormattedAddress = response.Data.Attributes?.FullFormattedAddress,
-                Latitude = response.Data.Attributes?.Latitude,
-                Longitude = response.Data.Attributes?.Longitude,
-                LocationType = response.Data.Attributes?.LocationType,
-                Url = response.Data.Attributes?.Url,
-                Subpremise = response.Data.Attributes?.Subpremise,
-                AddressData = response.Data.Attributes?.AddressData,
-                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime,
-                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime,
+                Latitude = double.TryParse(response.Data.Attributes?.Latitude, out var lat) ? lat : (double?)null,
+                Longitude = double.TryParse(response.Data.Attributes?.Longitude, out var lon) ? lon : (double?)null,
+                CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
+                UpdatedAt = response.Data.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
                 DataSource = "Registrations"
             };
 
@@ -1143,8 +1125,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 State = request.State,
                 PostalCode = request.PostalCode,
                 Country = request.Country,
-                Latitude = request.Latitude,
-                Longitude = request.Longitude,
+                Latitude = request.Latitude ?? 0.0,
+                Longitude = request.Longitude ?? 0.0,
                 PhoneNumber = request.PhoneNumber,
                 WebsiteUrl = request.WebsiteUrl,
                 Directions = request.Directions,
@@ -1197,8 +1179,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 StartTime = dto.Attributes?.StartsAt.DateTime ?? DateTime.MinValue,
                 EndTime = dto.Attributes?.EndsAt?.DateTime,
                 AllDay = dto.Attributes?.AllDay ?? false,
-                CreatedAt = dto.Attributes?.CreatedAt.DateTime,
-                UpdatedAt = dto.Attributes?.UpdatedAt.DateTime,
+                CreatedAt = dto.Attributes?.CreatedAt.DateTime ?? DateTime.MinValue,
+                UpdatedAt = dto.Attributes?.UpdatedAt.DateTime ?? DateTime.MinValue,
                 DataSource = "Registrations"
             }).ToList();
             

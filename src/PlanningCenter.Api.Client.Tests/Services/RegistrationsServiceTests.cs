@@ -3,13 +3,16 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.Registrations;
+using PlanningCenter.Api.Client.Models.People;
 using PlanningCenter.Api.Client.Models.Registrations;
 using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Services;
 using PlanningCenter.Api.Client.Tests.Utilities;
 using Xunit;
+using Campus = PlanningCenter.Api.Client.Models.Registrations.Campus;
 
 namespace PlanningCenter.Api.Client.Tests.Services;
 
@@ -834,21 +837,17 @@ public class RegistrationsServiceTests
     [Fact]
     public async Task GetCampusAsync_ShouldReturnCampus_WhenApiReturnsData()
     {
-        // Arrange
-        var response = new JsonApiSingleResponse<dynamic>
+        var campusDto = TestStubHelper.CreateRegistrationsCampusDto();
+        var campus = new Campus
         {
-            Data = new ExpandoObject()
+            Id = campusDto.Id,
+            Name = campusDto.Attributes?.Name,
+            City = campusDto.Attributes?.City,
+            // Map other properties as needed
         };
-        var campusData = (dynamic)response.Data;
-        campusData.id = "campus123";
-        campusData.attributes = new ExpandoObject();
-        ((dynamic)campusData.attributes).name = "Main Campus";
-        ((dynamic)campusData.attributes).description = "Our main campus location";
-        ((dynamic)campusData.attributes).city = "Springfield";
-        ((dynamic)campusData.attributes).state = "IL";
-        ((dynamic)campusData.attributes).active = true;
-        _mockApiConnection.SetupGetResponse("/registrations/v2/campuses/campus123", response);
 
+        var response = new JsonApiSingleResponse<Campus> { Data = campus };
+        _mockApiConnection.SetupGetResponse("/registrations/v2/campuses/campus123", response);
         // Act
         var result = await _registrationsService.GetCampusAsync("campus123");
 
@@ -902,19 +901,15 @@ public class RegistrationsServiceTests
     public async Task GetPersonAsync_ShouldReturnPerson_WhenApiReturnsData()
     {
         // Arrange
-        var response = new JsonApiSingleResponse<dynamic>
+        var personDto = TestStubHelper.CreatePersonDto(p =>
         {
-            Data = new ExpandoObject()
-        };
-        var personData = (dynamic)response.Data;
-        personData.id = "person123";
-        personData.attributes = new ExpandoObject();
-        ((dynamic)personData.attributes).first_name = "John";
-        ((dynamic)personData.attributes).last_name = "Doe";
-        ((dynamic)personData.attributes).email = "john.doe@example.com";
-        ((dynamic)personData.attributes).phone_number = "555-123-4567";
-        ((dynamic)personData.attributes).created_at = DateTime.Parse("2024-01-01T00:00:00Z");
-        ((dynamic)personData.attributes).updated_at = DateTime.Parse("2024-01-15T00:00:00Z");
+            p.Id = "person123";
+            p.Attributes.FirstName = "John";
+            p.Attributes.LastName = "Doe";
+            p.Attributes.CreatedAt = DateTime.Parse("2024-01-01T00:00:00Z");
+            p.Attributes.UpdatedAt = DateTime.Parse("2024-01-15T00:00:00Z");
+        });
+        var response = new JsonApiSingleResponse<PersonDto> { Data = personDto };
         _mockApiConnection.SetupGetResponse("/registrations/v2/people/person123", response);
 
         // Act
