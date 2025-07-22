@@ -1,0 +1,22 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  PlanningCenter.Api.Client.Models -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Models\bin\Debug\net9.0\PlanningCenter.Api.Client.Models.dll
+  PlanningCenter.Api.Client -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client\bin\Debug\net9.0\PlanningCenter.Api.Client.dll
+  PlanningCenter.Api.Client.IntegrationTests -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.IntegrationTests\bin\Debug\net9.0\PlanningCenter.Api.Client.IntegrationTests.dll
+Test run for C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.IntegrationTests\bin\Debug\net9.0\PlanningCenter.Api.Client.IntegrationTests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 17.14.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+No test matches the given testcase filter `FullyQualifiedName!~IntegrationTest` in C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.IntegrationTests\bin\Debug\net9.0\PlanningCenter.Api.Client.IntegrationTests.dll
+
+C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\ApiConnectionTests.cs(530,23): warning CS8618: Non-nullable property 'Id' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\PlanningCenter.Api.Client.Tests.csproj]
+C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\ApiConnectionTests.cs(531,23): warning CS8618: Non-nullable property 'Name' must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring the property as nullable. [C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\PlanningCenter.Api.Client.Tests.csproj]
+  PlanningCenter.Api.Client.Tests -> C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\bin\Debug\net9.0\PlanningCenter.Api.Client.Tests.dll
+Test run for C:\Source\PlanningCenterApiLib\src\PlanningCenter.Api.Client.Tests\bin\Debug\net9.0\PlanningCenter.Api.Client.Tests.dll (.NETCoreApp,Version=v9.0)
+VSTest version 17.14.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   665, Skipped:     0, Total:   665, Duration: 4 s - PlanningCenter.Api.Client.Tests.dll (net9.0)

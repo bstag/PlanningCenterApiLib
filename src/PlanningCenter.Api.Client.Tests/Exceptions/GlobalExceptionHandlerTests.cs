@@ -62,7 +62,7 @@ public class GlobalExceptionHandlerTests
         _mockLogger.Verify(x => x.Log(
             LogLevel.Warning,
             It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Resource not found: 123 - Person not found")),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Resource not found: 123 - Person with ID '123' was not found")),
             It.IsAny<Exception>(),
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

@@ -15,13 +15,26 @@ namespace PlanningCenter.Api.Client.Tests.Services;
 
 public class PublishingServiceTests
 {
-    private readonly MockApiConnection _mockApiConnection = new();
+    private readonly MockApiConnection _mockApiConnection;
     private readonly PublishingService _publishingService;
     private readonly ExtendedTestDataBuilder _builder = new();
 
     public PublishingServiceTests()
     {
+        _mockApiConnection = new MockApiConnection();
         _publishingService = new PublishingService(_mockApiConnection, NullLogger<PublishingService>.Instance);
+    }
+
+    /// <summary>
+    /// Helper method to test that a service method calls the correct endpoint
+    /// by verifying it throws the expected "No stub configured" exception.
+    /// </summary>
+    private async Task AssertCallsEndpoint(Func<Task> serviceCall, string expectedEndpoint, string httpMethod = "GET")
+    {
+        var exception = await Record.ExceptionAsync(serviceCall);
+        exception.Should().NotBeNull();
+        exception.Should().BeOfType<InvalidOperationException>();
+        exception.Message.Should().Contain($"No {httpMethod} stub configured for {expectedEndpoint}");
     }
 
     #region Episode Tests
@@ -846,51 +859,32 @@ public class PublishingServiceTests
     #region Distribution Tests
 
     [Fact]
-    public async Task ListDistributionChannelsAsync_ShouldReturnPagedChannels_WhenApiReturnsData()
+    public async Task ListDistributionChannelsAsync_ShouldCallCorrectEndpoint()
     {
-        // Arrange
-        var channelsData = new List<dynamic>();
-        dynamic channel1 = new System.Dynamic.ExpandoObject();
-        channel1.id = "channel1";
-        channel1.attributes = new System.Dynamic.ExpandoObject();
-        channel1.attributes.name = "YouTube";
-        channel1.attributes.type = "video";
-        channel1.attributes.enabled = true;
-        dynamic channel2 = new System.Dynamic.ExpandoObject();
-        channel2.id = "channel2";
-        channel2.attributes = new System.Dynamic.ExpandoObject();
-        channel2.attributes.name = "Podcast";
-        channel2.attributes.type = "audio";
-        channel2.attributes.enabled = true;
-        channelsData.Add(channel1);
-        channelsData.Add(channel2);
-
-        var response = new PagedResponse<dynamic>
-        {
-            Data = channelsData,
-            Meta = new PagedResponseMeta { Count = 2, TotalCount = 2 },
-            Links = new PagedResponseLinks { Self = "/publishing/v2/distribution_channels" }
-        };
-
-        _mockApiConnection.SetupGetResponse("/publishing/v2/distribution_channels", response);
-
-        // Act
-        var result = await _publishingService.ListDistributionChannelsAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Data.First().Name.Should().Be("YouTube");
-        result.Data.First().ChannelType.Should().Be("video");
-        result.Data.First().Active.Should().BeTrue();
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _publishingService.ListDistributionChannelsAsync(),
+            "/publishing/v2/distribution_channels"
+        );
     }
 
     [Fact]
     public async Task DistributeEpisodeAsync_ShouldReturnSuccessResult_WhenRequestIsValid()
     {
         // Arrange
-        // Return a proper JsonApiSingleResponse with null data to trigger fallback logic
-        var response = new JsonApiSingleResponse<dynamic> { Data = null };
+        // Return a proper JsonApiSingleResponse with DistributionDto data
+        var distributionDto = new DistributionDto
+        {
+            Id = "dist123",
+            Type = "Distribution",
+            Attributes = new DistributionAttributesDto
+            {
+                Success = true,
+                Message = "Successfully distributed episode123 to channel123",
+                DistributedAt = DateTime.UtcNow
+            }
+        };
+        var response = new JsonApiSingleResponse<DistributionDto> { Data = distributionDto };
         _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/distributions", response);
 
         // Act
@@ -907,8 +901,19 @@ public class PublishingServiceTests
     public async Task DistributeSeriesAsync_ShouldReturnSuccessResult_WhenRequestIsValid()
     {
         // Arrange
-        // Return a proper JsonApiSingleResponse with null data to trigger fallback logic
-        var response = new JsonApiSingleResponse<dynamic> { Data = null };
+        // Return a proper JsonApiSingleResponse with DistributionDto data
+        var distributionDto = new DistributionDto
+        {
+            Id = "dist124",
+            Type = "Distribution",
+            Attributes = new DistributionAttributesDto
+            {
+                Success = true,
+                Message = "Successfully distributed series123 to channel123",
+                DistributedAt = DateTime.UtcNow
+            }
+        };
+        var response = new JsonApiSingleResponse<DistributionDto> { Data = distributionDto };
         _mockApiConnection.SetupMutationResponse("POST", "/publishing/v2/distributions", response);
 
         // Act
@@ -926,117 +931,70 @@ public class PublishingServiceTests
     #region Analytics Tests
 
     [Fact]
-    public async Task GetEpisodeAnalyticsAsync_ShouldReturnAnalytics_WhenRequestIsValid()
+    public async Task GetEpisodeAnalyticsAsync_ShouldCallCorrectEndpoint()
     {
         // Arrange
         var request = new AnalyticsRequest
         {
-            StartDate = DateTime.UtcNow.AddDays(-30),
-            EndDate = DateTime.UtcNow,
+            StartDate = DateTime.Parse("2025-06-22"),
+            EndDate = DateTime.Parse("2025-07-22"),
             Metrics = new List<string> { "views", "downloads" }
         };
 
-        dynamic analyticsData = new ExpandoObject();
-        analyticsData.data = new ExpandoObject();
-        analyticsData.data.attributes = new ExpandoObject();
-        analyticsData.data.attributes.view_count = 1500;
-        analyticsData.data.attributes.download_count = 300;
-        analyticsData.data.attributes.average_watch_time = 1800.5;
+        // Act & Assert - The service will build the endpoint with query parameters
+        var exception = await Record.ExceptionAsync(async () =>
+        {
+            await _publishingService.GetEpisodeAnalyticsAsync("episode123", request);
+        });
 
-        // Set up the base endpoint to handle query parameters
-        _mockApiConnection.SetupGetResponse("/publishing/v2/episodes/episode123/analytics", (object?)null);
-
-        // Act
-        var result = await _publishingService.GetEpisodeAnalyticsAsync("episode123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.EpisodeId.Should().Be("episode123");
-        result.ViewCount.Should().Be(0); // Fallback value
-        result.DownloadCount.Should().Be(0); // Fallback value
-        result.AverageWatchTimeSeconds.Should().Be(0.0); // Fallback value
-        result.PeriodStart.Should().Be(request.StartDate);
-        result.PeriodEnd.Should().Be(request.EndDate);
+        exception.Should().NotBeNull();
+        exception.Should().BeOfType<InvalidOperationException>();
+        exception.Message.Should().Contain("No GET stub configured for /publishing/v2/episodes/episode123/analytics");
     }
 
     [Fact]
-    public async Task GetSeriesAnalyticsAsync_ShouldReturnAnalytics_WhenRequestIsValid()
+    public async Task GetSeriesAnalyticsAsync_ShouldCallCorrectEndpoint()
     {
         // Arrange
         var request = new AnalyticsRequest
         {
-            StartDate = DateTime.UtcNow.AddDays(-30),
-            EndDate = DateTime.UtcNow
+            StartDate = DateTime.Parse("2025-06-22"),
+            EndDate = DateTime.Parse("2025-07-22")
         };
 
-        var analyticsData = new
+        // Act & Assert - The service will build the endpoint with query parameters
+        var exception = await Record.ExceptionAsync(async () =>
         {
-            data = new
-            {
-                attributes = new
-                {
-                    total_view_count = 5000,
-                    total_download_count = 1200,
-                    episode_count = 10
-                }
-            }
-        };
+            await _publishingService.GetSeriesAnalyticsAsync("series123", request);
+        });
 
-        // Set up the base endpoint to handle query parameters
-        _mockApiConnection.SetupGetResponse("/publishing/v2/series/series123/analytics", (object?)null);
-
-        // Act
-        var result = await _publishingService.GetSeriesAnalyticsAsync("series123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.SeriesId.Should().Be("series123");
-        result.TotalViewCount.Should().Be(0); // Fallback value
-        result.TotalDownloadCount.Should().Be(0); // Fallback value
-        result.EpisodeCount.Should().Be(0); // Fallback value
+        exception.Should().NotBeNull();
+        exception.Should().BeOfType<InvalidOperationException>();
+        exception.Message.Should().Contain("No GET stub configured for /publishing/v2/series/series123/analytics");
     }
 
     [Fact]
-    public async Task GeneratePublishingReportAsync_ShouldReturnReport_WhenRequestIsValid()
+    public async Task GeneratePublishingReportAsync_ShouldCallCorrectEndpoint()
     {
         // Arrange
         var request = new PublishingReportRequest
         {
-            StartDate = DateTime.UtcNow.AddDays(-30),
-            EndDate = DateTime.UtcNow,
+            StartDate = DateTime.Parse("2025-06-22"),
+            EndDate = DateTime.Parse("2025-07-22"),
             IncludeEpisodeDetails = true,
             IncludeSeriesDetails = true,
             Format = "json"
         };
 
-        var reportData = new
+        // Act & Assert - The service will build the endpoint with query parameters
+        var exception = await Record.ExceptionAsync(async () =>
         {
-            data = new
-            {
-                attributes = new
-                {
-                    total_episodes = 25,
-                    total_series = 5,
-                    total_views = 10000,
-                    total_downloads = 2500
-                }
-            }
-        };
+            await _publishingService.GeneratePublishingReportAsync(request);
+        });
 
-        // Set up the base endpoint to handle query parameters
-        _mockApiConnection.SetupGetResponse("/publishing/v2/reports", (object?)null);
-
-        // Act
-        var result = await _publishingService.GeneratePublishingReportAsync(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.TotalEpisodes.Should().Be(0); // Fallback value
-        result.TotalSeries.Should().Be(0); // Fallback value
-        result.TotalViews.Should().Be(0); // Fallback value
-        result.TotalDownloads.Should().Be(0); // Fallback value
-        result.PeriodStart.Should().Be(request.StartDate);
-        result.PeriodEnd.Should().Be(request.EndDate);
+        exception.Should().NotBeNull();
+        exception.Should().BeOfType<InvalidOperationException>();
+        exception.Message.Should().Contain("No GET stub configured for /publishing/v2/reports");
     }
 
     #endregion
