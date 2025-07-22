@@ -896,7 +896,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             {
                 Id = dto.Id,
                 Name = dto.Attributes?.Name ?? "Unknown Selection Type",
-                Cost = dto.Attributes?.PriceCents / 100m, // Convert cents to decimal
+                Cost = (dto.Attributes?.PriceCents ?? 0m) / 100m, // Convert cents to decimal
                 Currency = dto.Attributes?.PriceCurrency ?? string.Empty,
                 CreatedAt = dto.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,
                 UpdatedAt = dto.Attributes?.UpdatedAt?.DateTime ?? DateTime.MinValue,
