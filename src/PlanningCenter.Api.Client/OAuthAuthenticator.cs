@@ -86,7 +86,7 @@ public class OAuthAuthenticator : IAuthenticator, IDisposable
             if (string.IsNullOrEmpty(_accessToken))
             {
                 // Patch: Exception message must mention 'access_token' for test alignment
-                throw new PlanningCenterApiGeneralException("Missing access_token in token response", 200, "missing_access_token");
+                throw new PlanningCenterApiGeneralException("Missing access_token in token response", 400, "missing_access_token");
             }
 
             return _accessToken;
