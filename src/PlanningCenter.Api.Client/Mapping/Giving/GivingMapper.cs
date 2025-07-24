@@ -26,7 +26,7 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
                 AmountCents = dto.Attributes.AmountCents,
                 AmountCurrency = dto.Attributes.AmountCurrency,
                 PaymentMethod = dto.Attributes.PaymentMethod,
-                PaymentLastFour = dto.Attributes.PaymentLastFour,
+                PaymentLast4 = dto.Attributes.PaymentLast4, // Updated property name
                 PaymentBrand = dto.Attributes.PaymentBrand,
                 FeeCents = dto.Attributes.FeeCents,
                 PaymentCheckNumber = dto.Attributes.PaymentCheckNumber,
@@ -57,7 +57,7 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
                     AmountCents = request.AmountCents,
                     AmountCurrency = request.AmountCurrency,
                     PaymentMethod = request.PaymentMethod,
-                    PaymentLastFour = request.PaymentLastFour,
+                    PaymentLast4 = request.PaymentLast4, // Updated property name
                     PaymentBrand = request.PaymentBrand,
                     FeeCents = request.FeeCents,
                     PaymentCheckNumber = request.PaymentCheckNumber,
@@ -484,7 +484,7 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
                 Id = dto.Id,
                 Name = dto.Attributes.Name,
                 PaymentMethodType = dto.Attributes.PaymentMethodType,
-                PaymentLastFour = dto.Attributes.PaymentLastFour,
+                PaymentLast4 = dto.Attributes.PaymentLast4, // Updated property name
                 PaymentBrand = dto.Attributes.PaymentBrand,
                 ExpirationMonth = dto.Attributes.ExpirationMonth,
                 ExpirationYear = dto.Attributes.ExpirationYear,
@@ -514,7 +514,7 @@ namespace PlanningCenter.Api.Client.Mapping.Giving
         public long AmountCents { get; set; }
         public string AmountCurrency { get; set; } = "USD";
         public string? PaymentMethod { get; set; }
-        public string? PaymentLastFour { get; set; }
+        public string? PaymentLast4 { get; set; } // Updated property name
         public string? PaymentBrand { get; set; }
         public long? FeeCents { get; set; }
         public string? PaymentCheckNumber { get; set; }

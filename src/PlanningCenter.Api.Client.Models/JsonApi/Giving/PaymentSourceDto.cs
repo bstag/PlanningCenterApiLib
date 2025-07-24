@@ -21,7 +21,7 @@ namespace PlanningCenter.Api.Client.Models.JsonApi.Giving
     {
         public string? Name { get; set; }
         public string? PaymentMethodType { get; set; }
-        public string? PaymentLastFour { get; set; }
+        public string? PaymentLast4 { get; set; } // Updated property name
         public string? PaymentBrand { get; set; }
         public int? ExpirationMonth { get; set; }
         public int? ExpirationYear { get; set; }

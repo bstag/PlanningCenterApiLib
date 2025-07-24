@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
+using PlanningCenter.Api.Client.Models.JsonApi.Core;
 
 namespace PlanningCenter.Api.Client.Models.JsonApi.Calendar;
 
@@ -26,6 +27,24 @@ public class ResourceDto
     /// </summary>
     [JsonPropertyName("attributes")]
     public ResourceAttributes Attributes { get; set; } = new();
+    
+    /// <summary>
+    /// Gets or sets the resource relationships.
+    /// </summary>
+    [JsonPropertyName("relationships")]
+    public ResourceRelationships? Relationships { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the resource links.
+    /// </summary>
+    [JsonPropertyName("links")]
+    public ResourceLinks? Links { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the resource meta information.
+    /// </summary>
+    [JsonPropertyName("meta")]
+    public object? Meta { get; set; }
 }
 
 /// <summary>
@@ -98,4 +117,40 @@ public class ResourceAttributes
     /// </summary>
     [JsonPropertyName("updated_at")]
     public DateTime? UpdatedAt { get; set; }
+}
+
+/// <summary>
+/// Resource relationships for JSON:API.
+/// </summary>
+public class ResourceRelationships
+{
+    /// <summary>
+    /// Gets or sets the resource bookings relationship.
+    /// </summary>
+    [JsonPropertyName("resource_bookings")]
+    public RelationshipData? ResourceBookings { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the resource questions relationship.
+    /// </summary>
+    [JsonPropertyName("resource_questions")]
+    public RelationshipData? ResourceQuestions { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the room setups relationship.
+    /// </summary>
+    [JsonPropertyName("room_setups")]
+    public RelationshipData? RoomSetups { get; set; }
+}
+
+/// <summary>
+/// Resource links for JSON:API.
+/// </summary>
+public class ResourceLinks
+{
+    /// <summary>
+    /// Gets or sets the self link.
+    /// </summary>
+    [JsonPropertyName("self")]
+    public string? Self { get; set; }
 }

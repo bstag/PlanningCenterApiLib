@@ -15,12 +15,13 @@ namespace PlanningCenter.Api.Client.Models.JsonApi.People
     /// </summary>
     public class AddressUpdateAttributesDto
     {
-        public string? Street { get; set; }
-        public string? Street2 { get; set; }
+        public string? StreetLine1 { get; set; } // Updated property name
+        public string? StreetLine2 { get; set; } // Updated property name
         public string? City { get; set; }
         public string? State { get; set; }
         public string? Zip { get; set; }
-        public string? Country { get; set; }
+        public string? CountryCode { get; set; } // Updated property name
+        public string? CountryName { get; set; } // New field
         public string? Location { get; set; }
         public bool? Primary { get; set; }
     }

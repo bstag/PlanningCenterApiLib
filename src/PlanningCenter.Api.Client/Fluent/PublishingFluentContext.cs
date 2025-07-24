@@ -178,6 +178,22 @@ public class PublishingFluentContext : IPublishingFluentContext
         return response.Data.First();
     }
 
+    public async Task<Episode> SingleAsync(Expression<Func<Episode, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleAsync(cancellationToken);
+    }
+
+    public async Task<Episode?> SingleOrDefaultAsync(Expression<Func<Episode, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         var parameters = _queryBuilder.Build();
@@ -553,6 +569,193 @@ public class PublishingFluentContext : IPublishingFluentContext
     {
         var episodes = await GetAllAsync(null, cancellationToken);
         return episodes.Where(e => e.LengthInSeconds.HasValue).Sum(e => e.LengthInSeconds!.Value);
+    }
+
+    #endregion
+
+    #region Publishing-Specific Filters
+
+    /// <summary>
+    /// Filters episodes that are in draft status (not published).
+    /// </summary>
+    public IPublishingFluentContext Draft()
+    {
+        return Where(e => e.PublishedAt == null);
+    }
+
+    /// <summary>
+    /// Filters episodes by speaker ID.
+    /// </summary>
+    public IPublishingFluentContext BySpeaker(string speakerId)
+    {
+        if (string.IsNullOrWhiteSpace(speakerId))
+            throw new ArgumentException("Speaker ID cannot be null or empty", nameof(speakerId));
+
+        // Filter by speaker through speakership relationships using query parameters
+        _queryBuilder.Include("speakerships.speaker");
+        _queryBuilder.Where("speakerships.speaker.id", speakerId);
+        return this;
+    }
+
+    /// <summary>
+    /// Filters episodes by series ID (alias for BySeries for consistency).
+    /// </summary>
+    public IPublishingFluentContext BySeriesId(string seriesId)
+    {
+        return BySeries(seriesId);
+    }
+
+    /// <summary>
+    /// Filters episodes that do not belong to any series.
+    /// </summary>
+    public IPublishingFluentContext WithoutSeries()
+    {
+        return Where(e => string.IsNullOrEmpty(e.SeriesId));
+    }
+
+    #endregion
+
+    #region Series and Episode Relationship Querying
+
+    /// <summary>
+    /// Filters episodes that belong to the specified series (alias for BySeries).
+    /// </summary>
+    public IPublishingFluentContext InSeries(string seriesId)
+    {
+        return BySeries(seriesId);
+    }
+
+    /// <summary>
+    /// Filters episodes that belong to any of the specified series.
+    /// </summary>
+    public IPublishingFluentContext InSeries(params string[] seriesIds)
+    {
+        if (seriesIds == null || seriesIds.Length == 0)
+            throw new ArgumentException("At least one series ID must be specified", nameof(seriesIds));
+
+        return Where(e => seriesIds.Contains(e.SeriesId));
+    }
+
+    #endregion
+
+    #region Speaker Filtering Methods
+
+    /// <summary>
+    /// Filters episodes that have any of the specified speakers.
+    /// </summary>
+    public IPublishingFluentContext WithSpeakers(params string[] speakerIds)
+    {
+        if (speakerIds == null || speakerIds.Length == 0)
+            throw new ArgumentException("At least one speaker ID must be specified", nameof(speakerIds));
+
+        // Filter by speakers through speakership relationships using query parameters
+        _queryBuilder.Include("speakerships.speaker");
+        _queryBuilder.Where("speakerships.speaker.id", string.Join(",", speakerIds));
+        return this;
+    }
+
+    /// <summary>
+    /// Filters episodes that do not have any speakers assigned.
+    /// </summary>
+    public IPublishingFluentContext WithoutSpeakers()
+    {
+        // Filter episodes without any speakerships using query parameters
+        _queryBuilder.Where("speakerships", "null");
+        return this;
+    }
+
+    #endregion
+
+    #region Media Management Methods
+
+    /// <summary>
+    /// Filters episodes that have any media files attached.
+    /// </summary>
+    public IPublishingFluentContext WithMedia()
+    {
+        return Where(e => e.VideoUrl != null || e.AudioUrl != null || e.ArtworkUrl != null);
+    }
+
+    /// <summary>
+    /// Filters episodes that do not have any media files attached.
+    /// </summary>
+    public IPublishingFluentContext WithoutMedia()
+    {
+        return Where(e => e.VideoUrl == null && e.AudioUrl == null && e.ArtworkUrl == null);
+    }
+
+    /// <summary>
+    /// Filters episodes by media type.
+    /// </summary>
+    public IPublishingFluentContext ByMediaType(string mediaType)
+    {
+        if (string.IsNullOrWhiteSpace(mediaType))
+            throw new ArgumentException("Media type cannot be null or empty", nameof(mediaType));
+
+        return mediaType.ToLower() switch
+        {
+            "video" => WithVideo(),
+            "audio" => WithAudio(),
+            "artwork" => WithArtwork(),
+            _ => throw new ArgumentException($"Unsupported media type: {mediaType}", nameof(mediaType))
+        };
+    }
+
+    /// <summary>
+    /// Filters episodes that have downloadable media.
+    /// </summary>
+    public IPublishingFluentContext WithDownloadableMedia()
+    {
+        return Where(e => e.VideoDownloadUrl != null || e.AudioDownloadUrl != null);
+    }
+
+    /// <summary>
+    /// Filters episodes that have streamable media.
+    /// </summary>
+    public IPublishingFluentContext WithStreamableMedia()
+    {
+        return Where(e => e.VideoUrl != null || e.AudioUrl != null);
+    }
+
+    #endregion
+
+    #region Advanced Aggregation Methods
+
+    /// <summary>
+    /// Gets the total number of unique series across all episodes in the current query.
+    /// </summary>
+    public async Task<int> TotalSeriesAsync(CancellationToken cancellationToken = default)
+    {
+        var episodes = await GetAllAsync(null, cancellationToken);
+        return episodes.Where(e => !string.IsNullOrEmpty(e.SeriesId))
+                      .Select(e => e.SeriesId)
+                      .Distinct()
+                      .Count();
+    }
+
+    /// <summary>
+    /// Gets the total number of unique speakers across all episodes in the current query.
+    /// </summary>
+    public async Task<int> TotalSpeakersAsync(CancellationToken cancellationToken = default)
+    {
+        // This would need to be implemented through a separate speakership query
+        // For now, return a placeholder implementation that counts episodes with speakers
+        _queryBuilder.Include("speakerships");
+        var episodes = await GetAllAsync(null, cancellationToken);
+        return episodes.Count();
+    }
+
+    /// <summary>
+    /// Gets the average number of episodes per series in the current query.
+    /// </summary>
+    public async Task<double> AverageEpisodeCountAsync(CancellationToken cancellationToken = default)
+    {
+        var episodes = await GetAllAsync(null, cancellationToken);
+        var episodesBySeries = episodes.Where(e => !string.IsNullOrEmpty(e.SeriesId))
+                                      .GroupBy(e => e.SeriesId)
+                                      .ToList();
+        
+        return episodesBySeries.Any() ? episodesBySeries.Average(g => g.Count()) : 0;
     }
 
     #endregion

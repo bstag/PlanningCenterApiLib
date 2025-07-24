@@ -170,6 +170,51 @@ public class CalendarFluentContext : ICalendarFluentContext
         return await contextWithPredicate.AnyAsync(cancellationToken);
     }
 
+    public async Task<Event> SingleAsync(CancellationToken cancellationToken = default)
+    {
+        var parameters = _queryBuilder.Build();
+        parameters.PerPage = 2; // Get 2 to check if there's more than one
+        
+        var response = await _calendarService.ListEventsAsync(parameters, cancellationToken);
+        
+        if (!response.Data.Any())
+            throw new InvalidOperationException("Sequence contains no elements");
+            
+        if (response.Data.Count() > 1)
+            throw new InvalidOperationException("Sequence contains more than one element");
+            
+        return response.Data.Single();
+    }
+
+    public async Task<Event?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
+    {
+        var parameters = _queryBuilder.Build();
+        parameters.PerPage = 2; // Get 2 to check if there's more than one
+        
+        var response = await _calendarService.ListEventsAsync(parameters, cancellationToken);
+        
+        if (response.Data.Count() > 1)
+            throw new InvalidOperationException("Sequence contains more than one element");
+            
+        return response.Data.SingleOrDefault();
+    }
+
+    public async Task<Event> SingleAsync(Expression<Func<Event, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleAsync(cancellationToken);
+    }
+
+    public async Task<Event?> SingleOrDefaultAsync(Expression<Func<Event, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleOrDefaultAsync(cancellationToken);
+    }
+
     #endregion
 
     #region Specialized Calendar Operations
@@ -213,6 +258,59 @@ public class CalendarFluentContext : ICalendarFluentContext
         var now = DateTime.Now;
         
         return Where(e => e.StartsAt > now);
+    }
+
+    #endregion
+
+    #region Aggregation Methods
+
+    public async Task<Dictionary<string, int>> CountByApprovalStatusAsync(CancellationToken cancellationToken = default)
+    {
+        var events = await GetAllAsync(cancellationToken: cancellationToken);
+        
+        return events
+            .GroupBy(e => e.ApprovalStatus ?? "Unknown")
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
+
+    public async Task<int> CountRegistrationRequiredAsync(CancellationToken cancellationToken = default)
+    {
+        var events = await GetAllAsync(cancellationToken: cancellationToken);
+        
+        return events.Count(e => e.RegistrationRequired);
+    }
+
+    public async Task<int> CountAllDayEventsAsync(CancellationToken cancellationToken = default)
+    {
+        var events = await GetAllAsync(cancellationToken: cancellationToken);
+        
+        return events.Count(e => e.AllDayEvent);
+    }
+
+    public async Task<double> AverageDurationHoursAsync(CancellationToken cancellationToken = default)
+    {
+        var events = await GetAllAsync(cancellationToken: cancellationToken);
+        
+        var eventsWithDuration = events
+            .Where(e => e.StartsAt.HasValue && e.EndsAt.HasValue && !e.AllDayEvent)
+            .ToList();
+            
+        if (!eventsWithDuration.Any())
+            return 0;
+            
+        return eventsWithDuration
+            .Average(e => (e.EndsAt!.Value - e.StartsAt!.Value).TotalHours);
+    }
+
+    public async Task<Dictionary<TKey, List<Event>>> GroupByAsync<TKey>(Expression<Func<Event, TKey>> keySelector, CancellationToken cancellationToken = default)
+    {
+        var events = await GetAllAsync(cancellationToken: cancellationToken);
+        
+        var compiledSelector = keySelector.Compile();
+        
+        return events
+            .GroupBy(compiledSelector)
+            .ToDictionary(g => g.Key, g => g.ToList());
     }
 
     #endregion

@@ -18,12 +18,13 @@ namespace PlanningCenter.Api.Client.Mapping.People
             return new Address
             {
                 Id = dto.Id,
-                Street = dto.Attributes.Street ?? string.Empty,
-                Street2 = dto.Attributes.Street2,
+                Street = dto.Attributes.StreetLine1 ?? string.Empty, // Updated property name
+                Street2 = dto.Attributes.StreetLine2, // Updated property name
                 City = dto.Attributes.City ?? string.Empty,
                 State = dto.Attributes.State ?? string.Empty,
                 Zip = dto.Attributes.Zip ?? string.Empty,
-                Country = dto.Attributes.Country ?? "US",
+                Country = dto.Attributes.CountryCode ?? "US", // Updated property name
+                CountryName = dto.Attributes.CountryName, // New field
                 Location = dto.Attributes.Location ?? "Home",
                 IsPrimary = dto.Attributes.Primary,
                 CreatedAt = dto.Attributes.CreatedAt,
@@ -39,12 +40,12 @@ namespace PlanningCenter.Api.Client.Mapping.People
         {
             return new AddressCreateAttributesDto
             {
-                Street = request.Street,
-                Street2 = request.Street2,
+                StreetLine1 = request.Street, // Updated property name
+                StreetLine2 = request.Street2, // Updated property name
                 City = request.City,
                 State = request.State,
                 Zip = request.Zip,
-                Country = request.Country,
+                CountryCode = request.Country, // Updated property name
                 Location = request.Location,
                 Primary = request.IsPrimary
             };
@@ -57,12 +58,12 @@ namespace PlanningCenter.Api.Client.Mapping.People
         {
             return new AddressUpdateAttributesDto
             {
-                Street = request.Street,
-                Street2 = request.Street2,
+                StreetLine1 = request.Street, // Updated property name
+                StreetLine2 = request.Street2, // Updated property name
                 City = request.City,
                 State = request.State,
                 Zip = request.Zip,
-                Country = request.Country,
+                CountryCode = request.Country, // Updated property name
                 Location = request.Location,
                 Primary = request.IsPrimary
             };

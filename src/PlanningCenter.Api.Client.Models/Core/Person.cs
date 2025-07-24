@@ -169,6 +169,66 @@ public class Person
     public string? AvatarUrl { get; set; }
     
     /// <summary>
+    /// Avatar image data (base64 encoded or URL)
+    /// </summary>
+    public string? Avatar { get; set; }
+    
+    /// <summary>
+    /// Demographic avatar URL
+    /// </summary>
+    public string? DemographicAvatarUrl { get; set; }
+    
+    /// <summary>
+    /// Full name as returned by the API
+    /// </summary>
+    public string? Name { get; set; }
+    
+    /// <summary>
+    /// Remote identifier for external system integration
+    /// </summary>
+    public string? RemoteId { get; set; }
+    
+    /// <summary>
+    /// Whether the person is an accounting administrator
+    /// </summary>
+    public bool? AccountingAdministrator { get; set; }
+    
+    /// <summary>
+    /// Whether the person is classified as a child
+    /// </summary>
+    public bool? Child { get; set; }
+    
+    /// <summary>
+    /// Given name (first name)
+    /// </summary>
+    public string? GivenName { get; set; }
+    
+    /// <summary>
+    /// Whether the person has passed background check
+    /// </summary>
+    public bool? PassedBackgroundCheck { get; set; }
+    
+    /// <summary>
+    /// Whether the person can create forms
+    /// </summary>
+    public bool? CanCreateForms { get; set; }
+    
+    /// <summary>
+    /// Whether the person can email lists
+    /// </summary>
+    public bool? CanEmailLists { get; set; }
+    
+    /// <summary>
+    /// Whether the person is a site administrator
+    /// </summary>
+    public bool? SiteAdministrator { get; set; }
+    
+    /// <summary>
+    /// People module permissions
+    /// </summary>
+    public string? PeoplePermissions { get; set; }
+    
+    /// <summary>
     /// Custom fields and additional data
     /// Key-value pairs for module-specific or custom field data
     /// </summary>

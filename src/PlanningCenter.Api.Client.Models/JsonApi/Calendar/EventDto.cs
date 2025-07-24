@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
+using PlanningCenter.Api.Client.Models.JsonApi.Core;
 
 namespace PlanningCenter.Api.Client.Models.JsonApi.Calendar;
 
@@ -26,6 +27,24 @@ public class EventDto
     /// </summary>
     [JsonPropertyName("attributes")]
     public EventAttributes Attributes { get; set; } = new();
+    
+    /// <summary>
+    /// Gets or sets the event relationships.
+    /// </summary>
+    [JsonPropertyName("relationships")]
+    public EventRelationships? Relationships { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the event links.
+    /// </summary>
+    [JsonPropertyName("links")]
+    public EventLinks? Links { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the event meta information.
+    /// </summary>
+    [JsonPropertyName("meta")]
+    public object? Meta { get; set; }
 }
 
 /// <summary>
@@ -122,4 +141,46 @@ public class EventAttributes
     /// </summary>
     [JsonPropertyName("updated_at")]
     public DateTime? UpdatedAt { get; set; }
+}
+
+/// <summary>
+/// Event relationships for JSON:API.
+/// </summary>
+ public class EventRelationships
+{
+    /// <summary>
+    /// Gets or sets the event instances relationship.
+    /// </summary>
+    [JsonPropertyName("event_instances")]
+    public RelationshipData? EventInstances { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the event resource requests relationship.
+    /// </summary>
+    [JsonPropertyName("event_resource_requests")]
+    public RelationshipData? EventResourceRequests { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the owner relationship.
+    /// </summary>
+    [JsonPropertyName("owner")]
+    public RelationshipData? Owner { get; set; }
+    
+    /// <summary>
+    /// Gets or sets the tags relationship.
+    /// </summary>
+    [JsonPropertyName("tags")]
+    public RelationshipData? Tags { get; set; }
+}
+
+/// <summary>
+/// Event links for JSON:API.
+/// </summary>
+public class EventLinks
+{
+    /// <summary>
+    /// Gets or sets the self link.
+    /// </summary>
+    [JsonPropertyName("self")]
+    public string? Self { get; set; }
 }

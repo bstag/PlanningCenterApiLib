@@ -32,36 +32,24 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
     /// </summary>
     public async Task<Signup?> GetSignupAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Signup ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        Logger.LogDebug("Getting signup with ID: {SignupId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SignupDto>>(
-                $"{BaseEndpoint}/signups/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                Logger.LogWarning("Signup not found: {SignupId}", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<SignupDto>>(
+                    $"{BaseEndpoint}/signups/{id}", cancellationToken);
 
-            var signup = RegistrationsMapper.MapToDomain(response.Data);
-            Logger.LogInformation("Successfully retrieved signup: {SignupId}", id);
-            return signup;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogWarning("Signup not found: {SignupId}", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error retrieving signup: {SignupId}", id);
-            throw;
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Signup with ID {id} not found");
+                }
+
+                return RegistrationsMapper.MapToDomain(response.Data);
+            },
+            "GetSignup",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -69,47 +57,23 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
     /// </summary>
     public async Task<IPagedResponse<Signup>> ListSignupsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("Listing signups with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"{BaseEndpoint}/signups";
-            if (!string.IsNullOrEmpty(queryString))
+        return await ExecuteAsync(
+            async () =>
             {
-                endpoint += $"?{queryString}";
-            }
-            var response = await ApiConnection.GetAsync<PagedResponse<SignupDto>>(
-                endpoint, cancellationToken);
+                var response = await ApiConnection.GetPagedAsync<SignupDto>(
+                    $"{BaseEndpoint}/signups", parameters, cancellationToken);
 
-            if (response?.Data == null)
-            {
-                Logger.LogWarning("No signups returned from API");
+                var signups = response.Data.Select(RegistrationsMapper.MapToDomain).ToList();
+
                 return new PagedResponse<Signup>
                 {
-                    Data = new List<Signup>(),
-                    Meta = new PagedResponseMeta { TotalCount = 0 },
-                    Links = new PagedResponseLinks()
+                    Data = signups,
+                    Meta = response.Meta,
+                    Links = response.Links
                 };
-            }
-
-            var signups = response.Data.Select(RegistrationsMapper.MapToDomain).ToList();
-            
-            var pagedResponse = new PagedResponse<Signup>
-            {
-                Data = signups,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-
-            Logger.LogInformation("Successfully retrieved {Count} signups", signups.Count);
-            return pagedResponse;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error listing signups");
-            throw;
-        }
+            },
+            "ListSignups",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>

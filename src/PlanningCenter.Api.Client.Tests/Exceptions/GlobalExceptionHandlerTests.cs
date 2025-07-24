@@ -116,9 +116,10 @@ public class GlobalExceptionHandlerTests
         // Arrange
         var exception = new PlanningCenterApiRateLimitException(
             "Rate limit exceeded", 
-            null, // resetTime
-            TimeSpan.FromMinutes(5), // retryAfter
-            requestId: "req-202");
+            "req-202", // requestId
+            null, // requestUrl
+            null, // requestMethod
+            300); // retryAfterSeconds (5 minutes)
 
         // Act
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "MakeRequest");

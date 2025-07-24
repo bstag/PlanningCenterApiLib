@@ -62,6 +62,8 @@ public class TestFixture : IDisposable
         _serviceProvider = services.BuildServiceProvider();
     }
 
+    public PlanningCenterClient Client => _serviceProvider.GetRequiredService<PlanningCenterClient>();
+
     public void Dispose()
     {
         _serviceProvider?.Dispose();

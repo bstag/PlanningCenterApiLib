@@ -7,6 +7,8 @@ using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.Registrations;
 using PlanningCenter.Api.Client.Models.People;
+using CampusDto = PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto;
+using CampusAttributesDto = PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusAttributesDto;
 using PlanningCenter.Api.Client.Models.Registrations;
 using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Services;
@@ -699,6 +701,22 @@ public class RegistrationsServiceTests
         );
     }
 
+    [Fact]
+    public async Task ListCampusesAsync_ShouldReturnPagedCampuses_WhenApiReturnsData()
+    {
+        // Arrange
+        var campusesResponse = CreateCampusCollectionResponse(3);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/campuses", campusesResponse);
+
+        // Act
+        var result = await _registrationsService.ListCampusesAsync();
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Data.Should().HaveCount(3);
+        result!.Data.First().Name.Should().Be("Test Campus");
+    }
+
     #endregion
 
     #region Person Management Tests
@@ -998,6 +1016,51 @@ public class RegistrationsServiceTests
             Data = attendees,
             Meta = new() { Count = count, TotalCount = count },
             Links = new() { Self = "/registrations/v2/attendees" }
+        };
+    }
+
+    private CampusDto CreateCampusDto(Action<CampusDto> customize)
+    {
+        var dto = new CampusDto
+        {
+            Id = "campus123",
+            Type = "Campus",
+            Attributes = new CampusAttributesDto
+            {
+                Name = "Test Campus",
+                Description = "A test campus",
+                Timezone = "America/New_York",
+                Address = "123 Main St",
+                City = "Test City",
+                State = "NY",
+                PostalCode = "12345",
+                Country = "US",
+                PhoneNumber = "555-123-4567",
+                WebsiteUrl = "https://testcampus.com",
+                Active = true,
+                SortOrder = 1,
+                SignupCount = 5,
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-30),
+                UpdatedAt = DateTimeOffset.UtcNow
+            }
+        };
+        customize(dto);
+        return dto;
+    }
+
+    private PagedResponse<CampusDto> CreateCampusCollectionResponse(int count)
+    {
+        var campuses = new List<CampusDto>();
+        for (int i = 0; i < count; i++)
+        {
+            campuses.Add(CreateCampusDto(c => c.Id = $"campus{i + 1}"));
+        }
+
+        return new PagedResponse<CampusDto>
+        {
+            Data = campuses,
+            Meta = new() { Count = count, TotalCount = count },
+            Links = new() { Self = "/registrations/v2/campuses" }
         };
     }
 }

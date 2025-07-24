@@ -34,37 +34,24 @@ public class WebhooksService : ServiceBase, IWebhooksService
     /// </summary>
     public async Task<WebhookSubscription?> GetSubscriptionAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Subscription ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        Logger.LogDebug("Getting webhook subscription with ID: {SubscriptionId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
-                $"{BaseEndpoint}/subscriptions/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                Logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
+                    $"{BaseEndpoint}/subscriptions/{id}", cancellationToken);
 
-            var subscription = WebhooksMapper.MapToDomain(response.Data);
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Webhook subscription with ID {id} not found");
+                }
 
-            Logger.LogInformation("Successfully retrieved webhook subscription: {SubscriptionId}", id);
-            return subscription;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error retrieving webhook subscription: {SubscriptionId}", id);
-            throw;
-        }
+                return WebhooksMapper.MapToDomain(response.Data);
+            },
+            "GetSubscription",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -72,48 +59,23 @@ public class WebhooksService : ServiceBase, IWebhooksService
     /// </summary>
     public async Task<IPagedResponse<WebhookSubscription>> ListSubscriptionsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("Listing webhook subscriptions with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"{BaseEndpoint}/subscriptions";
-            if (!string.IsNullOrEmpty(queryString))
+        return await ExecuteAsync(
+            async () =>
             {
-                endpoint += $"?{queryString}";
-            }
-            
-            var response = await ApiConnection.GetAsync<PagedResponse<WebhookSubscriptionDto>>(
-                endpoint, cancellationToken);
+                var response = await ApiConnection.GetPagedAsync<WebhookSubscriptionDto>(
+                    $"{BaseEndpoint}/subscriptions", parameters, cancellationToken);
 
-            if (response?.Data == null)
-            {
-                Logger.LogWarning("No webhook subscriptions returned from API");
+                var subscriptions = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
+
                 return new PagedResponse<WebhookSubscription>
                 {
-                    Data = new List<WebhookSubscription>(),
-                    Meta = new PagedResponseMeta { TotalCount = 0 },
-                    Links = new PagedResponseLinks()
+                    Data = subscriptions,
+                    Meta = response.Meta,
+                    Links = response.Links
                 };
-            }
-
-            var subscriptions = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
-            
-            var pagedResponse = new PagedResponse<WebhookSubscription>
-            {
-                Data = subscriptions,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-
-            Logger.LogInformation("Successfully retrieved {Count} webhook subscriptions", subscriptions.Count);
-            return pagedResponse;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error listing webhook subscriptions");
-            throw;
-        }
+            },
+            "ListSubscriptions",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>

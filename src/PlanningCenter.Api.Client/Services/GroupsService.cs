@@ -36,42 +36,54 @@ public class GroupsService : ServiceBase, IGroupsService
     /// </summary>
     public async Task<Group?> GetGroupAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Group ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        Logger.LogDebug("Getting group with ID: {GroupId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<GroupDto>>(
-                $"{BaseEndpoint}/groups/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                Logger.LogDebug("Group with ID {GroupId} not found", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<GroupDto>>(
+                    $"{BaseEndpoint}/groups/{id}", cancellationToken);
 
-            var group = GroupMapper.MapToDomain(response.Data);
-            Logger.LogDebug("Successfully retrieved group: {GroupName} (ID: {GroupId})", group.Name, group.Id);
-            return group;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogDebug("Group with ID {GroupId} not found", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error getting group with ID: {GroupId}", id);
-            throw;
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Group with ID {id} not found");
+                }
+
+                return GroupMapper.MapToDomain(response.Data);
+            },
+            "GetGroup",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
     /// Lists groups with optional filtering, sorting, and pagination.
     /// </summary>
     public async Task<IPagedResponse<Group>> ListGroupsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await ApiConnection.GetPagedAsync<GroupDto>(
+                    $"{BaseEndpoint}/groups", parameters, cancellationToken);
+
+                var groups = response.Data.Select(GroupMapper.MapToDomain).ToList();
+
+                return new PagedResponse<Group>
+                {
+                    Data = groups,
+                    Meta = response.Meta,
+                    Links = response.Links
+                };
+            },
+            "ListGroups",
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Lists groups with optional filtering, sorting, and pagination.
+    /// </summary>
+    public async Task<IPagedResponse<Group>> ListGroupsWithLoggingAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
         Logger.LogDebug("Listing groups with parameters: {@Parameters}", parameters);
 

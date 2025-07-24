@@ -448,8 +448,13 @@ public class ApiConnection : IApiConnection, IDisposable
                     content);
 
             case HttpStatusCode.TooManyRequests:
-                var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value.FirstOrDefault() ?? "");
-                throw PlanningCenterApiRateLimitException.FromHeaders(headers, requestId, endpoint, method);
+                var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+                throw PlanningCenterApiRateLimitException.FromHeaders(
+                    "Rate limit exceeded",
+                    headers, 
+                    requestId, 
+                    endpoint, 
+                    method);
 
             case HttpStatusCode.BadRequest:
             case HttpStatusCode.UnprocessableEntity:

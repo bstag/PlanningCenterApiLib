@@ -35,36 +35,24 @@ public class GivingService : ServiceBase, IGivingService
     /// </summary>
     public async Task<Donation?> GetDonationAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Donation ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        Logger.LogDebug("Getting donation with ID: {DonationId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<DonationDto>>(
-                $"{BaseEndpoint}/donations/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                Logger.LogWarning("Donation not found: {DonationId}", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<DonationDto>>(
+                    $"{BaseEndpoint}/donations/{id}", cancellationToken);
 
-            var donation = GivingMapper.MapToDomain(response.Data);
-            Logger.LogInformation("Successfully retrieved donation: {DonationId}", id);
-            return donation;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogWarning("Donation not found: {DonationId}", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error retrieving donation: {DonationId}", id);
-            throw;
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Donation with ID {id} not found");
+                }
+
+                return GivingMapper.MapToDomain(response.Data);
+            },
+            "GetDonation",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -72,47 +60,23 @@ public class GivingService : ServiceBase, IGivingService
     /// </summary>
     public async Task<IPagedResponse<Donation>> ListDonationsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("Listing donations with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"{BaseEndpoint}/donations";
-            if (!string.IsNullOrEmpty(queryString))
+        return await ExecuteAsync(
+            async () =>
             {
-                endpoint += $"?{queryString}";
-            }
-            var response = await ApiConnection.GetAsync<PagedResponse<DonationDto>>(
-                endpoint, cancellationToken);
+                var response = await ApiConnection.GetPagedAsync<DonationDto>(
+                    $"{BaseEndpoint}/donations", parameters, cancellationToken);
 
-            if (response?.Data == null)
-            {
-                Logger.LogWarning("No donations returned from API");
+                var donations = response.Data.Select(GivingMapper.MapToDomain).ToList();
+
                 return new PagedResponse<Donation>
                 {
-                    Data = new List<Donation>(),
-                    Meta = new PagedResponseMeta { TotalCount = 0 },
-                    Links = new PagedResponseLinks()
+                    Data = donations,
+                    Meta = response.Meta,
+                    Links = response.Links
                 };
-            }
-
-            var donations = response.Data.Select(GivingMapper.MapToDomain).ToList();
-            
-            var pagedResponse = new PagedResponse<Donation>
-            {
-                Data = donations,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-
-            Logger.LogInformation("Successfully retrieved {Count} donations", donations.Count);
-            return pagedResponse;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error listing donations");
-            throw;
-        }
+            },
+            "ListDonations",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>

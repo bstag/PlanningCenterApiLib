@@ -189,6 +189,8 @@ namespace PlanningCenter.Api.Client.Tests.Utilities
             var attendeesResponse = CreateAttendeesResponse();
             mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees", attendeesResponse);
             mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?filter[on_waitlist]=true", attendeesResponse);
+            // Add stub for waitlist count endpoint
+            mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?where[on_waitlist]=true", attendeesResponse);
 
             // Individual attendee stub
             var attendeeDto = CreateAttendeeDto();

@@ -76,6 +76,11 @@ public class Plan : PlanningCenterResource
     public string? ServiceTypeId { get; set; }
 
     /// <summary>
+    /// Gets or sets the series ID.
+    /// </summary>
+    public string? SeriesId { get; set; }
+
+    /// <summary>
     /// Gets or sets the creation date.
     /// </summary>
     public new DateTime? CreatedAt { get; set; }
@@ -84,4 +89,14 @@ public class Plan : PlanningCenterResource
     /// Gets or sets the last update date.
     /// </summary>
     public new DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of people assigned to this plan.
+    /// </summary>
+    public List<PlanPerson> PlanPeople { get; set; } = new List<PlanPerson>();
+
+    /// <summary>
+    /// Gets or sets the collection of items in this plan.
+    /// </summary>
+    public List<Item> Items { get; set; } = new List<Item>();
 }

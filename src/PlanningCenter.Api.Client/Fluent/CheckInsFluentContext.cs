@@ -313,6 +313,56 @@ public class CheckInsFluentContext : ICheckInsFluentContext
 
         return Where(c => c.Kind == kind);
     }
+    
+    // Advanced aggregation methods
+    
+    public async Task<int> CountByEventAsync(string eventId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(eventId))
+            throw new ArgumentException("Event ID cannot be null or empty", nameof(eventId));
+
+        var contextWithFilter = ByEvent(eventId);
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountByLocationAsync(string locationId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(locationId))
+            throw new ArgumentException("Location ID cannot be null or empty", nameof(locationId));
+
+        var contextWithFilter = ByLocation(locationId);
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountCheckedInAsync(CancellationToken cancellationToken = default)
+    {
+        var contextWithFilter = CheckedIn();
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountCheckedOutAsync(CancellationToken cancellationToken = default)
+    {
+        var contextWithFilter = CheckedOut();
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountGuestsAsync(CancellationToken cancellationToken = default)
+    {
+        var contextWithFilter = Guests();
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountMembersAsync(CancellationToken cancellationToken = default)
+    {
+        var contextWithFilter = Members();
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountWithMedicalNotesAsync(CancellationToken cancellationToken = default)
+    {
+        var contextWithFilter = WithMedicalNotes();
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
 
     #endregion
 }

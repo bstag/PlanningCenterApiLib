@@ -36,36 +36,24 @@ public class ServicesService : ServiceBase, IServicesService
     /// </summary>
     public async Task<Plan?> GetPlanAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Plan ID cannot be null or empty.", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        Logger.LogDebug("Getting plan with ID: {PlanId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PlanDto>>(
-                $"{BaseEndpoint}/plans/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                Logger.LogDebug("Plan with ID {PlanId} not found", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PlanDto>>(
+                    $"{BaseEndpoint}/plans/{id}", cancellationToken);
 
-            var plan = PlanMapper.MapToDomain(response.Data);
-            Logger.LogDebug("Successfully retrieved plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
-            return plan;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogDebug("Plan with ID {PlanId} not found", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error getting plan with ID: {PlanId}", id);
-            throw;
-        }
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Plan with ID {id} not found");
+                }
+
+                return PlanMapper.MapToDomain(response.Data);
+            },
+            "GetPlan",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -73,29 +61,23 @@ public class ServicesService : ServiceBase, IServicesService
     /// </summary>
     public async Task<IPagedResponse<Plan>> ListPlansAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("Listing plans with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var response = await ApiConnection.GetPagedAsync<PlanDto>(
-                $"{BaseEndpoint}/plans", parameters, cancellationToken);
-
-            var plans = response.Data.Select(PlanMapper.MapToDomain).ToList();
-
-            Logger.LogDebug("Successfully retrieved {Count} plans", plans.Count);
-
-            return new PagedResponse<Plan>
+        return await ExecuteAsync(
+            async () =>
             {
-                Data = plans,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error listing plans");
-            throw;
-        }
+                var response = await ApiConnection.GetPagedAsync<PlanDto>(
+                    $"{BaseEndpoint}/plans", parameters, cancellationToken);
+
+                var plans = response.Data.Select(PlanMapper.MapToDomain).ToList();
+
+                return new PagedResponse<Plan>
+                {
+                    Data = plans,
+                    Meta = response.Meta,
+                    Links = response.Links
+                };
+            },
+            "ListPlans",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -103,36 +85,18 @@ public class ServicesService : ServiceBase, IServicesService
     /// </summary>
     public async Task<Plan> CreatePlanAsync(PlanCreateRequest request, CancellationToken cancellationToken = default)
     {
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
+        ValidateNotNull(request, nameof(request));
+        ValidateNotNullOrEmpty(request.Title, nameof(request.Title));
+        ValidateNotNullOrEmpty(request.ServiceTypeId, nameof(request.ServiceTypeId));
 
-        if (string.IsNullOrWhiteSpace(request.Title))
-            throw new ArgumentException("Plan title is required.", nameof(request));
-
-        if (string.IsNullOrWhiteSpace(request.ServiceTypeId))
-            throw new ArgumentException("Service type ID is required.", nameof(request));
-
-        Logger.LogDebug("Creating plan: {PlanTitle}", request.Title);
-
-        try
-        {
-            var jsonApiRequest = PlanMapper.MapCreateRequestToJsonApi(request);
-
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<PlanDto>>(
-                $"{BaseEndpoint}/plans", jsonApiRequest, cancellationToken);
-
-            if (response?.Data == null)
-                throw new PlanningCenterApiGeneralException("Failed to create plan - no data returned");
-
-            var plan = PlanMapper.MapToDomain(response.Data);
-            Logger.LogInformation("Successfully created plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
-            return plan;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error creating plan: {PlanTitle}", request.Title);
-            throw;
-        }
+        return await CreateResourceAsync<PlanCreateRequest, PlanDto, Plan>(
+            $"{BaseEndpoint}/plans",
+            request,
+            PlanMapper.MapCreateRequestToJsonApi,
+            PlanMapper.MapToDomain,
+            "CreatePlan",
+            "Plan",
+            cancellationToken);
     }
 
     /// <summary>
@@ -140,33 +104,15 @@ public class ServicesService : ServiceBase, IServicesService
     /// </summary>
     public async Task<Plan> UpdatePlanAsync(string id, PlanUpdateRequest request, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Plan ID cannot be null or empty.", nameof(id));
-
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
-
-        Logger.LogDebug("Updating plan with ID: {PlanId}", id);
-
-        try
-        {
-            var jsonApiRequest = PlanMapper.MapUpdateRequestToJsonApi(request);
-
-            var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<PlanDto>>(
-                $"{BaseEndpoint}/plans/{id}", jsonApiRequest, cancellationToken);
-
-            if (response?.Data == null)
-                throw new PlanningCenterApiGeneralException("Failed to update plan - no data returned");
-
-            var plan = PlanMapper.MapToDomain(response.Data);
-            Logger.LogInformation("Successfully updated plan: {PlanTitle} (ID: {PlanId})", plan.Title, plan.Id);
-            return plan;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error updating plan with ID: {PlanId}", id);
-            throw;
-        }
+        return await UpdateResourceAsync<PlanUpdateRequest, PlanDto, Plan>(
+            $"{BaseEndpoint}/plans",
+            id,
+            request,
+            (resourceId, req) => PlanMapper.MapUpdateRequestToJsonApi(req),
+            PlanMapper.MapToDomain,
+            "UpdatePlan",
+            "Plan",
+            cancellationToken);
     }
 
     /// <summary>
@@ -174,21 +120,12 @@ public class ServicesService : ServiceBase, IServicesService
     /// </summary>
     public async Task DeletePlanAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Plan ID cannot be null or empty.", nameof(id));
-
-        Logger.LogDebug("Deleting plan with ID: {PlanId}", id);
-
-        try
-        {
-            await ApiConnection.DeleteAsync($"{BaseEndpoint}/plans/{id}", cancellationToken);
-            Logger.LogInformation("Successfully deleted plan with ID: {PlanId}", id);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error deleting plan with ID: {PlanId}", id);
-            throw;
-        }
+        await DeleteResourceAsync(
+            $"{BaseEndpoint}/plans",
+            id,
+            "DeletePlan",
+            "Plan",
+            cancellationToken);
     }
 
     // Service type management

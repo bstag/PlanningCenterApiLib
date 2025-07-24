@@ -31,37 +31,24 @@ public class PublishingService : ServiceBase, IPublishingService
     /// </summary>
     public async Task<Episode?> GetEpisodeAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Episode ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        Logger.LogDebug("Getting episode with ID: {EpisodeId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<EpisodeDto>>(
-                $"{BaseEndpoint}/episodes/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                Logger.LogWarning("Episode not found: {EpisodeId}", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<EpisodeDto>>(
+                    $"{BaseEndpoint}/episodes/{id}", cancellationToken);
 
-            var episode = PublishingMapper.MapToDomain(response.Data);
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Episode with ID {id} not found");
+                }
 
-            Logger.LogInformation("Successfully retrieved episode: {EpisodeId}", id);
-            return episode;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogWarning("Episode not found: {EpisodeId}", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error retrieving episode: {EpisodeId}", id);
-            throw;
-        }
+                return PublishingMapper.MapToDomain(response.Data);
+            },
+            "GetEpisode",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -69,48 +56,23 @@ public class PublishingService : ServiceBase, IPublishingService
     /// </summary>
     public async Task<IPagedResponse<Episode>> ListEpisodesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("Listing episodes with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"{BaseEndpoint}/episodes";
-            if (!string.IsNullOrEmpty(queryString))
+        return await ExecuteAsync(
+            async () =>
             {
-                endpoint += $"?{queryString}";
-            }
-            
-            var response = await ApiConnection.GetAsync<PagedResponse<EpisodeDto>>(
-                endpoint, cancellationToken);
+                var response = await ApiConnection.GetPagedAsync<EpisodeDto>(
+                    $"{BaseEndpoint}/episodes", parameters, cancellationToken);
 
-            if (response?.Data == null)
-            {
-                Logger.LogWarning("No episodes returned from API");
+                var episodes = response.Data.Select(PublishingMapper.MapToDomain).ToList();
+
                 return new PagedResponse<Episode>
                 {
-                    Data = new List<Episode>(),
-                    Meta = new PagedResponseMeta { TotalCount = 0 },
-                    Links = new PagedResponseLinks()
+                    Data = episodes,
+                    Meta = response.Meta,
+                    Links = response.Links
                 };
-            }
-
-            var episodes = response.Data.Select(PublishingMapper.MapToDomain).ToList();
-            
-            var pagedResponse = new PagedResponse<Episode>
-            {
-                Data = episodes,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-
-            Logger.LogInformation("Successfully retrieved {Count} episodes", episodes.Count);
-            return pagedResponse;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error listing episodes");
-            throw;
-        }
+            },
+            "ListEpisodes",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>

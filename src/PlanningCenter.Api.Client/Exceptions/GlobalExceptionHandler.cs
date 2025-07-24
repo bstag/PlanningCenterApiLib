@@ -93,8 +93,8 @@ public static class GlobalExceptionHandler
                 break;
 
             case PlanningCenterApiRateLimitException rateLimitEx:
-                logger.LogWarning("Rate limit exceeded for {OperationName}: {Message}, Retry after: {RetryAfter} [CorrelationId: {CorrelationId}]{ContextSuffix}",
-                    operationName, rateLimitEx.Message, rateLimitEx.RetryAfter, correlationId, contextSuffix);
+                logger.LogWarning("Rate limit exceeded for {OperationName}: {Message}, Retry after: {RetryAfter} seconds [CorrelationId: {CorrelationId}]{ContextSuffix}",
+                    operationName, rateLimitEx.Message, rateLimitEx.RetryAfterSeconds, correlationId, contextSuffix);
                 break;
 
             case PlanningCenterApiServerException serverEx:

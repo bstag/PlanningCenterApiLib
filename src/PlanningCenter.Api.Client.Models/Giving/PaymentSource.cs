@@ -26,7 +26,7 @@ namespace PlanningCenter.Api.Client.Models.Giving
         /// <summary>
         /// Gets or sets the last four digits of the payment method.
         /// </summary>
-        public string? PaymentLastFour { get; set; }
+        public string? PaymentLast4 { get; set; } // Updated property name
 
         /// <summary>
         /// Gets or sets the payment brand (e.g., Visa, MasterCard).
