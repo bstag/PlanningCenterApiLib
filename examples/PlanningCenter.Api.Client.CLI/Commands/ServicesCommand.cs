@@ -51,9 +51,9 @@ public class ServicesCommand : BaseCommand
             try
             {
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
                 var pageSize = context.ParseResult.GetValueForOption((Option<int>)plansListCommand.Options[0]);
@@ -136,9 +136,9 @@ public class ServicesCommand : BaseCommand
                 var id = context.ParseResult.GetValueForArgument((Argument<string>)plansGetCommand.Arguments[0]);
                 
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
                 var include = context.ParseResult.GetValueForOption((Option<string?>)plansGetCommand.Options[0]);

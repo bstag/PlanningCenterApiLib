@@ -242,4 +242,34 @@ public abstract class BaseCommand : Command
         
         return conditions;
     }
+
+    /// <summary>
+    /// Safely gets the token option value from global options
+    /// </summary>
+    protected string? GetTokenOption(InvocationContext context)
+    {
+        var tokenOption = context.ParseResult.RootCommandResult.Command.Options
+            .OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token"));
+        return tokenOption != null ? context.ParseResult.GetValueForOption(tokenOption) : null;
+    }
+
+    /// <summary>
+    /// Safely gets the format option value from global options
+    /// </summary>
+    protected OutputFormat GetFormatOption(InvocationContext context)
+    {
+        var formatOption = context.ParseResult.RootCommandResult.Command.Options
+            .OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format"));
+        return formatOption != null ? context.ParseResult.GetValueForOption(formatOption) : OutputFormat.Json;
+    }
+
+    /// <summary>
+    /// Safely gets the detailed logging option value from global options
+    /// </summary>
+    protected bool GetDetailedLoggingOption(InvocationContext context)
+    {
+        var detailedLoggingOption = context.ParseResult.RootCommandResult.Command.Options
+            .OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging"));
+        return detailedLoggingOption != null ? context.ParseResult.GetValueForOption(detailedLoggingOption) : false;
+    }
 }
