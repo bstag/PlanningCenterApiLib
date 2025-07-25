@@ -214,7 +214,7 @@ public class PersonAttributesDto
     /// Resource permission flags
     /// </summary>
     [JsonPropertyName("resource_permission_flags")]
-    public string? ResourcePermissionFlags { get; set; }
+    public Dictionary<string, bool>? ResourcePermissionFlags { get; set; }
 
     /// <summary>
     /// School type

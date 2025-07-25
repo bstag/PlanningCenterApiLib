@@ -38,7 +38,7 @@ namespace PlanningCenter.Api.Client.Console
             }
             else
             {
-                builder.Services.AddPlanningCenterApiClientWithPAT("demo-app-id:demo-secret");
+                builder.Services.AddPlanningCenterApiClientWithPAT("8c69ef5698268937e4bc53698435a5771222afb5694e37c06e6c046fd50811f8:16c161bb872079a014d5e779a9c166379b44835e94b435e4a82d81f4d76817e9");
             }
 
             // Configure SDK options

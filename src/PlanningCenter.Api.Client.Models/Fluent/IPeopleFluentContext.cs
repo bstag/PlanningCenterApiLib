@@ -180,4 +180,11 @@ public interface IPeopleFluentContext
     /// <param name="request">The person creation request</param>
     /// <returns>A creation context for fluent person creation</returns>
     IPeopleCreateContext Create(PersonCreateRequest request);
+    
+    /// <summary>
+    /// Gets the current authenticated user's person record.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The current user's person record</returns>
+    Task<Core.Person> GetMeAsync(CancellationToken cancellationToken = default);
 }

@@ -63,9 +63,11 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
     public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        _logger.LogDebug("Returning Personal Access Token for authentication (Base64 only, no 'Basic ' prefix)");
+        //_logger.LogDebug("Returning Personal Access Token for authentication (Base64 only, no 'Basic ' prefix)");
         var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
-        return Task.FromResult(encodedCredentials);
+        var _basicAuthHeader = $"Basic {encodedCredentials}";
+        //var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
+        return Task.FromResult(_basicAuthHeader);
     }
 
     /// <summary>

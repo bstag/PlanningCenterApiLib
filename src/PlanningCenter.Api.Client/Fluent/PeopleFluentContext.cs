@@ -219,6 +219,16 @@ public class PeopleFluentContext : IPeopleFluentContext
         
         return new PeopleCreateContext(_peopleService, request);
     }
+    
+    /// <summary>
+    /// Gets the current authenticated user's person record.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The current user's person record</returns>
+    public async Task<Person> GetMeAsync(CancellationToken cancellationToken = default)
+    {
+        return await _peopleService.GetMeAsync(cancellationToken);
+    }
 
     /// <summary>
     /// Creates a batch context for performing multiple operations efficiently.
