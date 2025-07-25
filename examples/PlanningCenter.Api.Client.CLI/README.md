@@ -5,11 +5,12 @@ A command-line interface for interacting with the Planning Center API using Pers
 ## Features
 
 - **Authentication**: Secure Personal Access Token management
-- **Multiple Output Formats**: JSON, CSV, XML, and Table formats
-- **Comprehensive People Module**: List, search, get, and manage people data
+- **Multiple Output Formats**: JSON (default), CSV, XML, and Table formats
+- **Complete Module Coverage**: People, Services, Registrations, Calendar, and Check-Ins modules
 - **Configuration Management**: Store and manage CLI settings
-- **Flexible Filtering**: Advanced filtering and pagination options
-- **Error Handling**: User-friendly error messages and logging
+- **Advanced Filtering**: Complex filtering, sorting, and pagination options
+- **Flexible Output**: Property selection, file export, and customizable formatting
+- **Error Handling**: User-friendly error messages and comprehensive logging
 
 ## Installation
 
@@ -59,6 +60,38 @@ dotnet run -- people list --format json
 dotnet run -- people search "John Doe"
 ```
 
+## Available Modules
+
+### People Module ✅
+- List, search, and get people
+- Manage households and field data
+- User profile information
+- Advanced filtering and sorting
+
+### Services Module ✅
+- List and get service plans
+- Manage service types
+- Song and team management
+- Service scheduling
+
+### Registrations Module ✅
+- List events and registrations
+- Get event details
+- Manage attendees and signups
+- Registration analytics
+
+### Calendar Module ✅
+- List and manage events
+- Event scheduling and resources
+- Calendar integration
+- Event filtering and search
+
+### Check-Ins Module ✅
+- List events and check-ins
+- Location management
+- Attendance tracking
+- Check-in analytics
+
 ## Commands
 
 ### Configuration Commands
@@ -93,6 +126,8 @@ dotnet run -- config show
 ```
 
 ### People Commands
+
+The People module provides comprehensive people management functionality.
 
 #### `people list [options]`
 List people with optional filtering and pagination.
@@ -193,6 +228,145 @@ dotnet run -- people field-data 12345
 dotnet run -- people field-data 12345 --format json
 ```
 
+### Services Commands
+
+The Services module manages worship services, plans, and scheduling.
+
+#### `services list-plans [options]`
+List service plans with optional filtering.
+
+**Examples:**
+```bash
+# List service plans
+dotnet run -- services list-plans
+
+# List plans for specific service type
+dotnet run -- services list-plans --where "service_type_id=123"
+
+# Export plans to JSON
+dotnet run -- services list-plans --format json --output-file plans.json
+```
+
+#### `services get-plan <id> [options]`
+Get a specific service plan by ID.
+
+**Examples:**
+```bash
+# Get service plan
+dotnet run -- services get-plan 12345
+
+# Get plan with items included
+dotnet run -- services get-plan 12345 --include "items"
+```
+
+#### `services list-service-types [options]`
+List available service types.
+
+**Examples:**
+```bash
+# List service types
+dotnet run -- services list-service-types
+
+# Filter by frequency
+dotnet run -- services list-service-types --where "frequency=weekly"
+```
+
+#### `services list-songs [options]`
+List songs in the song library.
+
+**Examples:**
+```bash
+# List songs
+dotnet run -- services list-songs
+
+# Search songs by title
+dotnet run -- services list-songs --where "title=Amazing Grace"
+```
+
+### Registrations Commands
+
+The Registrations module manages event registrations and attendees.
+
+#### `registrations list-events [options]`
+List registration events.
+
+**Examples:**
+```bash
+# List events
+dotnet run -- registrations list-events
+
+# List active events only
+dotnet run -- registrations list-events --where "status=active"
+```
+
+#### `registrations get-event <id> [options]`
+Get a specific registration event by ID.
+
+**Examples:**
+```bash
+# Get event details
+dotnet run -- registrations get-event 12345
+
+# Get event with registrations
+dotnet run -- registrations get-event 12345 --include "registrations"
+```
+
+### Calendar Commands
+
+The Calendar module manages calendar events and resources.
+
+#### `calendar list-events [options]`
+List calendar events.
+
+**Examples:**
+```bash
+# List events
+dotnet run -- calendar list-events
+
+# List events for specific date range
+dotnet run -- calendar list-events --where "starts_at>2024-01-01"
+```
+
+#### `calendar get-event <id> [options]`
+Get a specific calendar event by ID.
+
+**Examples:**
+```bash
+# Get event details
+dotnet run -- calendar get-event 12345
+
+# Get event with resources
+dotnet run -- calendar get-event 12345 --include "resource_bookings"
+```
+
+### Check-Ins Commands
+
+The Check-Ins module manages event check-ins and attendance.
+
+#### `checkins list-events [options]`
+List check-in events.
+
+**Examples:**
+```bash
+# List events
+dotnet run -- checkins list-events
+
+# List events with check-ins
+dotnet run -- checkins list-events --include "check_ins"
+```
+
+#### `checkins get-event <id> [options]`
+Get a specific check-in event by ID.
+
+**Examples:**
+```bash
+# Get event details
+dotnet run -- checkins get-event 12345
+
+# Get event with locations
+dotnet run -- checkins get-event 12345 --include "locations"
+```
+
 ## Global Options
 
 These options are available for all commands:
@@ -203,14 +377,19 @@ These options are available for all commands:
 
 ## Output Formats
 
-### Table (Default)
-Human-readable table format with automatic column sizing.
-
-### JSON
-Structured JSON output, perfect for scripting and automation.
+### JSON (Default)
+Structured JSON output, perfect for scripting and automation. This is now the default format.
 
 ```bash
-dotnet run -- people list --format json
+dotnet run -- people list
+# Outputs JSON by default
+```
+
+### Table
+Human-readable table format with automatic column sizing.
+
+```bash
+dotnet run -- people list --format table
 ```
 
 ### CSV

@@ -84,6 +84,7 @@ public class PersonAttributesDto
     public string? School { get; set; }
     
     [JsonPropertyName("grade")]
+    [JsonConverter(typeof(PlanningCenter.Api.Client.Models.JsonApi.Core.FlexibleStringJsonConverter))]
     public string? Grade { get; set; }
     
     [JsonPropertyName("graduation_year")]

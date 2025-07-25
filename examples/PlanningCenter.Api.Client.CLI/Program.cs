@@ -41,7 +41,7 @@ class Program
         
         var formatOption = new Option<OutputFormat>(
             aliases: new[] { "--format", "-f" },
-            getDefaultValue: () => OutputFormat.Table,
+            getDefaultValue: () => OutputFormat.Json,
             description: "Output format (table, json, csv, xml)");
         
         var verboseOption = new Option<bool>(
@@ -63,6 +63,15 @@ class Program
         
         var servicesCommand = serviceProvider.GetRequiredService<ServicesCommand>();
         rootCommand.AddCommand(servicesCommand);
+        
+        var registrationsCommand = serviceProvider.GetRequiredService<RegistrationsCommand>();
+        rootCommand.AddCommand(registrationsCommand);
+        
+        var calendarCommand = serviceProvider.GetRequiredService<CalendarCommand>();
+        rootCommand.AddCommand(calendarCommand);
+        
+        var checkInsCommand = serviceProvider.GetRequiredService<CheckInsCommand>();
+        rootCommand.AddCommand(checkInsCommand);
 
         // Add configuration commands
         var configCommand = serviceProvider.GetRequiredService<ConfigCommand>();
@@ -102,6 +111,9 @@ class Program
         // Commands
         services.AddTransient<PeopleCommand>();
         services.AddTransient<ServicesCommand>();
+        services.AddTransient<RegistrationsCommand>();
+        services.AddTransient<CalendarCommand>();
+        services.AddTransient<CheckInsCommand>();
         services.AddTransient<ConfigCommand>(provider => new ConfigCommand(
             provider.GetRequiredService<ILogger<ConfigCommand>>(),
             provider.GetRequiredService<IAuthenticationService>(),

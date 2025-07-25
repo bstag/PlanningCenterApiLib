@@ -75,10 +75,36 @@ The SDK supports three authentication methods:
 
 See the [Authentication Guide](docs/AUTHENTICATION.md) for detailed information on each method.
 
+## CLI Tool
+
+🚀 **NEW: Command-Line Interface** - A powerful CLI tool for interacting with Planning Center from the terminal!
+
+```bash
+# Navigate to the CLI
+cd examples/PlanningCenter.Api.Client.CLI
+
+# Set your token and start using
+dotnet run -- config set-token "your-app-id:your-secret"
+dotnet run -- people list
+dotnet run -- services list-plans
+dotnet run -- calendar list-events
+```
+
+**Features:**
+- **5 Complete Modules**: People, Services, Registrations, Calendar, Check-Ins
+- **Multiple Output Formats**: JSON (default), CSV, XML, Table
+- **Advanced Filtering**: Complex queries with sorting and pagination
+- **Secure Authentication**: Encrypted token storage
+- **Export Capabilities**: Save results to files
+- **Production Ready**: Comprehensive error handling and logging
+
+See the [CLI Documentation](examples/PlanningCenter.Api.Client.CLI/README.md) for complete usage guide.
+
 ## Documentation
 
 - **[Fluent API Guide](docs/FLUENT_API.md)** - Complete guide to the LINQ-like fluent interface
 - **[Authentication Guide](planning-center-sdk-plan/architecture/AUTHENTICATION.md)** - Complete guide to all authentication methods
+- **[CLI Tool Guide](examples/PlanningCenter.Api.Client.CLI/README.md)** - Complete command-line interface documentation
 - **[Examples](examples/)** - Working examples for different scenarios
 - **[API Reference](planning-center-sdk-plan/api-reference/)** - Detailed API documentation
 - **[Architecture](planning-center-sdk-plan/architecture/)** - SDK architecture and design decisions
@@ -87,6 +113,7 @@ See the [Authentication Guide](docs/AUTHENTICATION.md) for detailed information 
 
 See the `examples/` directory for complete working examples:
 
+- **`PlanningCenter.Api.Client.CLI/`** - 🆕 **Command-line interface with 5 complete modules**
 - `PlanningCenter.Api.Client.Console/` - General usage with standard API
 - `PlanningCenter.Api.Client.Fluent.Console/` - Fluent API usage examples
 - `PlanningCenter.Api.Client.Worker/` - Background service implementation

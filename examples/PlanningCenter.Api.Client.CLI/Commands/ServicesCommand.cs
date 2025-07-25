@@ -508,37 +508,4 @@ public class ServicesCommand : BaseCommand
         AddCommand(songsCommand);
     }
 
-    private Dictionary<string, object> ParseWhereConditions(string whereClause)
-    {
-        var conditions = new Dictionary<string, object>();
-        
-        if (string.IsNullOrWhiteSpace(whereClause))
-        {
-            return conditions;
-        }
-
-        // Parse simple key=value pairs separated by commas
-        var pairs = whereClause.Split(',', StringSplitOptions.RemoveEmptyEntries);
-        
-        foreach (var pair in pairs)
-        {
-            var parts = pair.Split('=', 2, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length == 2)
-            {
-                var key = parts[0].Trim();
-                var value = parts[1].Trim();
-                
-                // Remove quotes if present
-                if ((value.StartsWith('"') && value.EndsWith('"')) ||
-                    (value.StartsWith('\'') && value.EndsWith('\'')))
-                {
-                    value = value.Substring(1, value.Length - 2);
-                }
-                
-                conditions[key] = value;
-            }
-        }
-
-        return conditions;
-    }
 }
