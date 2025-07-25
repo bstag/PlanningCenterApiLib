@@ -72,6 +72,18 @@ class Program
         
         var checkInsCommand = serviceProvider.GetRequiredService<CheckInsCommand>();
         rootCommand.AddCommand(checkInsCommand);
+        
+        var givingCommand = serviceProvider.GetRequiredService<GivingCommand>();
+        rootCommand.AddCommand(givingCommand);
+        
+        var groupsCommand = serviceProvider.GetRequiredService<GroupsCommand>();
+        rootCommand.AddCommand(groupsCommand);
+        
+        var publishingCommand = serviceProvider.GetRequiredService<PublishingCommand>();
+        rootCommand.AddCommand(publishingCommand);
+        
+        var webhooksCommand = serviceProvider.GetRequiredService<WebhooksCommand>();
+        rootCommand.AddCommand(webhooksCommand);
 
         // Add configuration commands
         var configCommand = serviceProvider.GetRequiredService<ConfigCommand>();
@@ -114,6 +126,10 @@ class Program
         services.AddTransient<RegistrationsCommand>();
         services.AddTransient<CalendarCommand>();
         services.AddTransient<CheckInsCommand>();
+        services.AddTransient<GivingCommand>();
+        services.AddTransient<GroupsCommand>();
+        services.AddTransient<PublishingCommand>();
+        services.AddTransient<WebhooksCommand>();
         services.AddTransient<ConfigCommand>(provider => new ConfigCommand(
             provider.GetRequiredService<ILogger<ConfigCommand>>(),
             provider.GetRequiredService<IAuthenticationService>(),

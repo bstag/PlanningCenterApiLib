@@ -88,10 +88,14 @@ dotnet run -- config set-token "your-app-id:your-secret"
 dotnet run -- people list
 dotnet run -- services list-plans
 dotnet run -- calendar list-events
+dotnet run -- giving list-donations
+dotnet run -- groups list
+dotnet run -- publishing list-episodes
+dotnet run -- webhooks list-subscriptions
 ```
 
 **Features:**
-- **5 Complete Modules**: People, Services, Registrations, Calendar, Check-Ins
+- **9 Complete Modules**: All Planning Center modules (People, Services, Registrations, Calendar, Check-Ins, Giving, Groups, Publishing, Webhooks)
 - **Multiple Output Formats**: JSON (default), CSV, XML, Table
 - **Advanced Filtering**: Complex queries with sorting and pagination
 - **Secure Authentication**: Encrypted token storage
@@ -113,7 +117,7 @@ See the [CLI Documentation](examples/PlanningCenter.Api.Client.CLI/README.md) fo
 
 See the `examples/` directory for complete working examples:
 
-- **`PlanningCenter.Api.Client.CLI/`** - 🆕 **Command-line interface with 5 complete modules**
+- **`PlanningCenter.Api.Client.CLI/`** - 🆕 **Command-line interface with all 9 Planning Center modules**
 - `PlanningCenter.Api.Client.Console/` - General usage with standard API
 - `PlanningCenter.Api.Client.Fluent.Console/` - Fluent API usage examples
 - `PlanningCenter.Api.Client.Worker/` - Background service implementation

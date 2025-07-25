@@ -6,7 +6,7 @@ A command-line interface for interacting with the Planning Center API using Pers
 
 - **Authentication**: Secure Personal Access Token management
 - **Multiple Output Formats**: JSON (default), CSV, XML, and Table formats
-- **Complete Module Coverage**: People, Services, Registrations, Calendar, and Check-Ins modules
+- **Complete Module Coverage**: All 9 Planning Center modules (People, Services, Registrations, Calendar, Check-Ins, Giving, Groups, Publishing, Webhooks)
 - **Configuration Management**: Store and manage CLI settings
 - **Advanced Filtering**: Complex filtering, sorting, and pagination options
 - **Flexible Output**: Property selection, file export, and customizable formatting
@@ -47,14 +47,26 @@ dotnet run -- config test-token
 dotnet run -- people me
 ```
 
-### 3. List People
+### 3. Explore Different Modules
 
 ```bash
 # List first 10 people
 dotnet run -- people list --page-size 10
 
-# List people with JSON output
-dotnet run -- people list --format json
+# List service plans
+dotnet run -- services list-plans
+
+# List recent donations
+dotnet run -- giving list-donations --page-size 5
+
+# List active groups
+dotnet run -- groups list --where "status=active"
+
+# List published episodes
+dotnet run -- publishing list-episodes
+
+# List webhook subscriptions
+dotnet run -- webhooks list-subscriptions
 
 # Search for people by name
 dotnet run -- people search "John Doe"
@@ -91,6 +103,30 @@ dotnet run -- people search "John Doe"
 - Location management
 - Attendance tracking
 - Check-in analytics
+
+### Giving Module ✅
+- List and manage donations
+- Fund management
+- Batch processing
+- Giving analytics and reporting
+
+### Groups Module ✅
+- List and manage groups
+- Group membership management
+- Group types and categories
+- Group scheduling and events
+
+### Publishing Module ✅
+- List and manage episodes
+- Series and media management
+- Speaker and content management
+- Publishing analytics
+
+### Webhooks Module ✅
+- List and manage webhook subscriptions
+- Event type configuration
+- Webhook delivery management
+- Subscription analytics
 
 ## Commands
 
@@ -365,6 +401,178 @@ dotnet run -- checkins get-event 12345
 
 # Get event with locations
 dotnet run -- checkins get-event 12345 --include "locations"
+```
+
+### Giving Commands
+
+The Giving module manages donations, funds, and financial data.
+
+#### `giving list-donations [options]`
+List donations with optional filtering.
+
+**Examples:**
+```bash
+# List donations
+dotnet run -- giving list-donations
+
+# List donations for specific fund
+dotnet run -- giving list-donations --where "fund_id=123"
+
+# Export donations to CSV
+dotnet run -- giving list-donations --format csv --output-file donations.csv
+```
+
+#### `giving get-donation <id> [options]`
+Get a specific donation by ID.
+
+**Examples:**
+```bash
+# Get donation details
+dotnet run -- giving get-donation 12345
+
+# Get donation with designations
+dotnet run -- giving get-donation 12345 --include "designations"
+```
+
+#### `giving list-funds [options]`
+List available funds.
+
+**Examples:**
+```bash
+# List funds
+dotnet run -- giving list-funds
+
+# List active funds only
+dotnet run -- giving list-funds --where "status=active"
+```
+
+### Groups Commands
+
+The Groups module manages small groups and memberships.
+
+#### `groups list [options]`
+List groups with optional filtering.
+
+**Examples:**
+```bash
+# List groups
+dotnet run -- groups list
+
+# List groups by type
+dotnet run -- groups list --where "group_type_id=123"
+
+# Export groups to JSON
+dotnet run -- groups list --format json --output-file groups.json
+```
+
+#### `groups get <id> [options]`
+Get a specific group by ID.
+
+**Examples:**
+```bash
+# Get group details
+dotnet run -- groups get 12345
+
+# Get group with memberships
+dotnet run -- groups get 12345 --include "memberships"
+```
+
+#### `groups list-memberships <group-id> [options]`
+List memberships for a specific group.
+
+**Examples:**
+```bash
+# List group memberships
+dotnet run -- groups list-memberships 12345
+
+# List active memberships only
+dotnet run -- groups list-memberships 12345 --where "status=active"
+```
+
+### Publishing Commands
+
+The Publishing module manages media content and episodes.
+
+#### `publishing list-episodes [options]`
+List episodes with optional filtering.
+
+**Examples:**
+```bash
+# List episodes
+dotnet run -- publishing list-episodes
+
+# List episodes for specific series
+dotnet run -- publishing list-episodes --where "series_id=123"
+
+# Export episodes to CSV
+dotnet run -- publishing list-episodes --format csv --output-file episodes.csv
+```
+
+#### `publishing get-episode <id> [options]`
+Get a specific episode by ID.
+
+**Examples:**
+```bash
+# Get episode details
+dotnet run -- publishing get-episode 12345
+
+# Get episode with media
+dotnet run -- publishing get-episode 12345 --include "media"
+```
+
+#### `publishing list-series [options]`
+List series with optional filtering.
+
+**Examples:**
+```bash
+# List series
+dotnet run -- publishing list-series
+
+# List active series only
+dotnet run -- publishing list-series --where "status=active"
+```
+
+### Webhooks Commands
+
+The Webhooks module manages webhook subscriptions and events.
+
+#### `webhooks list-subscriptions [options]`
+List webhook subscriptions.
+
+**Examples:**
+```bash
+# List subscriptions
+dotnet run -- webhooks list-subscriptions
+
+# List active subscriptions only
+dotnet run -- webhooks list-subscriptions --where "status=active"
+
+# Export subscriptions to JSON
+dotnet run -- webhooks list-subscriptions --format json --output-file webhooks.json
+```
+
+#### `webhooks get-subscription <id> [options]`
+Get a specific webhook subscription by ID.
+
+**Examples:**
+```bash
+# Get subscription details
+dotnet run -- webhooks get-subscription 12345
+
+# Get subscription with deliveries
+dotnet run -- webhooks get-subscription 12345 --include "deliveries"
+```
+
+#### `webhooks list-deliveries <subscription-id> [options]`
+List webhook deliveries for a specific subscription.
+
+**Examples:**
+```bash
+# List deliveries
+dotnet run -- webhooks list-deliveries 12345
+
+# List failed deliveries only
+dotnet run -- webhooks list-deliveries 12345 --where "status=failed"
 ```
 
 ## Global Options
