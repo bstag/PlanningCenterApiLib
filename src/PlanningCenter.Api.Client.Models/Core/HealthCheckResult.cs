@@ -11,6 +11,11 @@ public class HealthCheckResult
     public bool IsHealthy { get; set; }
 
     /// <summary>
+    /// Gets or sets the overall status of the health check (e.g., "healthy", "unhealthy").
+    /// </summary>
+    public string? Status { get; set; }
+
+    /// <summary>
     /// Gets or sets the response time in milliseconds.
     /// </summary>
     public double ResponseTimeMs { get; set; }
@@ -28,5 +33,5 @@ public class HealthCheckResult
     /// <summary>
     /// Gets or sets additional health check details.
     /// </summary>
-    public Dictionary<string, object>? Details { get; set; }
+    public Dictionary<string, object> Details { get; set; } = new();
 }

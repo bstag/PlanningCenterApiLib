@@ -177,6 +177,22 @@ public class RegistrationsFluentContext : IRegistrationsFluentContext
         return response.Data.First();
     }
 
+    public async Task<Signup> SingleAsync(Expression<Func<Signup, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleAsync(cancellationToken);
+    }
+
+    public async Task<Signup?> SingleOrDefaultAsync(Expression<Func<Signup, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         var parameters = _queryBuilder.Build();
@@ -475,6 +491,67 @@ public class RegistrationsFluentContext : IRegistrationsFluentContext
     {
         var signups = await GetAllAsync(null, cancellationToken);
         return signups.Any() ? signups.Average(s => s.RegistrationCount) : 0;
+    }
+
+    #endregion
+
+    #region Event Registration Filtering
+
+    /// <summary>
+    /// Filters signups by person ID (using ID property).
+    /// </summary>
+    public IRegistrationsFluentContext ByPerson(string personId)
+    {
+        if (string.IsNullOrWhiteSpace(personId))
+            throw new ArgumentException("Person ID cannot be null or empty", nameof(personId));
+
+        return Where(s => s.Id == personId);
+    }
+
+    /// <summary>
+    /// Filters signups by event ID (using ID property).
+    /// </summary>
+    public IRegistrationsFluentContext ByEvent(string eventId)
+    {
+        if (string.IsNullOrWhiteSpace(eventId))
+            throw new ArgumentException("Event ID cannot be null or empty", nameof(eventId));
+
+        return Where(s => s.Id == eventId);
+    }
+
+    #endregion
+
+    #region Form and Response Querying
+
+    /// <summary>
+    /// Filters signups to include only those with registration limit set.
+    /// </summary>
+    /// <returns>The fluent context for method chaining.</returns>
+    public IRegistrationsFluentContext WithRegistrationLimitSet()
+    {
+        return Where(s => s.RegistrationLimit.HasValue && s.RegistrationLimit > 0);
+    }
+
+    /// <summary>
+    /// Filters signups to include only those without registration limit (unlimited).
+    /// </summary>
+    /// <returns>The fluent context for method chaining.</returns>
+    public IRegistrationsFluentContext WithoutRegistrationLimit()
+    {
+        return Where(s => !s.RegistrationLimit.HasValue || s.RegistrationLimit <= 0);
+    }
+
+    /// <summary>
+    /// Filters signups by name matching the specified value.
+    /// </summary>
+    /// <param name="name">The name to match.</param>
+    /// <returns>The fluent context for method chaining.</returns>
+    public IRegistrationsFluentContext ByName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Name cannot be null or empty", nameof(name));
+
+        return Where(s => s.Name == name);
     }
 
     #endregion

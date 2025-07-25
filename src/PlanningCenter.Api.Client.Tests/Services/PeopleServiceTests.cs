@@ -247,7 +247,7 @@ public class PeopleServiceTests
         var addressDto = CreateAddressDto(a =>
         {
             a.Id = "addr123";
-            a.Attributes.Street = "123 Main St";
+            a.Attributes.StreetLine1 = "123 Main St"; // Updated property name
             a.Attributes.City = "Anytown";
             a.Attributes.State = "CA";
             a.Attributes.Zip = "12345";
@@ -262,7 +262,7 @@ public class PeopleServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be("addr123");
-        result.Street.Should().Be("123 Main St");
+        result.Street.Should().Be("123 Main St"); // Domain model still uses Street
         result.City.Should().Be("Anytown");
         result.State.Should().Be("CA");
         result.Zip.Should().Be("12345");
@@ -301,7 +301,7 @@ public class PeopleServiceTests
         var addressDto = CreateAddressDto(a =>
         {
             a.Id = "addr123";
-            a.Attributes.Street = "456 Oak Ave";
+            a.Attributes.StreetLine1 = "456 Oak Ave"; // Updated property name
             a.Attributes.City = "Newtown";
         });
 
@@ -314,7 +314,7 @@ public class PeopleServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be("addr123");
-        result.Street.Should().Be("456 Oak Ave");
+        result.Street.Should().Be("456 Oak Ave"); // Domain model still uses Street
         result.City.Should().Be("Newtown");
     }
 
@@ -1008,7 +1008,7 @@ public class PeopleServiceTests
             Type = "Address",
             Attributes = new AddressAttributesDto
             {
-                Street = "123 Test St",
+                StreetLine1 = "123 Test St", // Updated property name
                 City = "Test City",
                 State = "TS",
                 Zip = "12345",

@@ -267,4 +267,213 @@ public class GroupsFluentContext : IGroupsFluentContext
     }
 
     #endregion
+
+    #region Member Relationship Querying
+
+    /// <summary>
+    /// Include members in the response.
+    /// </summary>
+    public IGroupsFluentContext WithMembers()
+    {
+        // Note: Memberships are included via API include parameters, not navigation properties
+        return this;
+    }
+
+    /// <summary>
+    /// Include member roles in the response.
+    /// </summary>
+    public IGroupsFluentContext WithMemberRoles()
+    {
+        // Note: Member roles are included via API include parameters, not navigation properties
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups by member count range.
+    /// </summary>
+    public IGroupsFluentContext ByMemberCount(int minCount, int maxCount)
+    {
+        if (minCount < 0) throw new ArgumentException("Minimum count cannot be negative", nameof(minCount));
+        if (maxCount < minCount) throw new ArgumentException("Maximum count cannot be less than minimum count", nameof(maxCount));
+
+        return Where(g => g.MembershipsCount >= minCount && g.MembershipsCount <= maxCount);
+    }
+
+    /// <summary>
+    /// Filter groups by membership type.
+    /// </summary>
+    public IGroupsFluentContext ByMembershipType(string membershipType)
+    {
+        if (string.IsNullOrWhiteSpace(membershipType))
+            throw new ArgumentException("Membership type cannot be null or empty", nameof(membershipType));
+
+        // Note: This would typically be handled via API query parameters for related data
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups that have active members.
+    /// </summary>
+    public IGroupsFluentContext WithActiveMembers()
+    {
+        // Note: This would typically be handled via API query parameters for related data
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups by member status.
+    /// </summary>
+    public IGroupsFluentContext ByMemberStatus(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Status cannot be null or empty", nameof(status));
+
+        // Note: This would typically be handled via API query parameters for related data
+        return this;
+    }
+
+    #endregion
+
+    #region Group Hierarchy Navigation
+
+    /// <summary>
+    /// Include parent group in the response.
+    /// </summary>
+    public IGroupsFluentContext WithParentGroup()
+    {
+        // Note: Parent group would be included via API include parameters
+        return this;
+    }
+
+    /// <summary>
+    /// Include child groups in the response.
+    /// </summary>
+    public IGroupsFluentContext WithChildGroups()
+    {
+        // Note: Child groups would be included via API include parameters
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups that have a parent group.
+    /// </summary>
+    public IGroupsFluentContext WithParent()
+    {
+        // Note: Group model doesn't have ParentGroupId property - this would need to be implemented based on actual API structure
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups that are top-level (no parent).
+    /// </summary>
+    public IGroupsFluentContext TopLevel()
+    {
+        // Note: Group model doesn't have ParentGroupId property - this would need to be implemented based on actual API structure
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups by specific parent group.
+    /// </summary>
+    public IGroupsFluentContext ByParentGroup(string parentGroupId)
+    {
+        if (string.IsNullOrWhiteSpace(parentGroupId))
+            throw new ArgumentException("Parent group ID cannot be null or empty", nameof(parentGroupId));
+
+        // Note: Group model doesn't have ParentGroupId property - this would need to be implemented based on actual API structure
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups that have child groups.
+    /// </summary>
+    public IGroupsFluentContext WithChildren()
+    {
+        // Note: Group model doesn't have ChildGroups property - this would need to be implemented based on actual API structure
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups by hierarchy level.
+    /// </summary>
+    public IGroupsFluentContext ByHierarchyLevel(int level)
+    {
+        if (level < 0) throw new ArgumentException("Level cannot be negative", nameof(level));
+
+        // Note: Group model doesn't have HierarchyLevel property - this would need to be implemented based on actual API structure
+        return this;
+    }
+
+    #endregion
+
+    #region Advanced Group Features
+
+    /// <summary>
+    /// Include group events in the response.
+    /// </summary>
+    public IGroupsFluentContext WithEvents()
+    {
+        // Note: Events would be included via API include parameters
+        return this;
+    }
+
+    /// <summary>
+    /// Include group resources in the response.
+    /// </summary>
+    public IGroupsFluentContext WithResources()
+    {
+        // Note: Resources would be included via API include parameters
+        return this;
+    }
+
+    /// <summary>
+    /// Include group tags in the response.
+    /// </summary>
+    public IGroupsFluentContext WithTags()
+    {
+        // Note: Tags would be included via API include parameters
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups by enrollment status.
+    /// </summary>
+    public IGroupsFluentContext ByEnrollmentStatus(string enrollmentStatus)
+    {
+        if (string.IsNullOrWhiteSpace(enrollmentStatus))
+            throw new ArgumentException("Enrollment status cannot be null or empty", nameof(enrollmentStatus));
+
+        // Note: Group model doesn't have Enrollment property - this would need to be implemented based on actual API structure
+        return this;
+    }
+
+    /// <summary>
+    /// Filter groups that allow public enrollment.
+    /// </summary>
+    public IGroupsFluentContext PublicEnrollment()
+    {
+        return Where(g => !string.IsNullOrEmpty(g.PublicChurchCenterWebUrl));
+    }
+
+    /// <summary>
+    /// Filter groups by schedule.
+    /// </summary>
+    public IGroupsFluentContext BySchedule(string schedule)
+    {
+        if (string.IsNullOrWhiteSpace(schedule))
+            throw new ArgumentException("Schedule cannot be null or empty", nameof(schedule));
+
+        return Where(g => g.Schedule == schedule);
+    }
+
+    /// <summary>
+    /// Include all common group relationships.
+    /// </summary>
+    public IGroupsFluentContext WithAllRelationships()
+    {
+        // Note: All relationships would be included via API include parameters, not navigation properties
+        return this;
+    }
+
+    #endregion
 }

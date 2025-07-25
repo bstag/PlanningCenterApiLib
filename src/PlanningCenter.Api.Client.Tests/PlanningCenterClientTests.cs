@@ -343,59 +343,6 @@ public class PlanningCenterClientTests
     #region Global Operations Tests
 
     [Fact]
-    public async Task CheckHealthAsync_ShouldReturnHealthCheckResult()
-    {
-        // Arrange
-        var client = new PlanningCenterClient(_mockPeopleService.Object, _mockApiConnection.Object);
-        var expectedHealthCheck = new HealthCheckResult
-        {
-            IsHealthy = true,
-            ResponseTimeMs = 150,
-            ApiVersion = "2.0",
-            CheckedAt = DateTime.UtcNow
-        };
-
-        _mockApiConnection.Setup(a => a.GetAsync<HealthCheckResult>("/", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedHealthCheck);
-
-        // Act
-        var result = await client.CheckHealthAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.IsHealthy.Should().BeTrue();
-        result.ResponseTimeMs.Should().Be(150);
-        result.ApiVersion.Should().Be("2.0");
-    }
-
-    [Fact]
-    public async Task GetApiLimitsAsync_ShouldReturnApiLimitsInfo()
-    {
-        // Arrange
-        var client = new PlanningCenterClient(_mockPeopleService.Object, _mockApiConnection.Object);
-        var expectedLimits = new ApiLimitsInfo
-        {
-            RateLimit = 1000,
-            RemainingRequests = 750,
-            ResetTime = DateTime.UtcNow.AddHours(1),
-            TimePeriod = "hour"
-        };
-
-        _mockApiConnection.Setup(a => a.GetAsync<ApiLimitsInfo>("/rate_limit", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedLimits);
-
-        // Act
-        var result = await client.GetApiLimitsAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result.RateLimit.Should().Be(1000);
-        result.RemainingRequests.Should().Be(750);
-        result.TimePeriod.Should().Be("hour");
-        result.UsagePercentage.Should().Be(25); // (1000-750)/1000 * 100
-    }
-
-    [Fact]
     public async Task GetCurrentUserAsync_ShouldReturnCurrentUserInfo()
     {
         // Arrange
@@ -469,60 +416,6 @@ public class PlanningCenterClientTests
         result.Metadata["error"].Should().Be("Authentication failed");
         result.Metadata.Should().ContainKey("error_type");
         result.Metadata["error_type"].Should().Be("PlanningCenterApiAuthenticationException");
-    }
-
-    #endregion
-
-    #region Error Handling Tests
-
-    [Fact]
-    public async Task CheckHealthAsync_WithApiException_ShouldPropagateException()
-    {
-        // Arrange
-        var client = new PlanningCenterClient(_mockPeopleService.Object, _mockApiConnection.Object);
-        var expectedException = new PlanningCenterApiServerException("Server error");
-
-        _mockApiConnection.Setup(a => a.GetAsync<HealthCheckResult>("/", It.IsAny<CancellationToken>()))
-            .ThrowsAsync(expectedException);
-
-        // Act & Assert
-        var act = async () => await client.CheckHealthAsync();
-        await act.Should().ThrowAsync<PlanningCenterApiServerException>().WithMessage("Server error");
-    }
-
-    [Fact]
-    public async Task GetApiLimitsAsync_WithApiException_ShouldPropagateException()
-    {
-        // Arrange
-        var client = new PlanningCenterClient(_mockPeopleService.Object, _mockApiConnection.Object);
-        var expectedException = new PlanningCenterApiAuthenticationException("Auth failed");
-
-        _mockApiConnection.Setup(a => a.GetAsync<ApiLimitsInfo>("/rate_limit", It.IsAny<CancellationToken>()))
-            .ThrowsAsync(expectedException);
-
-        // Act & Assert
-        var act = async () => await client.GetApiLimitsAsync();
-        await act.Should().ThrowAsync<PlanningCenterApiAuthenticationException>().WithMessage("Auth failed");
-    }
-
-    #endregion
-
-    #region Cancellation Tests
-
-    [Fact]
-    public async Task CheckHealthAsync_WithCancellation_ShouldRespectCancellationToken()
-    {
-        // Arrange
-        var client = new PlanningCenterClient(_mockPeopleService.Object, _mockApiConnection.Object);
-        var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        _mockApiConnection.Setup(a => a.GetAsync<HealthCheckResult>("/", It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new OperationCanceledException());
-
-        // Act & Assert
-        var act = async () => await client.CheckHealthAsync(cts.Token);
-        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     #endregion

@@ -1,92 +1,159 @@
+using System.Net;
+
 namespace PlanningCenter.Api.Client.Models.Exceptions;
 
 /// <summary>
-/// Exception thrown when API rate limits are exceeded (HTTP 429).
+/// Exception thrown when the API rate limit is exceeded.
 /// </summary>
 public class PlanningCenterApiRateLimitException : PlanningCenterApiException
 {
     /// <summary>
-    /// When the rate limit will reset and requests can be made again
+    /// The number of seconds to wait before retrying the request.
     /// </summary>
-    public DateTime? ResetTime { get; }
+    public int? RetryAfterSeconds { get; }
     
     /// <summary>
-    /// How long to wait before retrying
-    /// </summary>
-    public TimeSpan? RetryAfter { get; }
-    
-    /// <summary>
-    /// The current rate limit (requests per time period)
+    /// The current rate limit for the API.
     /// </summary>
     public int? RateLimit { get; }
     
     /// <summary>
-    /// How many requests remain in the current time period
+    /// The number of requests remaining in the current rate limit window.
     /// </summary>
-    public int? RemainingRequests { get; }
+    public int? RateLimitRemaining { get; }
     
+    /// <summary>
+    /// The time when the rate limit window resets.
+    /// </summary>
+    public DateTimeOffset? RateLimitReset { get; }
+    
+    /// <summary>
+    /// Initializes a new instance of the PlanningCenterApiRateLimitException class.
+    /// </summary>
+    /// <param name="message">The error message</param>
+    /// <param name="requestId">The request ID from the API response</param>
+    /// <param name="requestUrl">The URL that was requested</param>
+    /// <param name="requestMethod">The HTTP method used</param>
+    /// <param name="retryAfterSeconds">The number of seconds to wait before retrying</param>
+    /// <param name="rateLimit">The current rate limit</param>
+    /// <param name="rateLimitRemaining">The number of requests remaining</param>
+    /// <param name="rateLimitReset">The time when the rate limit resets</param>
+    /// <param name="innerException">The inner exception</param>
     public PlanningCenterApiRateLimitException(
-        string message = "Rate limit exceeded", 
-        DateTime? resetTime = null,
-        TimeSpan? retryAfter = null,
-        int? rateLimit = null,
-        int? remainingRequests = null,
+        string message,
         string? requestId = null,
         string? requestUrl = null,
         string? requestMethod = null,
-        string? rawResponse = null)
-        : base(message, 429, "rate_limit_exceeded", requestId, requestUrl, requestMethod, rawResponse)
+        int? retryAfterSeconds = null,
+        int? rateLimit = null,
+        int? rateLimitRemaining = null,
+        DateTimeOffset? rateLimitReset = null,
+        Exception? innerException = null)
+        : base(message, HttpStatusCode.TooManyRequests, requestId, null, requestUrl, requestMethod, innerException)
     {
-        ResetTime = resetTime;
-        RetryAfter = retryAfter ?? TimeSpan.FromMinutes(1); // Default to 1 minute if not specified
+        RetryAfterSeconds = retryAfterSeconds;
         RateLimit = rateLimit;
-        RemainingRequests = remainingRequests;
+        RateLimitRemaining = rateLimitRemaining;
+        RateLimitReset = rateLimitReset;
     }
     
     /// <summary>
-    /// Creates a rate limit exception from HTTP headers
+    /// Gets a detailed message including rate limit information.
     /// </summary>
+    public override string DetailedMessage
+    {
+        get
+        {
+            var details = new List<string> { base.DetailedMessage };
+            
+            if (RetryAfterSeconds.HasValue)
+                details.Add($"Retry after: {RetryAfterSeconds.Value} seconds");
+                
+            if (RateLimit.HasValue)
+                details.Add($"Rate limit: {RateLimit.Value} requests");
+                
+            if (RateLimitRemaining.HasValue)
+                details.Add($"Remaining: {RateLimitRemaining.Value} requests");
+                
+            if (RateLimitReset.HasValue)
+                details.Add($"Reset time: {RateLimitReset.Value:yyyy-MM-dd HH:mm:ss UTC}");
+                
+            return string.Join(Environment.NewLine, details);
+        }
+    }
+    
+    /// <summary>
+    /// Creates a PlanningCenterApiRateLimitException from HTTP response headers.
+    /// </summary>
+    /// <param name="message">The error message</param>
+    /// <param name="headers">The HTTP response headers</param>
+    /// <param name="requestId">The request ID</param>
+    /// <param name="requestUrl">The request URL</param>
+    /// <param name="requestMethod">The request method</param>
+    /// <param name="innerException">The inner exception</param>
+    /// <returns>A new PlanningCenterApiRateLimitException instance</returns>
     public static PlanningCenterApiRateLimitException FromHeaders(
-        Dictionary<string, string> headers,
+        string message,
+        IDictionary<string, IEnumerable<string>> headers,
         string? requestId = null,
         string? requestUrl = null,
-        string? requestMethod = null)
+        string? requestMethod = null,
+        Exception? innerException = null)
     {
-        DateTime? resetTime = null;
-        TimeSpan? retryAfter = null;
+        int? retryAfter = null;
         int? rateLimit = null;
-        int? remainingRequests = null;
+        int? rateLimitRemaining = null;
+        DateTimeOffset? rateLimitReset = null;
         
-        // Parse common rate limit headers
-        if (headers.TryGetValue("X-RateLimit-Reset", out var resetHeader) && 
-            long.TryParse(resetHeader, out var resetUnix))
+        // Parse Retry-After header
+        if (headers.TryGetValue("Retry-After", out var retryAfterValues))
         {
-            resetTime = DateTimeOffset.FromUnixTimeSeconds(resetUnix).DateTime;
+            var retryAfterValue = retryAfterValues.FirstOrDefault();
+            if (int.TryParse(retryAfterValue, out var retryAfterInt))
+            {
+                retryAfter = retryAfterInt;
+            }
         }
         
-        if (headers.TryGetValue("Retry-After", out var retryHeader) && 
-            int.TryParse(retryHeader, out var retrySeconds))
+        // Parse X-RateLimit-Limit header
+        if (headers.TryGetValue("X-RateLimit-Limit", out var rateLimitValues))
         {
-            retryAfter = TimeSpan.FromSeconds(retrySeconds);
+            var rateLimitValue = rateLimitValues.FirstOrDefault();
+            if (int.TryParse(rateLimitValue, out var rateLimitInt))
+            {
+                rateLimit = rateLimitInt;
+            }
         }
         
-        if (headers.TryGetValue("X-RateLimit-Limit", out var limitHeader) && 
-            int.TryParse(limitHeader, out var limit))
+        // Parse X-RateLimit-Remaining header
+        if (headers.TryGetValue("X-RateLimit-Remaining", out var rateLimitRemainingValues))
         {
-            rateLimit = limit;
+            var rateLimitRemainingValue = rateLimitRemainingValues.FirstOrDefault();
+            if (int.TryParse(rateLimitRemainingValue, out var rateLimitRemainingInt))
+            {
+                rateLimitRemaining = rateLimitRemainingInt;
+            }
         }
         
-        if (headers.TryGetValue("X-RateLimit-Remaining", out var remainingHeader) && 
-            int.TryParse(remainingHeader, out var remaining))
+        // Parse X-RateLimit-Reset header
+        if (headers.TryGetValue("X-RateLimit-Reset", out var rateLimitResetValues))
         {
-            remainingRequests = remaining;
+            var rateLimitResetValue = rateLimitResetValues.FirstOrDefault();
+            if (long.TryParse(rateLimitResetValue, out var rateLimitResetLong))
+            {
+                rateLimitReset = DateTimeOffset.FromUnixTimeSeconds(rateLimitResetLong);
+            }
         }
-        
-        var message = retryAfter.HasValue 
-            ? $"Rate limit exceeded. Retry after {retryAfter.Value.TotalSeconds} seconds."
-            : "Rate limit exceeded";
         
         return new PlanningCenterApiRateLimitException(
-            message, resetTime, retryAfter, rateLimit, remainingRequests, requestId, requestUrl, requestMethod);
+            message,
+            requestId,
+            requestUrl,
+            requestMethod,
+            retryAfter,
+            rateLimit,
+            rateLimitRemaining,
+            rateLimitReset,
+            innerException);
     }
 }

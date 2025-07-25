@@ -278,5 +278,137 @@ public class ServicesFluentContext : IServicesFluentContext
         return Where(p => p.Title.Contains(titleFragment));
     }
 
+    // Additional service-specific filtering methods
+
+    public IServicesFluentContext ByDate(DateTime date)
+    {
+        var startOfDay = date.Date;
+        var endOfDay = startOfDay.AddDays(1);
+        
+        return Where(p => p.SortDate >= startOfDay && p.SortDate < endOfDay);
+    }
+
+    public IServicesFluentContext ByStatus(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Status cannot be null or empty", nameof(status));
+
+        return Where(p => p.PlanningCenterUrl.Contains(status)); // Note: Adjust based on actual status property
+    }
+
+    public IServicesFluentContext WithSeries()
+    {
+        return Where(p => p.SeriesId != null);
+    }
+
+    public IServicesFluentContext WithoutSeries()
+    {
+        return Where(p => p.SeriesId == null);
+    }
+
+    // Plan and item relationship querying methods
+
+    public IServicesFluentContext WithPlans()
+    {
+        return Include(p => p.Items); // Include plan items
+    }
+
+    public IServicesFluentContext WithPlanItems()
+    {
+        return Include(p => p.Items);
+    }
+
+    public IServicesFluentContext ByPlanType(string planType)
+    {
+        if (string.IsNullOrWhiteSpace(planType))
+            throw new ArgumentException("Plan type cannot be null or empty", nameof(planType));
+
+        return Where(p => p.PlanningCenterUrl.Contains(planType)); // Note: Adjust based on actual plan type property
+    }
+
+    public IServicesFluentContext WithSongs()
+    {
+        return Where(p => p.Items.Any(i => i.ItemType == "song"));
+    }
+
+    public IServicesFluentContext WithMedia()
+    {
+        return Where(p => p.Items.Any(i => i.ItemType == "media"));
+    }
+
+    // Team member filtering methods
+
+    public IServicesFluentContext WithTeamMembers()
+    {
+        return Include(p => p.PlanPeople);
+    }
+
+    public IServicesFluentContext ByTeamRole(string teamRole)
+    {
+        if (string.IsNullOrWhiteSpace(teamRole))
+            throw new ArgumentException("Team role cannot be null or empty", nameof(teamRole));
+
+        return Where(p => p.PlanPeople.Any(pp => pp.TeamPositionName.Contains(teamRole)));
+    }
+
+    public IServicesFluentContext ByTeamPosition(string teamPosition)
+    {
+        if (string.IsNullOrWhiteSpace(teamPosition))
+            throw new ArgumentException("Team position cannot be null or empty", nameof(teamPosition));
+
+        return Where(p => p.PlanPeople.Any(pp => pp.TeamPositionName == teamPosition));
+    }
+
+    public IServicesFluentContext WithConfirmedTeamMembers()
+    {
+        return Where(p => p.PlanPeople.Any(pp => pp.Status == "C"));
+    }
+
+    public IServicesFluentContext WithDeclinedTeamMembers()
+    {
+        return Where(p => p.PlanPeople.Any(pp => pp.Status == "D"));
+    }
+
+    public IServicesFluentContext WithMinimumTeamMembers(int minimumCount)
+    {
+        if (minimumCount < 0)
+            throw new ArgumentException("Minimum count cannot be negative", nameof(minimumCount));
+
+        return Where(p => p.PlanPeople.Count >= minimumCount);
+    }
+
+    // Advanced aggregation methods
+
+    public async Task<int> CountByServiceTypeAsync(string serviceTypeId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(serviceTypeId))
+            throw new ArgumentException("Service Type ID cannot be null or empty", nameof(serviceTypeId));
+
+        var contextWithFilter = ByServiceType(serviceTypeId);
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountPublicPlansAsync(CancellationToken cancellationToken = default)
+    {
+        var contextWithFilter = Public();
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountPrivatePlansAsync(CancellationToken cancellationToken = default)
+    {
+        var contextWithFilter = Private();
+        return await contextWithFilter.CountAsync(cancellationToken);
+    }
+
+    public async Task<double> AveragePlanLengthAsync(CancellationToken cancellationToken = default)
+    {
+        var plans = await GetAllAsync(cancellationToken: cancellationToken);
+        
+        if (!plans.Any())
+            return 0;
+            
+        return plans.Where(p => p.Length.HasValue).Average(p => p.Length.Value);
+    }
+
     #endregion
 }

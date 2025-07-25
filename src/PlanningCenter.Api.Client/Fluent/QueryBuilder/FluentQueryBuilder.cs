@@ -9,19 +9,21 @@ namespace PlanningCenter.Api.Client.Fluent.QueryBuilder;
 /// Advanced query builder that optimizes and caches expression parsing for better performance.
 /// Provides intelligent query optimization and parameter building.
 /// </summary>
-public class FluentQueryBuilder<T> where T : class
+public class FluentQueryBuilder<T> : IFluentQueryBuilder<T> where T : class
 {
     private readonly List<Expression<Func<T, bool>>> _whereConditions = new();
     private readonly List<Expression<Func<T, object>>> _includeExpressions = new();
+    private readonly List<string> _includeRelationships = new();
     private readonly List<(Expression<Func<T, object>> Expression, bool Descending)> _orderByExpressions = new();
     private readonly Dictionary<string, object> _customParameters = new();
+    private readonly Dictionary<string, object> _whereFilters = new();
     
     // Caching for parsed expressions to improve performance
     private static readonly Dictionary<string, FilterResult> _filterCache = new();
     private static readonly Dictionary<string, string> _includeCache = new();
     private static readonly Dictionary<string, string> _sortCache = new();
 
-    public FluentQueryBuilder<T> Where(Expression<Func<T, bool>> predicate)
+    public IFluentQueryBuilder<T> Where(Expression<Func<T, bool>> predicate)
     {
         if (predicate == null) throw new ArgumentNullException(nameof(predicate));
         
@@ -29,7 +31,7 @@ public class FluentQueryBuilder<T> where T : class
         return this;
     }
 
-    public FluentQueryBuilder<T> Include(Expression<Func<T, object>> include)
+    public IFluentQueryBuilder<T> Include(Expression<Func<T, object>> include)
     {
         if (include == null) throw new ArgumentNullException(nameof(include));
         
@@ -37,7 +39,81 @@ public class FluentQueryBuilder<T> where T : class
         return this;
     }
 
-    public FluentQueryBuilder<T> OrderBy(Expression<Func<T, object>> orderBy)
+    public IFluentQueryBuilder<T> Include(params string[] relationships)
+    {
+        if (relationships == null) throw new ArgumentNullException(nameof(relationships));
+        
+        _includeRelationships.AddRange(relationships);
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> Where(string field, object value)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _whereFilters[field] = value;
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> Where(Dictionary<string, object> filters)
+    {
+        if (filters == null) throw new ArgumentNullException(nameof(filters));
+        
+        foreach (var filter in filters)
+        {
+            _whereFilters[filter.Key] = filter.Value;
+        }
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> OrderBy(string field, bool descending = false)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _customParameters["sort"] = descending ? $"-{field}" : field;
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> OrderByDescending(string field)
+    {
+        return OrderBy(field, true);
+    }
+
+    public IFluentQueryBuilder<T> Take(int count)
+    {
+        if (count <= 0) throw new ArgumentException("Count must be greater than zero", nameof(count));
+        
+        _customParameters["per_page"] = count;
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> Skip(int count)
+    {
+        if (count < 0) throw new ArgumentException("Count cannot be negative", nameof(count));
+        
+        _customParameters["offset"] = count;
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> Page(int page, int pageSize)
+    {
+        if (page <= 0) throw new ArgumentException("Page must be greater than zero", nameof(page));
+        if (pageSize <= 0) throw new ArgumentException("Page size must be greater than zero", nameof(pageSize));
+        
+        _customParameters["page"] = page;
+        _customParameters["per_page"] = pageSize;
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> OrderBy(string field)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _customParameters["order"] = field;
+        return this;
+    }
+
+    public IFluentQueryBuilder<T> OrderBy(Expression<Func<T, object>> orderBy)
     {
         if (orderBy == null) throw new ArgumentNullException(nameof(orderBy));
         
@@ -46,7 +122,7 @@ public class FluentQueryBuilder<T> where T : class
         return this;
     }
 
-    public FluentQueryBuilder<T> OrderByDescending(Expression<Func<T, object>> orderBy)
+    public IFluentQueryBuilder<T> OrderByDescending(Expression<Func<T, object>> orderBy)
     {
         if (orderBy == null) throw new ArgumentNullException(nameof(orderBy));
         
@@ -55,7 +131,7 @@ public class FluentQueryBuilder<T> where T : class
         return this;
     }
 
-    public FluentQueryBuilder<T> ThenBy(Expression<Func<T, object>> thenBy)
+    public IFluentQueryBuilder<T> ThenBy(Expression<Func<T, object>> thenBy)
     {
         if (thenBy == null) throw new ArgumentNullException(nameof(thenBy));
         
@@ -63,7 +139,7 @@ public class FluentQueryBuilder<T> where T : class
         return this;
     }
 
-    public FluentQueryBuilder<T> ThenByDescending(Expression<Func<T, object>> thenBy)
+    public IFluentQueryBuilder<T> ThenByDescending(Expression<Func<T, object>> thenBy)
     {
         if (thenBy == null) throw new ArgumentNullException(nameof(thenBy));
         
@@ -71,7 +147,7 @@ public class FluentQueryBuilder<T> where T : class
         return this;
     }
 
-    public FluentQueryBuilder<T> WithParameter(string key, object value)
+    public IFluentQueryBuilder<T> WithParameter(string key, object value)
     {
         if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException("Key cannot be null or empty", nameof(key));
         
@@ -79,14 +155,585 @@ public class FluentQueryBuilder<T> where T : class
         return this;
     }
 
+    IFluentQueryBuilder<T> IFluentQueryBuilder<T>.WithParameter(string key, object value)
+    {
+        return WithParameter(key, value);
+    }
+
+    /// <summary>
+    /// Groups the results by the specified field.
+    /// </summary>
+    public IFluentQueryBuilder<T> GroupBy(string field)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _customParameters["group_by"] = field;
+        return this;
+    }
+
+    /// <summary>
+    /// Groups the results by multiple fields.
+    /// </summary>
+    public IFluentQueryBuilder<T> GroupBy(params string[] fields)
+    {
+        if (fields == null) throw new ArgumentNullException(nameof(fields));
+        if (fields.Length == 0) throw new ArgumentException("At least one field must be specified", nameof(fields));
+        
+        _customParameters["group_by"] = string.Join(",", fields);
+        return this;
+    }
+
+    /// <summary>
+    /// Groups the results using a LINQ expression.
+    /// </summary>
+    public IFluentQueryBuilder<T> GroupBy<TKey>(Expression<Func<T, TKey>> keySelector)
+    {
+        if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
+        
+        var field = ParseSortExpression(keySelector as Expression<Func<T, object>> ?? 
+                                       Expression.Lambda<Func<T, object>>(Expression.Convert(keySelector.Body, typeof(object)), keySelector.Parameters));
+        
+        if (!string.IsNullOrEmpty(field))
+        {
+            _customParameters["group_by"] = field;
+        }
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a HAVING clause condition to filter grouped results.
+    /// </summary>
+    public IFluentQueryBuilder<T> Having(string field, object value)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _customParameters[$"having[{field}]"] = value;
+        return this;
+    }
+
+    /// <summary>
+    /// Adds multiple HAVING clause conditions to filter grouped results.
+    /// </summary>
+    public IFluentQueryBuilder<T> Having(Dictionary<string, object> conditions)
+    {
+        if (conditions == null) throw new ArgumentNullException(nameof(conditions));
+        
+        foreach (var condition in conditions)
+        {
+            _customParameters[$"having[{condition.Key}]"] = condition.Value;
+        }
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a HAVING clause condition using a LINQ expression.
+    /// </summary>
+    public IFluentQueryBuilder<T> Having(Expression<Func<IGrouping<object, T>, bool>> predicate)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        // For now, we'll store the expression as a string representation
+        // In a full implementation, this would need proper expression parsing
+        _customParameters["having_expression"] = predicate.ToString();
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a filter for values within a collection (IN operation).
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereIn<TProperty>(Expression<Func<T, TProperty>> property, IEnumerable<TProperty> values)
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        
+        var valuesList = values.ToList();
+        if (!valuesList.Any()) return this;
+        
+        // Create a Contains expression: values.Contains(property)
+        var valuesConstant = Expression.Constant(valuesList);
+        var containsMethod = typeof(Enumerable).GetMethods()
+            .First(m => m.Name == "Contains" && m.GetParameters().Length == 2)
+            .MakeGenericMethod(typeof(TProperty));
+        var containsCall = Expression.Call(containsMethod, valuesConstant, property.Body);
+        var lambda = Expression.Lambda<Func<T, bool>>(containsCall, property.Parameters[0]);
+        
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Adds a filter for values within a collection (IN operation) using string field name.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereIn(string field, IEnumerable<object> values)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        
+        var valuesList = values.ToList();
+        if (!valuesList.Any()) return this;
+        
+        var valuesString = string.Join(",", valuesList);
+        _whereFilters[field] = valuesString;
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a filter for values not within a collection (NOT IN operation).
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereNotIn<TProperty>(Expression<Func<T, TProperty>> property, IEnumerable<TProperty> values)
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        
+        var valuesList = values.ToList();
+        if (!valuesList.Any()) return this;
+        
+        // Create a !Contains expression: !values.Contains(property)
+        var valuesConstant = Expression.Constant(valuesList);
+        var containsMethod = typeof(Enumerable).GetMethods()
+            .First(m => m.Name == "Contains" && m.GetParameters().Length == 2)
+            .MakeGenericMethod(typeof(TProperty));
+        var containsCall = Expression.Call(containsMethod, valuesConstant, property.Body);
+        var notContains = Expression.Not(containsCall);
+        var lambda = Expression.Lambda<Func<T, bool>>(notContains, property.Parameters[0]);
+        
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Adds a filter for values not within a collection (NOT IN operation) using string field name.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereNotIn(string field, IEnumerable<object> values)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        if (values == null) throw new ArgumentNullException(nameof(values));
+        
+        var valuesList = values.ToList();
+        if (!valuesList.Any()) return this;
+        
+        var valuesString = "!" + string.Join(",", valuesList);
+        _whereFilters[field] = valuesString;
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a filter for null values.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereNull<TProperty>(Expression<Func<T, TProperty>> property)
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+        
+        var nullConstant = Expression.Constant(null, typeof(TProperty));
+        var equalExpression = Expression.Equal(property.Body, nullConstant);
+        var lambda = Expression.Lambda<Func<T, bool>>(equalExpression, property.Parameters[0]);
+        
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Adds a filter for null values using string field name.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereNull(string field)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _whereFilters[field] = "null";
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a filter for non-null values.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereNotNull<TProperty>(Expression<Func<T, TProperty>> property)
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+        
+        var nullConstant = Expression.Constant(null, typeof(TProperty));
+        var notEqualExpression = Expression.NotEqual(property.Body, nullConstant);
+        var lambda = Expression.Lambda<Func<T, bool>>(notEqualExpression, property.Parameters[0]);
+        
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Adds a filter for non-null values using string field name.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereNotNull(string field)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _whereFilters[field] = "!null";
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a date range filter.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereDateRange(Expression<Func<T, DateTime>> property, DateTime startDate, DateTime endDate)
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+        if (startDate > endDate) throw new ArgumentException("Start date must be before end date");
+        
+        var startConstant = Expression.Constant(startDate);
+        var endConstant = Expression.Constant(endDate);
+        
+        var greaterThanOrEqual = Expression.GreaterThanOrEqual(property.Body, startConstant);
+        var lessThanOrEqual = Expression.LessThanOrEqual(property.Body, endConstant);
+        var andExpression = Expression.AndAlso(greaterThanOrEqual, lessThanOrEqual);
+        
+        var lambda = Expression.Lambda<Func<T, bool>>(andExpression, property.Parameters[0]);
+        
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Adds a date range filter using string field name.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereDateRange(string field, DateTime startDate, DateTime endDate)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        if (startDate > endDate) throw new ArgumentException("Start date must be before end date");
+        
+        var startString = startDate.ToString("yyyy-MM-dd");
+        var endString = endDate.ToString("yyyy-MM-dd");
+        _whereFilters[field] = $"{startString}..{endString}";
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a date range filter for nullable DateTime properties.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereDateRange(Expression<Func<T, DateTime?>> property, DateTime startDate, DateTime endDate)
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+        if (startDate > endDate) throw new ArgumentException("Start date must be before end date");
+        
+        var startConstant = Expression.Constant(startDate, typeof(DateTime?));
+        var endConstant = Expression.Constant(endDate, typeof(DateTime?));
+        
+        var greaterThanOrEqual = Expression.GreaterThanOrEqual(property.Body, startConstant);
+        var lessThanOrEqual = Expression.LessThanOrEqual(property.Body, endConstant);
+        var andExpression = Expression.AndAlso(greaterThanOrEqual, lessThanOrEqual);
+        
+        var lambda = Expression.Lambda<Func<T, bool>>(andExpression, property.Parameters[0]);
+        
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Adds a date range filter for nullable DateTime using string field name.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereDateRange(string field, DateTime? startDate, DateTime? endDate)
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        if (startDate.HasValue && endDate.HasValue)
+        {
+            if (startDate > endDate) throw new ArgumentException("Start date must be before end date");
+            var startString = startDate.Value.ToString("yyyy-MM-dd");
+            var endString = endDate.Value.ToString("yyyy-MM-dd");
+            _whereFilters[field] = $"{startString}..{endString}";
+        }
+        else if (startDate.HasValue)
+        {
+            var startString = startDate.Value.ToString("yyyy-MM-dd");
+            _whereFilters[field] = $">={startString}";
+        }
+        else if (endDate.HasValue)
+        {
+            var endString = endDate.Value.ToString("yyyy-MM-dd");
+            _whereFilters[field] = $"<={endString}";
+        }
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a between filter for numeric values.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereBetween<TProperty>(Expression<Func<T, TProperty>> property, TProperty minValue, TProperty maxValue)
+        where TProperty : IComparable<TProperty>
+    {
+        if (property == null) throw new ArgumentNullException(nameof(property));
+        if (minValue.CompareTo(maxValue) > 0) throw new ArgumentException("Min value must be less than or equal to max value");
+        
+        var minConstant = Expression.Constant(minValue);
+        var maxConstant = Expression.Constant(maxValue);
+        
+        var greaterThanOrEqual = Expression.GreaterThanOrEqual(property.Body, minConstant);
+        var lessThanOrEqual = Expression.LessThanOrEqual(property.Body, maxConstant);
+        var andExpression = Expression.AndAlso(greaterThanOrEqual, lessThanOrEqual);
+        
+        var lambda = Expression.Lambda<Func<T, bool>>(andExpression, property.Parameters[0]);
+        
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Adds a between filter for numeric values using string field name.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereBetween<TValue>(string field, TValue minValue, TValue maxValue) where TValue : IComparable<TValue>
+    {
+        if (string.IsNullOrWhiteSpace(field)) throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        if (minValue.CompareTo(maxValue) > 0) throw new ArgumentException("Min value must be less than or equal to max value");
+        
+        _whereFilters[field] = $"{minValue}..{maxValue}";
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Combines multiple conditions with AND logic.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereAnd(params Expression<Func<T, bool>>[] conditions)
+    {
+        if (conditions == null || !conditions.Any()) return this;
+        
+        foreach (var condition in conditions)
+        {
+            Where(condition);
+        }
+        
+        return this;
+    }
+
+    /// <summary>
+    /// Combines multiple conditions with OR logic.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereOr(params Expression<Func<T, bool>>[] conditions)
+    {
+        if (conditions == null || !conditions.Any()) return this;
+        
+        if (conditions.Length == 1)
+        {
+            return Where(conditions[0]);
+        }
+        
+        // Combine all conditions with OR
+        var parameter = conditions[0].Parameters[0];
+        Expression combinedExpression = conditions[0].Body;
+        
+        for (int i = 1; i < conditions.Length; i++)
+        {
+            var condition = conditions[i];
+            var visitor = new ParameterReplacerVisitor(condition.Parameters[0], parameter);
+            var replacedBody = visitor.Visit(condition.Body);
+            combinedExpression = Expression.OrElse(combinedExpression, replacedBody);
+        }
+        
+        var lambda = Expression.Lambda<Func<T, bool>>(combinedExpression, parameter);
+        return Where(lambda);
+    }
+
+    /// <summary>
+    /// Includes related resources using a LINQ expression.
+    /// </summary>
+    public IFluentQueryBuilder<T> Include<TProperty>(Expression<Func<T, TProperty>> include)
+    {
+        if (include == null) throw new ArgumentNullException(nameof(include));
+        
+        // Convert to object expression for consistency with existing implementation
+        var objectExpression = Expression.Lambda<Func<T, object>>(
+            Expression.Convert(include.Body, typeof(object)), 
+            include.Parameters[0]);
+        
+        _includeExpressions.Add(objectExpression);
+        return this;
+    }
+
+    /// <summary>
+    /// Includes deep nested relationships (e.g., person.households.members).
+    /// </summary>
+    public IFluentQueryBuilder<T> IncludeDeep(string relationshipPath)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipPath)) 
+            throw new ArgumentException("Relationship path cannot be null or empty", nameof(relationshipPath));
+        
+        _includeRelationships.Add(relationshipPath);
+        return this;
+    }
+
+    /// <summary>
+    /// Includes multiple deep nested relationships.
+    /// </summary>
+    public IFluentQueryBuilder<T> IncludeDeep(params string[] relationshipPaths)
+    {
+        if (relationshipPaths == null) throw new ArgumentNullException(nameof(relationshipPaths));
+        
+        foreach (var path in relationshipPaths)
+        {
+            if (!string.IsNullOrWhiteSpace(path))
+            {
+                _includeRelationships.Add(path);
+            }
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on the existence of a relationship.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereHasRelationship(string relationshipName)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        
+        _whereFilters[$"has_{relationshipName}"] = "true";
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on the absence of a relationship.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereDoesntHaveRelationship(string relationshipName)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        
+        _whereFilters[$"has_{relationshipName}"] = "false";
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on a condition within a related entity.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereHas(string relationshipName, string field, object value)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        if (string.IsNullOrWhiteSpace(field)) 
+            throw new ArgumentException("Field cannot be null or empty", nameof(field));
+        
+        _whereFilters[$"{relationshipName}.{field}"] = value;
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on multiple conditions within a related entity.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereHas(string relationshipName, Dictionary<string, object> filters)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        if (filters == null) throw new ArgumentNullException(nameof(filters));
+        
+        foreach (var filter in filters)
+        {
+            _whereFilters[$"{relationshipName}.{filter.Key}"] = filter.Value;
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on the count of related entities.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereRelationshipCount(string relationshipName, int count)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        if (count < 0) throw new ArgumentException("Count cannot be negative", nameof(count));
+        
+        _whereFilters[$"{relationshipName}_count"] = count;
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on the minimum count of related entities.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereRelationshipCountGreaterThan(string relationshipName, int minCount)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        if (minCount < 0) throw new ArgumentException("Min count cannot be negative", nameof(minCount));
+        
+        _whereFilters[$"{relationshipName}_count"] = $">{minCount}";
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on the maximum count of related entities.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereRelationshipCountLessThan(string relationshipName, int maxCount)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        if (maxCount < 0) throw new ArgumentException("Max count cannot be negative", nameof(maxCount));
+        
+        _whereFilters[$"{relationshipName}_count"] = $"<{maxCount}";
+        return this;
+    }
+
+    /// <summary>
+    /// Filters results based on a count range of related entities.
+    /// </summary>
+    public IFluentQueryBuilder<T> WhereRelationshipCountBetween(string relationshipName, int minCount, int maxCount)
+    {
+        if (string.IsNullOrWhiteSpace(relationshipName)) 
+            throw new ArgumentException("Relationship name cannot be null or empty", nameof(relationshipName));
+        if (minCount < 0) throw new ArgumentException("Min count cannot be negative", nameof(minCount));
+        if (maxCount < 0) throw new ArgumentException("Max count cannot be negative", nameof(maxCount));
+        if (minCount > maxCount) throw new ArgumentException("Min count must be less than or equal to max count");
+        
+        _whereFilters[$"{relationshipName}_count"] = $"{minCount}..{maxCount}";
+        return this;
+    }
+
+    /// <summary>
+    /// Helper class to replace parameters in expressions for combining OR conditions.
+    /// </summary>
+    private class ParameterReplacerVisitor : ExpressionVisitor
+    {
+        private readonly ParameterExpression _oldParameter;
+        private readonly ParameterExpression _newParameter;
+        
+        public ParameterReplacerVisitor(ParameterExpression oldParameter, ParameterExpression newParameter)
+        {
+            _oldParameter = oldParameter;
+            _newParameter = newParameter;
+        }
+        
+        protected override Expression VisitParameter(ParameterExpression node)
+        {
+            return node == _oldParameter ? _newParameter : base.VisitParameter(node);
+        }
+    }
+
     public QueryParameters Build()
     {
         var parameters = new QueryParameters();
 
-        // Add custom parameters first
+        // Add custom parameters first, handling special cases
         foreach (var (key, value) in _customParameters)
         {
-            parameters.Add(key, value.ToString()!);
+            if (key == "order")
+            {
+                parameters.OrderBy = value.ToString();
+            }
+            else if (key == "per_page")
+            {
+                parameters.PerPage = Convert.ToInt32(value);
+            }
+            else if (key == "offset")
+            {
+                parameters.Offset = Convert.ToInt32(value);
+            }
+            else
+            {
+                parameters.Add(key, value.ToString()!);
+            }
+        }
+
+        // Process string-based where filters
+        foreach (var (field, value) in _whereFilters)
+        {
+            parameters.AddFilter(field, value.ToString()!);
         }
 
         // Process where conditions with caching
@@ -103,6 +750,15 @@ public class FluentQueryBuilder<T> where T : class
             if (!filterResult.IsEmpty)
             {
                 parameters.AddFilter(filterResult.Field, filterResult.ToApiFilterString());
+            }
+        }
+
+        // Process string-based includes
+        foreach (var relationship in _includeRelationships)
+        {
+            if (!string.IsNullOrEmpty(relationship))
+            {
+                parameters.AddInclude(relationship);
             }
         }
 
@@ -148,8 +804,8 @@ public class FluentQueryBuilder<T> where T : class
     {
         return new QueryOptimizationInfo
         {
-            WhereConditionsCount = _whereConditions.Count,
-            IncludeExpressionsCount = _includeExpressions.Count,
+            WhereConditionsCount = _whereConditions.Count + _whereFilters.Count,
+            IncludeExpressionsCount = _includeExpressions.Count + _includeRelationships.Count,
             OrderByExpressionsCount = _orderByExpressions.Count,
             CustomParametersCount = _customParameters.Count,
             EstimatedComplexity = CalculateQueryComplexity(),
@@ -163,7 +819,13 @@ public class FluentQueryBuilder<T> where T : class
         
         clone._whereConditions.AddRange(_whereConditions);
         clone._includeExpressions.AddRange(_includeExpressions);
+        clone._includeRelationships.AddRange(_includeRelationships);
         clone._orderByExpressions.AddRange(_orderByExpressions);
+        
+        foreach (var (key, value) in _whereFilters)
+        {
+            clone._whereFilters[key] = value;
+        }
         
         foreach (var (key, value) in _customParameters)
         {
@@ -175,42 +837,20 @@ public class FluentQueryBuilder<T> where T : class
 
     private static FilterResult ParseFilterExpression(Expression<Func<T, bool>> expression)
     {
-        // For Person type, use the ExpressionParser
-        if (typeof(T) == typeof(Person))
-        {
-            var personExpression = expression as Expression<Func<Person, bool>>;
-            return ExpressionParser.ParseFilter(personExpression!);
-        }
-
-        // For other types, return empty for now
-        // TODO: Implement generic expression parsing for other entity types
-        return new FilterResult();
+        // Use the generic expression parser for all entity types
+        return ExpressionParser.ParseFilter(expression);
     }
 
     private static string ParseIncludeExpression(Expression<Func<T, object>> expression)
     {
-        // For Person type, use the ExpressionParser
-        if (typeof(T) == typeof(Person))
-        {
-            var personExpression = expression as Expression<Func<Person, object>>;
-            return ExpressionParser.ParseInclude(personExpression!);
-        }
-
-        // For other types, return empty for now
-        return string.Empty;
+        // Use the generic expression parser for all entity types
+        return ExpressionParser.ParseInclude(expression);
     }
 
     private static string ParseSortExpression(Expression<Func<T, object>> expression)
     {
-        // For Person type, use the ExpressionParser
-        if (typeof(T) == typeof(Person))
-        {
-            var personExpression = expression as Expression<Func<Person, object>>;
-            return ExpressionParser.ParseSort(personExpression!);
-        }
-
-        // For other types, return empty for now
-        return string.Empty;
+        // Use the generic expression parser for all entity types
+        return ExpressionParser.ParseSort(expression);
     }
 
     private static string GetExpressionKey(Expression expression)
@@ -222,7 +862,7 @@ public class FluentQueryBuilder<T> where T : class
 
     private QueryComplexity CalculateQueryComplexity()
     {
-        var totalConditions = _whereConditions.Count + _includeExpressions.Count + _orderByExpressions.Count;
+        var totalConditions = _whereConditions.Count + _whereFilters.Count + _includeExpressions.Count + _includeRelationships.Count + _orderByExpressions.Count;
         
         return totalConditions switch
         {

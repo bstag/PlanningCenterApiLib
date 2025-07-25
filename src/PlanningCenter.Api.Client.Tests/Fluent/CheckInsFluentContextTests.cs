@@ -453,6 +453,145 @@ public class CheckInsFluentContextTests
 
     #endregion
 
+    #region Aggregation Methods Tests
+
+    [Fact]
+    public async Task CountByEventAsync_ShouldReturnCount_WhenEventIdIsProvided()
+    {
+        // Arrange
+        var eventId = "event-123";
+        var expectedCount = 5;
+        var response = BuildCheckInPagedResponse(expectedCount);
+        _mockCheckInsService.Setup(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await _fluentContext.CountByEventAsync(eventId);
+
+        // Assert
+        result.Should().Be(expectedCount);
+        _mockCheckInsService.Verify(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CountByEventAsync_ShouldThrowArgumentException_WhenEventIdIsEmpty()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _fluentContext.CountByEventAsync(""));
+    }
+
+    [Fact]
+    public async Task CountByLocationAsync_ShouldReturnCount_WhenLocationIdIsProvided()
+    {
+        // Arrange
+        var locationId = "location-456";
+        var expectedCount = 3;
+        var response = BuildCheckInPagedResponse(expectedCount);
+        _mockCheckInsService.Setup(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await _fluentContext.CountByLocationAsync(locationId);
+
+        // Assert
+        result.Should().Be(expectedCount);
+        _mockCheckInsService.Verify(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CountByLocationAsync_ShouldThrowArgumentException_WhenLocationIdIsEmpty()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => _fluentContext.CountByLocationAsync(""));
+    }
+
+    [Fact]
+    public async Task CountCheckedInAsync_ShouldReturnCount()
+    {
+        // Arrange
+        var expectedCount = 7;
+        var response = BuildCheckInPagedResponse(expectedCount);
+        _mockCheckInsService.Setup(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await _fluentContext.CountCheckedInAsync();
+
+        // Assert
+        result.Should().Be(expectedCount);
+        _mockCheckInsService.Verify(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CountCheckedOutAsync_ShouldReturnCount()
+    {
+        // Arrange
+        var expectedCount = 4;
+        var response = BuildCheckInPagedResponse(expectedCount);
+        _mockCheckInsService.Setup(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await _fluentContext.CountCheckedOutAsync();
+
+        // Assert
+        result.Should().Be(expectedCount);
+        _mockCheckInsService.Verify(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CountGuestsAsync_ShouldReturnCount()
+    {
+        // Arrange
+        var expectedCount = 2;
+        var response = BuildCheckInPagedResponse(expectedCount);
+        _mockCheckInsService.Setup(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await _fluentContext.CountGuestsAsync();
+
+        // Assert
+        result.Should().Be(expectedCount);
+        _mockCheckInsService.Verify(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CountMembersAsync_ShouldReturnCount()
+    {
+        // Arrange
+        var expectedCount = 8;
+        var response = BuildCheckInPagedResponse(expectedCount);
+        _mockCheckInsService.Setup(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await _fluentContext.CountMembersAsync();
+
+        // Assert
+        result.Should().Be(expectedCount);
+        _mockCheckInsService.Verify(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CountWithMedicalNotesAsync_ShouldReturnCount()
+    {
+        // Arrange
+        var expectedCount = 1;
+        var response = BuildCheckInPagedResponse(expectedCount);
+        _mockCheckInsService.Setup(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        // Act
+        var result = await _fluentContext.CountWithMedicalNotesAsync();
+
+        // Assert
+        result.Should().Be(expectedCount);
+        _mockCheckInsService.Verify(s => s.ListCheckInsAsync(It.IsAny<QueryParameters>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    #endregion
+
     #region Chaining Tests
 
     [Fact]

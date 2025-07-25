@@ -21,6 +21,18 @@ public class MockApiConnection : IApiConnection
     public void SetupMutationResponse<T>(string verb, string endpoint, T response) =>
         _mutationResponses[(verb, endpoint)] = response;
 
+    public void SetupPostResponse<T>(string endpoint, T response) =>
+        _mutationResponses[("POST", endpoint)] = response;
+
+    public void SetupPatchResponse<T>(string endpoint, T response) =>
+        _mutationResponses[("PATCH", endpoint)] = response;
+
+    public void SetupPutResponse<T>(string endpoint, T response) =>
+        _mutationResponses[("PUT", endpoint)] = response;
+
+    public void SetupDeleteResponse(string endpoint) =>
+        _mutationResponses[("DELETE", endpoint)] = true;
+
     #endregion
 
     public Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)

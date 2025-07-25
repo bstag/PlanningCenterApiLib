@@ -15,6 +15,7 @@ public class TestFixture : IDisposable
 {
     private readonly ServiceProvider _serviceProvider;
     public IServiceProvider ServiceProvider => _serviceProvider;
+    public bool HasRealAuthentication { get; private set; }
 
     public TestFixture()
     {
@@ -47,11 +48,21 @@ public class TestFixture : IDisposable
             {
                 // Set personal access token (format: "app_id:secret")
                 options.PersonalAccessToken = $"{appId}:{secret}";
+                HasRealAuthentication = true;
+            }
+            else
+            {
+                // Set dummy credentials for integration tests when real ones are not available
+                // This allows the service to be constructed but tests should be skipped
+                options.PersonalAccessToken = "dummy:dummy";
+                HasRealAuthentication = false;
             }
         });
 
         _serviceProvider = services.BuildServiceProvider();
     }
+
+    public PlanningCenterClient Client => _serviceProvider.GetRequiredService<PlanningCenterClient>();
 
     public void Dispose()
     {

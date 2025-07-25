@@ -152,6 +152,24 @@ public interface IGivingFluentContext
     Task<Giving.Donation?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
+    /// Gets the single donation matching the additional predicate.
+    /// Throws an exception if zero or more than one donation is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single donation matching all criteria</returns>
+    Task<Giving.Donation> SingleAsync(Expression<Func<Giving.Donation, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single donation matching the additional predicate, or null if none found.
+    /// Throws an exception if more than one donation is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single donation matching all criteria, or null</returns>
+    Task<Giving.Donation?> SingleOrDefaultAsync(Expression<Func<Giving.Donation, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Counts all donations matching the query criteria across all pages.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
@@ -205,11 +223,147 @@ public interface IGivingFluentContext
     IGivingFluentContext WithMinimumAmount(long minimumAmount);
     
     /// <summary>
+    /// Filters donations by maximum amount.
+    /// </summary>
+    /// <param name="maximumAmount">The maximum amount in cents</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext WithMaximumAmount(long maximumAmount);
+    
+    /// <summary>
+    /// Filters donations by amount range.
+    /// </summary>
+    /// <param name="minimumAmount">The minimum amount in cents</param>
+    /// <param name="maximumAmount">The maximum amount in cents</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext ByAmountRange(long minimumAmount, long maximumAmount);
+    
+    /// <summary>
+    /// Filters donations by status.
+    /// </summary>
+    /// <param name="status">The donation status</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext ByStatus(string status);
+    
+    /// <summary>
+    /// Filters donations by batch.
+    /// </summary>
+    /// <param name="batchId">The batch identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext ByBatch(string batchId);
+    
+    // Designation relationship querying methods
+    
+    /// <summary>
+    /// Filters donations to only include those with designations.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext WithDesignations();
+    
+    /// <summary>
+    /// Filters donations by specific designation.
+    /// </summary>
+    /// <param name="designationId">The designation identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext ByDesignation(string designationId);
+    
+    /// <summary>
+    /// Filters donations to only include those with multiple designations.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext WithMultipleDesignations();
+    
+    /// <summary>
+    /// Filters donations by designation count.
+    /// </summary>
+    /// <param name="count">The exact designation count</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext ByDesignationCount(int count);
+    
+    // Payment method filtering methods
+    
+    /// <summary>
+    /// Filters donations by payment method.
+    /// </summary>
+    /// <param name="paymentMethod">The payment method</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext ByPaymentMethod(string paymentMethod);
+    
+    /// <summary>
+    /// Filters donations by transaction ID.
+    /// </summary>
+    /// <param name="transactionId">The transaction identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext ByTransactionId(string transactionId);
+    
+    /// <summary>
+    /// Filters donations to only include cash donations.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext CashOnly();
+    
+    /// <summary>
+    /// Filters donations to only include check donations.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext CheckOnly();
+    
+    /// <summary>
+    /// Filters donations to only include credit card donations.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext CreditCardOnly();
+    
+    /// <summary>
+    /// Filters donations to only include ACH/bank transfer donations.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGivingFluentContext AchOnly();
+    
+    // Advanced aggregation methods
+    
+    /// <summary>
     /// Calculates the total amount of donations matching the current criteria.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The total amount in cents</returns>
     Task<long> TotalAmountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Calculates the average donation amount matching the current criteria.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The average amount in cents</returns>
+    Task<double> AverageAmountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the largest donation amount matching the current criteria.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The maximum amount in cents</returns>
+    Task<long> MaxAmountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the smallest donation amount matching the current criteria.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The minimum amount in cents</returns>
+    Task<long> MinAmountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of donations by fund.
+    /// </summary>
+    /// <param name="fundId">The fund identifier</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of donations for the specified fund</returns>
+    Task<int> CountByFundAsync(string fundId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of donations by payment method.
+    /// </summary>
+    /// <param name="paymentMethod">The payment method</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of donations for the specified payment method</returns>
+    Task<int> CountByPaymentMethodAsync(string paymentMethod, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -344,6 +498,40 @@ public interface ICalendarFluentContext
     Task<Calendar.Event?> FirstOrDefaultAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
+    /// Gets the single calendar event matching the query criteria.
+    /// Throws an exception if zero or more than one event is found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single calendar event matching the criteria</returns>
+    Task<Calendar.Event> SingleAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single calendar event matching the query criteria, or null if none found.
+    /// Throws an exception if more than one event is found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single calendar event matching the criteria, or null</returns>
+    Task<Calendar.Event?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single calendar event matching the additional predicate.
+    /// Throws an exception if zero or more than one event is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single calendar event matching all criteria</returns>
+    Task<Calendar.Event> SingleAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single calendar event matching the additional predicate, or null if none found.
+    /// Throws an exception if more than one event is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single calendar event matching all criteria, or null</returns>
+    Task<Calendar.Event?> SingleOrDefaultAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
     /// Counts all calendar events matching the query criteria across all pages.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
@@ -398,6 +586,45 @@ public interface ICalendarFluentContext
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
     ICalendarFluentContext Upcoming();
+    
+    // Aggregation methods
+    
+    /// <summary>
+    /// Counts events by approval status.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A dictionary with approval status as key and count as value</returns>
+    Task<Dictionary<string, int>> CountByApprovalStatusAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of events that require registration.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of events requiring registration</returns>
+    Task<int> CountRegistrationRequiredAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of all-day events.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of all-day events</returns>
+    Task<int> CountAllDayEventsAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Calculates the average duration of events in hours.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The average duration in hours</returns>
+    Task<double> AverageDurationHoursAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Groups events by the specified key selector.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the grouping key</typeparam>
+    /// <param name="keySelector">Function to extract the grouping key from each event</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A dictionary where keys are the grouping values and values are lists of events</returns>
+    Task<Dictionary<TKey, List<Calendar.Event>>> GroupByAsync<TKey>(Expression<Func<Calendar.Event, TKey>> keySelector, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -674,6 +901,59 @@ public interface ICheckInsFluentContext
     /// <param name="kind">The check-in kind</param>
     /// <returns>The fluent context for method chaining</returns>
     ICheckInsFluentContext ByKind(string kind);
+    
+    // Advanced aggregation methods
+    
+    /// <summary>
+    /// Gets the total count of check-ins by event.
+    /// </summary>
+    /// <param name="eventId">The event identifier</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of check-ins for the specified event</returns>
+    Task<int> CountByEventAsync(string eventId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of check-ins by location.
+    /// </summary>
+    /// <param name="locationId">The location identifier</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of check-ins for the specified location</returns>
+    Task<int> CountByLocationAsync(string locationId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of currently checked-in attendees.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of currently checked-in attendees</returns>
+    Task<int> CountCheckedInAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of checked-out attendees.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of checked-out attendees</returns>
+    Task<int> CountCheckedOutAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of guest check-ins.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of guest check-ins</returns>
+    Task<int> CountGuestsAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of member check-ins.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of member check-ins</returns>
+    Task<int> CountMembersAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of check-ins with medical notes.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of check-ins with medical notes</returns>
+    Task<int> CountWithMedicalNotesAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -905,6 +1185,140 @@ public interface IGroupsFluentContext
     /// <param name="nameFragment">The text to search for in group names</param>
     /// <returns>The fluent context for method chaining</returns>
     IGroupsFluentContext ByNameContains(string nameFragment);
+    
+    // Member Relationship Querying
+    
+    /// <summary>
+    /// Include members in the response.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithMembers();
+    
+    /// <summary>
+    /// Include member roles in the response.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithMemberRoles();
+    
+    /// <summary>
+    /// Filter groups by member count range.
+    /// </summary>
+    /// <param name="minCount">Minimum member count</param>
+    /// <param name="maxCount">Maximum member count</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext ByMemberCount(int minCount, int maxCount);
+    
+    /// <summary>
+    /// Filter groups by membership type.
+    /// </summary>
+    /// <param name="membershipType">The membership type to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext ByMembershipType(string membershipType);
+    
+    /// <summary>
+    /// Filter groups that have active members.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithActiveMembers();
+    
+    /// <summary>
+    /// Filter groups by member status.
+    /// </summary>
+    /// <param name="status">The member status to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext ByMemberStatus(string status);
+    
+    // Group Hierarchy Navigation
+    
+    /// <summary>
+    /// Include parent group in the response.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithParentGroup();
+    
+    /// <summary>
+    /// Include child groups in the response.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithChildGroups();
+    
+    /// <summary>
+    /// Filter groups that have a parent group.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithParent();
+    
+    /// <summary>
+    /// Filter groups that are top-level (no parent).
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext TopLevel();
+    
+    /// <summary>
+    /// Filter groups by specific parent group.
+    /// </summary>
+    /// <param name="parentGroupId">The parent group identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext ByParentGroup(string parentGroupId);
+    
+    /// <summary>
+    /// Filter groups that have child groups.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithChildren();
+    
+    /// <summary>
+    /// Filter groups by hierarchy level.
+    /// </summary>
+    /// <param name="level">The hierarchy level</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext ByHierarchyLevel(int level);
+    
+    // Advanced Group Features
+    
+    /// <summary>
+    /// Include group events in the response.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithEvents();
+    
+    /// <summary>
+    /// Include group resources in the response.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithResources();
+    
+    /// <summary>
+    /// Include group tags in the response.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithTags();
+    
+    /// <summary>
+    /// Filter groups by enrollment status.
+    /// </summary>
+    /// <param name="enrollmentStatus">The enrollment status to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext ByEnrollmentStatus(string enrollmentStatus);
+    
+    /// <summary>
+    /// Filter groups that allow public enrollment.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext PublicEnrollment();
+    
+    /// <summary>
+    /// Filter groups by schedule.
+    /// </summary>
+    /// <param name="schedule">The schedule to filter by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext BySchedule(string schedule);
+    
+    /// <summary>
+    /// Include all common group relationships.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IGroupsFluentContext WithAllRelationships();
 }
 
 /// <summary>
@@ -1053,6 +1467,24 @@ public interface IRegistrationsFluentContext
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single signup matching the criteria, or null</returns>
     Task<Registrations.Signup?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single signup matching the additional predicate.
+    /// Throws an exception if zero or more than one signup is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single signup matching all criteria</returns>
+    Task<Registrations.Signup> SingleAsync(Expression<Func<Registrations.Signup, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single signup matching the additional predicate, or null if none found.
+    /// Throws an exception if more than one signup is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single signup matching all criteria, or null</returns>
+    Task<Registrations.Signup?> SingleOrDefaultAsync(Expression<Func<Registrations.Signup, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all signups matching the query criteria across all pages.
@@ -1253,6 +1685,39 @@ public interface IRegistrationsFluentContext
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The average registration count</returns>
     Task<double> AverageRegistrationsAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Filters signups by person ID.
+    /// </summary>
+    /// <param name="personId">The person identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IRegistrationsFluentContext ByPerson(string personId);
+    
+    /// <summary>
+    /// Filters signups by event ID.
+    /// </summary>
+    /// <param name="eventId">The event identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IRegistrationsFluentContext ByEvent(string eventId);
+    
+    /// <summary>
+    /// Filters signups to include only those with registration limit set.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IRegistrationsFluentContext WithRegistrationLimitSet();
+    
+    /// <summary>
+    /// Filters signups to include only those without registration limit (unlimited).
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IRegistrationsFluentContext WithoutRegistrationLimit();
+    
+    /// <summary>
+    /// Filters signups by name matching the specified value.
+    /// </summary>
+    /// <param name="name">The name to match</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IRegistrationsFluentContext ByName(string name);
 }
 
 /// <summary>
@@ -1402,6 +1867,24 @@ public interface IPublishingFluentContext
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single episode matching the criteria, or null</returns>
     Task<Publishing.Episode?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single episode matching the additional predicate.
+    /// Throws an exception if no episodes are found or more than one is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single episode matching all criteria</returns>
+    Task<Publishing.Episode> SingleAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single episode matching the additional predicate, or null if none found.
+    /// Throws an exception if more than one episode is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single episode matching all criteria, or null</returns>
+    Task<Publishing.Episode?> SingleOrDefaultAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all episodes matching the query criteria across all pages.
@@ -1647,6 +2130,121 @@ public interface IPublishingFluentContext
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The total duration in seconds</returns>
     Task<long> TotalDurationAsync(CancellationToken cancellationToken = default);
+    
+    // Publishing-Specific Filters
+    
+    /// <summary>
+    /// Filters episodes that are in draft status (not published).
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext Draft();
+    
+    /// <summary>
+    /// Filters episodes by speaker ID.
+    /// </summary>
+    /// <param name="speakerId">The speaker identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext BySpeaker(string speakerId);
+    
+    /// <summary>
+    /// Filters episodes by series ID (alias for BySeries for consistency).
+    /// </summary>
+    /// <param name="seriesId">The series identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext BySeriesId(string seriesId);
+    
+    /// <summary>
+    /// Filters episodes that do not belong to any series.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithoutSeries();
+    
+    // Series and Episode Relationship Querying
+    
+    /// <summary>
+    /// Filters episodes that belong to the specified series (alias for BySeries).
+    /// </summary>
+    /// <param name="seriesId">The series identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext InSeries(string seriesId);
+    
+    /// <summary>
+    /// Filters episodes that belong to any of the specified series.
+    /// </summary>
+    /// <param name="seriesIds">The series identifiers</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext InSeries(params string[] seriesIds);
+    
+    // Speaker Filtering Methods
+    
+    /// <summary>
+    /// Filters episodes that have any of the specified speakers.
+    /// </summary>
+    /// <param name="speakerIds">The speaker identifiers</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithSpeakers(params string[] speakerIds);
+    
+    /// <summary>
+    /// Filters episodes that do not have any speakers assigned.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithoutSpeakers();
+    
+    // Media Management Methods
+    
+    /// <summary>
+    /// Filters episodes that have any media files attached.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithMedia();
+    
+    /// <summary>
+    /// Filters episodes that do not have any media files attached.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithoutMedia();
+    
+    /// <summary>
+    /// Filters episodes by media type.
+    /// </summary>
+    /// <param name="mediaType">The media type (video, audio, artwork)</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext ByMediaType(string mediaType);
+    
+    /// <summary>
+    /// Filters episodes that have downloadable media.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithDownloadableMedia();
+    
+    /// <summary>
+    /// Filters episodes that have streamable media.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IPublishingFluentContext WithStreamableMedia();
+    
+    // Advanced Aggregation Methods
+    
+    /// <summary>
+    /// Gets the total number of unique series across all episodes in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total number of unique series</returns>
+    Task<int> TotalSeriesAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total number of unique speakers across all episodes in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total number of unique speakers</returns>
+    Task<int> TotalSpeakersAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the average number of episodes per series in the current query.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The average number of episodes per series</returns>
+    Task<double> AverageEpisodeCountAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -1884,6 +2482,138 @@ public interface IServicesFluentContext
     /// <param name="titleFragment">The text to search for in plan titles</param>
     /// <returns>The fluent context for method chaining</returns>
     IServicesFluentContext ByTitleContains(string titleFragment);
+    
+    // Additional service-specific filtering methods
+    
+    /// <summary>
+    /// Filters service plans by date.
+    /// </summary>
+    /// <param name="date">The specific date</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext ByDate(DateTime date);
+    
+    /// <summary>
+    /// Filters service plans by status.
+    /// </summary>
+    /// <param name="status">The plan status</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext ByStatus(string status);
+    
+    /// <summary>
+    /// Filters service plans to only include those with a series.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithSeries();
+    
+    /// <summary>
+    /// Filters service plans to only include those without a series.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithoutSeries();
+    
+    // Plan and item relationship querying methods
+    
+    /// <summary>
+    /// Filters service plans to only include those with plan items.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithPlans();
+    
+    /// <summary>
+    /// Filters service plans to only include those with plan items.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithPlanItems();
+    
+    /// <summary>
+    /// Filters service plans by plan type.
+    /// </summary>
+    /// <param name="planType">The plan type</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext ByPlanType(string planType);
+    
+    /// <summary>
+    /// Filters service plans to only include those with songs.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithSongs();
+    
+    /// <summary>
+    /// Filters service plans to only include those with media items.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithMedia();
+    
+    // Team member filtering methods
+    
+    /// <summary>
+    /// Filters service plans to only include those with team members.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithTeamMembers();
+    
+    /// <summary>
+    /// Filters service plans by team role.
+    /// </summary>
+    /// <param name="teamRole">The team role</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext ByTeamRole(string teamRole);
+    
+    /// <summary>
+    /// Filters service plans by team position.
+    /// </summary>
+    /// <param name="teamPosition">The team position</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext ByTeamPosition(string teamPosition);
+    
+    /// <summary>
+    /// Filters service plans to only include those with confirmed team members.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithConfirmedTeamMembers();
+    
+    /// <summary>
+    /// Filters service plans to only include those with declined team members.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithDeclinedTeamMembers();
+    
+    /// <summary>
+    /// Filters service plans by minimum team member count.
+    /// </summary>
+    /// <param name="minimumCount">The minimum team member count</param>
+    /// <returns>The fluent context for method chaining</returns>
+    IServicesFluentContext WithMinimumTeamMembers(int minimumCount);
+    
+    // Advanced aggregation methods
+    
+    /// <summary>
+    /// Gets the total count of plans by service type.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of plans by service type</returns>
+    Task<int> CountByServiceTypeAsync(string serviceTypeId, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of public plans.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of public plans</returns>
+    Task<int> CountPublicPlansAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the total count of private plans.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The count of private plans</returns>
+    Task<int> CountPrivatePlansAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the average plan length in minutes.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The average plan length</returns>
+    Task<double> AveragePlanLengthAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -2033,6 +2763,24 @@ public interface IWebhooksFluentContext
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single webhook subscription matching the criteria, or null</returns>
     Task<Webhooks.WebhookSubscription?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single webhook subscription matching the additional predicate.
+    /// Throws an exception if no subscriptions are found or more than one is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single webhook subscription matching all criteria</returns>
+    Task<Webhooks.WebhookSubscription> SingleAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the single webhook subscription matching the additional predicate, or null if none found.
+    /// Throws an exception if more than one subscription is found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single webhook subscription matching all criteria, or null</returns>
+    Task<Webhooks.WebhookSubscription?> SingleOrDefaultAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all webhook subscriptions matching the query criteria across all pages.

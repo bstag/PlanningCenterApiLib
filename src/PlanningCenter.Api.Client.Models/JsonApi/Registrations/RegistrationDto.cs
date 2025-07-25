@@ -29,6 +29,8 @@ public class RegistrationAttributesDto
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? PhoneNumber { get; set; }
+    public string? Birthdate { get; set; }
+    public string? Gender { get; set; }
     public DateTime? CompletedAt { get; set; }
     public int AttendeeCount { get; set; }
     public bool RequiresApproval { get; set; }

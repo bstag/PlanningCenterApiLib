@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Exceptions;
+using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Services;
 using PlanningCenter.Api.Client.Tests.Utilities;
 using Xunit;
@@ -259,6 +260,221 @@ public class ServiceBaseTests
 
     #endregion
 
+    #region LogSuccess Tests
+
+    [Fact]
+    public void LogSuccess_WithMinimalParameters_ShouldLogCorrectMessage()
+    {
+        // Arrange
+        var operationName = "Create";
+        var resourceName = "Plan";
+
+        // Act
+        _testService.TestLogSuccess(operationName, resourceName);
+
+        // Assert
+        VerifyLoggerWasCalled(LogLevel.Information, Times.Once());
+    }
+
+    [Fact]
+    public void LogSuccess_WithResourceId_ShouldIncludeIdInMessage()
+    {
+        // Arrange
+        var operationName = "Update";
+        var resourceName = "Plan";
+        var resourceId = "123";
+
+        // Act
+        _testService.TestLogSuccess(operationName, resourceName, resourceId);
+
+        // Assert
+        VerifyLoggerWasCalled(LogLevel.Information, Times.Once());
+    }
+
+    [Fact]
+    public void LogSuccess_WithAdditionalInfo_ShouldIncludeInfoInMessage()
+    {
+        // Arrange
+        var operationName = "Delete";
+        var resourceName = "Plan";
+        var resourceId = "123";
+        var additionalInfo = "Test Plan";
+
+        // Act
+        _testService.TestLogSuccess(operationName, resourceName, resourceId, additionalInfo);
+
+        // Assert
+        VerifyLoggerWasCalled(LogLevel.Information, Times.Once());
+    }
+
+    #endregion
+
+    #region CreateResourceAsync Tests
+
+    [Fact]
+    public async Task CreateResourceAsync_WithValidRequest_ShouldReturnCreatedResource()
+    {
+        // Arrange
+        var request = new TestCreateRequest { Name = "Test Plan" };
+        var dto = new TestDto { Id = "123", Name = "Test Plan" };
+        var domain = new TestDomain { Id = "123", Name = "Test Plan" };
+        
+        var response = new JsonApiSingleResponse<TestDto> { Data = dto };
+        _mockApiConnection.SetupPostResponse("/plans", response);
+
+        // Act
+        var result = await _testService.TestCreateResourceAsync<TestCreateRequest, TestDto, TestDomain>(
+            "/plans",
+            request,
+            req => new { data = new { attributes = new { name = req.Name } } },
+            d => new TestDomain { Id = d.Id, Name = d.Name },
+            "CreatePlan",
+            "Plan");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be("123");
+        result.Name.Should().Be("Test Plan");
+        VerifyLoggerWasCalled(LogLevel.Information, Times.Exactly(2)); // Success + Operation completion logs
+    }
+
+    [Fact]
+    public async Task CreateResourceAsync_WithNullRequest_ShouldThrowArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var act = async () => await _testService.TestCreateResourceAsync<TestCreateRequest, TestDto, TestDomain>(
+            "/plans",
+            null!,
+            req => new { },
+            d => new TestDomain(),
+            "CreatePlan",
+            "Plan");
+
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("request");
+    }
+
+    [Fact]
+    public async Task CreateResourceAsync_WithNullResponse_ShouldThrowPlanningCenterApiGeneralException()
+    {
+        // Arrange
+        var request = new TestCreateRequest { Name = "Test Plan" };
+        _mockApiConnection.SetupPostResponse<JsonApiSingleResponse<TestDto>>("/plans", null);
+
+        // Act & Assert
+        var act = async () => await _testService.TestCreateResourceAsync<TestCreateRequest, TestDto, TestDomain>(
+            "/plans",
+            request,
+            req => new { },
+            d => new TestDomain(),
+            "CreatePlan",
+            "Plan");
+
+        await act.Should().ThrowAsync<Exception>();
+    }
+
+    #endregion
+
+    #region UpdateResourceAsync Tests
+
+    [Fact]
+    public async Task UpdateResourceAsync_WithValidRequest_ShouldReturnUpdatedResource()
+    {
+        // Arrange
+        var resourceId = "123";
+        var request = new TestUpdateRequest { Name = "Updated Plan" };
+        var dto = new TestDto { Id = "123", Name = "Updated Plan" };
+        var domain = new TestDomain { Id = "123", Name = "Updated Plan" };
+        
+        var response = new JsonApiSingleResponse<TestDto> { Data = dto };
+        _mockApiConnection.SetupPatchResponse($"/plans/{resourceId}", response);
+
+        // Act
+        var result = await _testService.TestUpdateResourceAsync<TestUpdateRequest, TestDto, TestDomain>(
+            "/plans",
+            resourceId,
+            request,
+            (id, req) => new { data = new { id, attributes = new { name = req.Name } } },
+            d => new TestDomain { Id = d.Id, Name = d.Name },
+            "UpdatePlan",
+            "Plan");
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be("123");
+        result.Name.Should().Be("Updated Plan");
+        VerifyLoggerWasCalled(LogLevel.Information, Times.Exactly(2)); // Success + Operation completion logs
+    }
+
+    [Fact]
+    public async Task UpdateResourceAsync_WithNullResourceId_ShouldThrowArgumentException()
+    {
+        // Arrange & Act & Assert
+        var act = async () => await _testService.TestUpdateResourceAsync<TestUpdateRequest, TestDto, TestDomain>(
+            "/plans",
+            null!,
+            new TestUpdateRequest(),
+            (id, req) => new { },
+            d => new TestDomain(),
+            "UpdatePlan",
+            "Plan");
+
+        await act.Should().ThrowAsync<ArgumentException>().WithParameterName("resourceId");
+    }
+
+    [Fact]
+    public async Task UpdateResourceAsync_WithNullRequest_ShouldThrowArgumentNullException()
+    {
+        // Arrange & Act & Assert
+        var act = async () => await _testService.TestUpdateResourceAsync<TestUpdateRequest, TestDto, TestDomain>(
+            "/plans",
+            "123",
+            null!,
+            (id, req) => new { },
+            d => new TestDomain(),
+            "UpdatePlan",
+            "Plan");
+
+        await act.Should().ThrowAsync<ArgumentNullException>().WithParameterName("request");
+    }
+
+    #endregion
+
+    #region DeleteResourceAsync Tests
+
+    [Fact]
+    public async Task DeleteResourceAsync_WithValidResourceId_ShouldCompleteSuccessfully()
+    {
+        // Arrange
+        var resourceId = "123";
+        _mockApiConnection.SetupDeleteResponse($"/plans/{resourceId}");
+
+        // Act
+        await _testService.TestDeleteResourceAsync("/plans", resourceId, "DeletePlan", "Plan");
+
+        // Assert
+        VerifyLoggerWasCalled(LogLevel.Information, Times.Exactly(2)); // Success + Operation completion logs
+    }
+
+    [Fact]
+    public async Task DeleteResourceAsync_WithNullResourceId_ShouldThrowArgumentException()
+    {
+        // Arrange & Act & Assert
+        var act = async () => await _testService.TestDeleteResourceAsync("/plans", null!, "DeletePlan", "Plan");
+
+        await act.Should().ThrowAsync<ArgumentException>().WithParameterName("resourceId");
+    }
+
+    [Fact]
+    public async Task DeleteResourceAsync_WithEmptyResourceId_ShouldThrowArgumentException()
+    {
+        // Arrange & Act & Assert
+        var act = async () => await _testService.TestDeleteResourceAsync("/plans", "", "DeletePlan", "Plan");
+
+        await act.Should().ThrowAsync<ArgumentException>().WithParameterName("resourceId");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private void VerifyLoggerWasCalled(LogLevel logLevel, Times times)
@@ -329,6 +545,78 @@ public class ServiceBaseTests
         {
             ValidateNotNull(value, paramName);
         }
+
+        public void TestLogSuccess(string operationName, string resourceName, string? resourceId = null, string? additionalInfo = null)
+        {
+            LogSuccess(operationName, resourceName, resourceId, additionalInfo);
+        }
+
+        public async Task<TDomain> TestCreateResourceAsync<TCreateRequest, TDto, TDomain>(
+            string endpoint,
+            TCreateRequest request,
+            Func<TCreateRequest, object> requestMapper,
+            Func<TDto, TDomain> responseMapper,
+            string operationName,
+            string resourceName,
+            CancellationToken cancellationToken = default)
+            where TCreateRequest : class
+            where TDto : class
+            where TDomain : class
+        {
+            return await CreateResourceAsync(endpoint, request, requestMapper, responseMapper, operationName, resourceName, cancellationToken);
+        }
+
+        public async Task<TDomain> TestUpdateResourceAsync<TUpdateRequest, TDto, TDomain>(
+            string endpoint,
+            string resourceId,
+            TUpdateRequest request,
+            Func<string, TUpdateRequest, object> requestMapper,
+            Func<TDto, TDomain> responseMapper,
+            string operationName,
+            string resourceName,
+            CancellationToken cancellationToken = default)
+            where TUpdateRequest : class
+            where TDto : class
+            where TDomain : class
+        {
+            return await UpdateResourceAsync(endpoint, resourceId, request, requestMapper, responseMapper, operationName, resourceName, cancellationToken);
+        }
+
+        public async Task TestDeleteResourceAsync(
+            string endpoint,
+            string resourceId,
+            string operationName,
+            string resourceName,
+            CancellationToken cancellationToken = default)
+        {
+            await DeleteResourceAsync(endpoint, resourceId, operationName, resourceName, cancellationToken);
+        }
+    }
+
+    #endregion
+
+    #region Test Models
+
+    public class TestCreateRequest
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class TestUpdateRequest
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class TestDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class TestDomain
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
     }
 
     #endregion

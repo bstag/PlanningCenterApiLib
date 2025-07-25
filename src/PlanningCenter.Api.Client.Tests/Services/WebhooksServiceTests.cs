@@ -330,7 +330,7 @@ public class WebhooksServiceTests
     {
         // Arrange
         var eventDto = _builder.CreateWebhookEventDto(e => e.Id = "event123");
-        var response = new JsonApiSingleResponse<dynamic> { Data = eventDto };
+        var response = new JsonApiSingleResponse<WebhookEventDto> { Data = eventDto };
         _mockApiConnection.SetupGetResponse("/webhooks/v2/events/event123", response);
 
         // Act
@@ -347,7 +347,7 @@ public class WebhooksServiceTests
     {
         // Arrange
         var eventDto = _builder.CreateWebhookEventDto(e => e.Id = "event123");
-        var response = new JsonApiSingleResponse<dynamic> { Data = eventDto };
+        var response = new JsonApiSingleResponse<WebhookEventDto> { Data = eventDto };
         _mockApiConnection.SetupMutationResponse("POST", "/webhooks/v2/events/event123/redeliver", response);
 
         // Act

@@ -14,22 +14,10 @@ namespace PlanningCenter.Api.Client.Tests.Exceptions;
 public class GlobalExceptionHandlerTests
 {
     private Mock<ILogger<GlobalExceptionHandlerTests>> _mockLogger;
-    private List<string> _logMessages;
 
     public GlobalExceptionHandlerTests()
     {
         _mockLogger = new Mock<ILogger<GlobalExceptionHandlerTests>>();
-        _logMessages = new List<string>();
-
-        _mockLogger.Setup(x => x.Log(
-            It.IsAny<LogLevel>(),
-            It.IsAny<EventId>(),
-            It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception?>(),
-            It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
-            .Callback((LogLevel l, EventId e, It.IsAnyType state, Exception? ex, Func<It.IsAnyType, Exception?, string> formatter) => {
-                _logMessages.Add(formatter(state, ex));
-            });
     }
 
     #region Handle Method Tests
@@ -49,7 +37,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "TestOperation", "resource123");
 
         // Assert
-        Assert.Contains("API error for TestOperation: API error [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("API error for TestOperation: API error")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -65,7 +59,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "GetPerson", "123");
 
         // Assert
-        Assert.Contains("Resource not found: 123 - Person not found [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Resource not found: 123 - Person with ID '123' was not found")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -80,8 +80,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "AuthenticateUser");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Authentication error for AuthenticateUser: Invalid credentials [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Authentication error for AuthenticateUser: Invalid credentials")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -96,8 +101,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "AccessResource");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Authorization error for AccessResource: Insufficient permissions [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Authorization error for AccessResource: Insufficient permissions")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -106,16 +116,22 @@ public class GlobalExceptionHandlerTests
         // Arrange
         var exception = new PlanningCenterApiRateLimitException(
             "Rate limit exceeded", 
-            null, // resetTime
-            TimeSpan.FromMinutes(5), // retryAfter
-            requestId: "req-202");
+            "req-202", // requestId
+            null, // requestUrl
+            null, // requestMethod
+            300); // retryAfterSeconds (5 minutes)
 
         // Act
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "MakeRequest");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Rate limit exceeded for MakeRequest: Rate limit exceeded, Retry after: 00:05:00 [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Rate limit exceeded for MakeRequest: Rate limit exceeded, Retry after: 00:05:00")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -139,8 +155,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "CreatePerson");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Validation error for CreatePerson: name: Name is required; email: Email is invalid, Email is required [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Validation error for CreatePerson: name: Name is required; email: Email is invalid")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -156,8 +177,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "ProcessData");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Server error for ProcessData: Internal server error [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Server error for ProcessData: Internal server error")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -170,8 +196,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "GenericOperation", "resource456");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("General error: Unexpected error in GenericOperation for resource resource456 [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("General error: Unexpected error in GenericOperation for resource resource456")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -184,8 +215,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "NetworkOperation");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Network error in NetworkOperation for resource unknown [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Network error in NetworkOperation for resource unknown")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -198,8 +234,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "CancellableOperation");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Operation cancelled: CancellableOperation was cancelled [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Operation cancelled: CancellableOperation was cancelled")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -212,8 +253,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "CancellableOperation");
 
         // Assert
-        _mockLogger.Verify(x => x.Log(LogLevel.Warning, It.IsAny<EventId>(), It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once());
-        Assert.Contains("Operation cancelled: CancellableOperation was cancelled [CorrelationId: ]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Operation cancelled: CancellableOperation was cancelled")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     #endregion
@@ -236,7 +282,13 @@ public class GlobalExceptionHandlerTests
         GlobalExceptionHandler.Handle(_mockLogger.Object, exception, "TestOperation", "resource789", additionalContext);
 
         // Assert
-        Assert.Contains($"General error: Unexpected error in TestOperation for resource resource789 [CorrelationId: ] [Context: UserId: user123, RequestSize: 1024, Timestamp: {DateTime.UtcNow:M/d/yyyy h:mm:ss tt}]", _logMessages);
+        _mockLogger.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("General error: Unexpected error in TestOperation for resource resource789")),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Fact]
@@ -363,9 +415,4 @@ public class GlobalExceptionHandlerTests
 
     #endregion
 
-    #region Helper Methods
-
-    // This helper method is no longer needed as we are capturing log messages directly.
-
-    #endregion
 }

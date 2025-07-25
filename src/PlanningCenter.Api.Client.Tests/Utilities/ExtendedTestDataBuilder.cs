@@ -276,7 +276,7 @@ public class ExtendedTestDataBuilder
                 AmountCents = _fixture.Create<int>() % 100000 + 1000, // $10 to $1000
                 AmountCurrency = "USD",
                 PaymentMethod = "Credit Card",
-                PaymentLastFour = "1234",
+                PaymentLast4 = "1234", // Updated property name
                 PaymentBrand = "Visa",
                 FeeCents = 30,
                 ReceivedAt = DateTime.UtcNow.AddDays(-1),
@@ -405,7 +405,7 @@ public class ExtendedTestDataBuilder
             {
                 Name = "Primary Card",
                 PaymentMethodType = "credit_card",
-                PaymentLastFour = "1234",
+                PaymentLast4 = "1234", // Updated property name
                 PaymentBrand = "Visa",
                 ExpirationMonth = 12,
                 ExpirationYear = DateTime.UtcNow.Year + 2,

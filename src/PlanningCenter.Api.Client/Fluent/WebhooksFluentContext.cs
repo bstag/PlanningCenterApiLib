@@ -218,6 +218,22 @@ public class WebhooksFluentContext : IWebhooksFluentContext
         return await contextWithPredicate.AnyAsync(cancellationToken);
     }
 
+    public async Task<WebhookSubscription> SingleAsync(Expression<Func<WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleAsync(cancellationToken);
+    }
+
+    public async Task<WebhookSubscription?> SingleOrDefaultAsync(Expression<Func<WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleOrDefaultAsync(cancellationToken);
+    }
+
     #endregion
 
     #region Subscription Status Filters

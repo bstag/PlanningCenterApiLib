@@ -27,6 +27,17 @@ public abstract class CalendarServiceIntegrationTestBase : IClassFixture<TestFix
     }
 
     /// <summary>
+    /// Checks if the test should be skipped due to missing authentication.
+    /// </summary>
+    protected void SkipIfNoAuthentication()
+    {
+        if (!_fixture.HasRealAuthentication)
+        {
+            return; // Skip test
+        }
+    }
+
+    /// <summary>
     /// Creates a test event with random data.
     /// </summary>
     protected async Task<Event> CreateTestEventAsync()

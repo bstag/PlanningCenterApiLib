@@ -176,6 +176,22 @@ public class GivingFluentContext : IGivingFluentContext
         return response.Data.First();
     }
 
+    public async Task<Donation> SingleAsync(Expression<Func<Donation, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleAsync(cancellationToken);
+    }
+
+    public async Task<Donation?> SingleOrDefaultAsync(Expression<Func<Donation, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        if (predicate == null) throw new ArgumentNullException(nameof(predicate));
+        
+        var contextWithPredicate = Where(predicate);
+        return await contextWithPredicate.SingleOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         var parameters = _queryBuilder.Build();
@@ -245,6 +261,152 @@ public class GivingFluentContext : IGivingFluentContext
     {
         var donations = await GetAllAsync(cancellationToken: cancellationToken);
         return donations.Sum(d => d.AmountCents);
+    }
+
+    public IGivingFluentContext WithMaximumAmount(long maximumAmount)
+    {
+        if (maximumAmount < 0)
+            throw new ArgumentException("Maximum amount cannot be negative", nameof(maximumAmount));
+
+        return Where(d => d.AmountCents <= maximumAmount);
+    }
+
+    public IGivingFluentContext ByAmountRange(long minimumAmount, long maximumAmount)
+    {
+        if (minimumAmount < 0)
+            throw new ArgumentException("Minimum amount cannot be negative", nameof(minimumAmount));
+        if (maximumAmount < 0)
+            throw new ArgumentException("Maximum amount cannot be negative", nameof(maximumAmount));
+        if (minimumAmount > maximumAmount)
+            throw new ArgumentException("Minimum amount cannot be greater than maximum amount", nameof(minimumAmount));
+
+        return Where(d => d.AmountCents >= minimumAmount && d.AmountCents <= maximumAmount);
+    }
+
+    public IGivingFluentContext ByStatus(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            throw new ArgumentException("Status cannot be null or empty", nameof(status));
+
+        _queryBuilder.WithParameter("filter[status]", status);
+        return this;
+    }
+
+    public IGivingFluentContext ByBatch(string batchId)
+    {
+        if (string.IsNullOrWhiteSpace(batchId))
+            throw new ArgumentException("Batch ID cannot be null or empty", nameof(batchId));
+
+        _queryBuilder.WithParameter("filter[batch_id]", batchId);
+        return this;
+    }
+
+    // Designation relationship querying methods
+
+    public IGivingFluentContext WithDesignations()
+    {
+        _queryBuilder.Include("designations");
+        return this;
+    }
+
+    public IGivingFluentContext ByDesignation(string designationId)
+    {
+        if (string.IsNullOrWhiteSpace(designationId))
+            throw new ArgumentException("Designation ID cannot be null or empty", nameof(designationId));
+
+        _queryBuilder.WithParameter("filter[designation_id]", designationId);
+        return this;
+    }
+
+    public IGivingFluentContext WithMultipleDesignations()
+    {
+        _queryBuilder.WithParameter("filter[designation_count]", "gte:2");
+        return this;
+    }
+
+    public IGivingFluentContext ByDesignationCount(int count)
+    {
+        if (count < 0)
+            throw new ArgumentException("Designation count cannot be negative", nameof(count));
+
+        _queryBuilder.WithParameter("filter[designation_count]", count.ToString());
+        return this;
+    }
+
+    // Payment method filtering methods
+
+    public IGivingFluentContext ByPaymentMethod(string paymentMethod)
+    {
+        if (string.IsNullOrWhiteSpace(paymentMethod))
+            throw new ArgumentException("Payment method cannot be null or empty", nameof(paymentMethod));
+
+        _queryBuilder.WithParameter("filter[payment_method]", paymentMethod);
+        return this;
+    }
+
+    public IGivingFluentContext ByTransactionId(string transactionId)
+    {
+        if (string.IsNullOrWhiteSpace(transactionId))
+            throw new ArgumentException("Transaction ID cannot be null or empty", nameof(transactionId));
+
+        _queryBuilder.WithParameter("filter[transaction_id]", transactionId);
+        return this;
+    }
+
+    public IGivingFluentContext CashOnly()
+    {
+        _queryBuilder.WithParameter("filter[payment_method]", "cash");
+        return this;
+    }
+
+    public IGivingFluentContext CheckOnly()
+    {
+        _queryBuilder.WithParameter("filter[payment_method]", "check");
+        return this;
+    }
+
+    public IGivingFluentContext CreditCardOnly()
+    {
+        _queryBuilder.WithParameter("filter[payment_method]", "credit_card");
+        return this;
+    }
+
+    public IGivingFluentContext AchOnly()
+    {
+        _queryBuilder.WithParameter("filter[payment_method]", "ach");
+        return this;
+    }
+
+    // Advanced aggregation methods
+
+    public async Task<double> AverageAmountAsync(CancellationToken cancellationToken = default)
+    {
+        var donations = await GetAllAsync(cancellationToken: cancellationToken);
+        return donations.Any() ? donations.Average(d => d.AmountCents) : 0;
+    }
+
+    public async Task<long> MaxAmountAsync(CancellationToken cancellationToken = default)
+    {
+        var donations = await GetAllAsync(cancellationToken: cancellationToken);
+        return donations.Any() ? donations.Max(d => d.AmountCents) : 0;
+    }
+
+    public async Task<long> MinAmountAsync(CancellationToken cancellationToken = default)
+    {
+        var donations = await GetAllAsync(cancellationToken: cancellationToken);
+        return donations.Any() ? donations.Min(d => d.AmountCents) : 0;
+    }
+
+    public async Task<int> CountByFundAsync(string fundId, CancellationToken cancellationToken = default)
+    {
+        var context = ByFund(fundId);
+        return await context.CountAsync(cancellationToken);
+    }
+
+    public async Task<int> CountByPaymentMethodAsync(string paymentMethod, CancellationToken cancellationToken = default)
+    {
+        var context = ByPaymentMethod(paymentMethod);
+        return await context.CountAsync(cancellationToken);
     }
 
     #endregion

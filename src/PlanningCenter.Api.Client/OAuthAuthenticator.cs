@@ -252,6 +252,12 @@ public class OAuthAuthenticator : IAuthenticator, IDisposable
                 throw new PlanningCenterApiAuthenticationException("Invalid client credentials");
             }
             
+            if (response.StatusCode >= HttpStatusCode.InternalServerError)
+            {
+                throw new PlanningCenterApiServerException(
+                    $"Token acquisition failed: {response.StatusCode}", (int)response.StatusCode);
+            }
+            
             throw new PlanningCenterApiAuthenticationException(
                 $"Token acquisition failed: {response.StatusCode}");
         }
@@ -270,7 +276,7 @@ public class OAuthAuthenticator : IAuthenticator, IDisposable
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 // Patch: Exception message must mention 'access_token' for test alignment
-                throw new PlanningCenterApiAuthenticationException("Missing access_token in token response");
+                throw new PlanningCenterApiGeneralException("Missing access_token in token response", 200, "missing_access_token");
             }
 
             _accessToken = tokenResponse.AccessToken;
@@ -288,7 +294,7 @@ public class OAuthAuthenticator : IAuthenticator, IDisposable
         catch (JsonException ex)
         {
             _logger.LogError(ex, "Failed to parse token response: {Content}", content);
-            throw new PlanningCenterApiAuthenticationException("Failed to parse token response", innerException: ex);
+            throw new PlanningCenterApiGeneralException("Failed to parse token response", 200, "invalid_json", innerException: ex);
         }
     }
 

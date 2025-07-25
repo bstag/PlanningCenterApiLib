@@ -14,12 +14,13 @@ namespace PlanningCenter.Api.Client.Models.JsonApi.People
     /// </summary>
     public class AddressCreateAttributesDto
     {
-        public string Street { get; set; } = string.Empty;
-        public string? Street2 { get; set; }
+        public string StreetLine1 { get; set; } = string.Empty; // Updated property name
+        public string? StreetLine2 { get; set; } // Updated property name
         public string City { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
         public string Zip { get; set; } = string.Empty;
-        public string Country { get; set; } = "US";
+        public string CountryCode { get; set; } = "US"; // Updated property name
+        public string? CountryName { get; set; } // New field
         public string Location { get; set; } = "Home";
         public bool Primary { get; set; }
     }

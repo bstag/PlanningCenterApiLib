@@ -107,10 +107,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var result = await _apiConnection.GetAsync<TestDto>("/test/endpoint");
 
         // Assert
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal("123", result.Id);
+        Assert.Equal("Test", result.Name);
         VerifyHttpRequest(HttpMethod.Get, "/test/endpoint");
     }
 
@@ -122,7 +124,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var act = async () => await _apiConnection.GetAsync<TestDto>("/test/endpoint");
         await act.Should().ThrowAsync<PlanningCenterApiNotFoundException>();
     }
 
@@ -134,7 +136,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var act = async () => await _apiConnection.GetAsync<TestDto>("/test/endpoint");
         await act.Should().ThrowAsync<PlanningCenterApiAuthenticationException>();
     }
 
@@ -146,7 +148,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var act = async () => await _apiConnection.GetAsync<TestDto>("/test/endpoint");
         await act.Should().ThrowAsync<PlanningCenterApiAuthorizationException>();
     }
 
@@ -167,7 +169,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var act = async () => await _apiConnection.GetAsync<TestDto>("/test/endpoint");
         await act.Should().ThrowAsync<PlanningCenterApiRateLimitException>();
     }
 
@@ -179,7 +181,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var act = async () => await _apiConnection.GetAsync<TestDto>("/test/endpoint");
         await act.Should().ThrowAsync<PlanningCenterApiServerException>();
     }
 
@@ -191,7 +193,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var act = async () => await _apiConnection.GetAsync<TestDto>("/test/endpoint");
         await act.Should().ThrowAsync<PlanningCenterApiGeneralException>();
     }
 
@@ -211,10 +213,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.PostAsync<dynamic>("/test/endpoint", requestData);
+        var result = await _apiConnection.PostAsync<TestDto>("/test/endpoint", requestData);
 
         // Assert
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal("456", result.Id);
+        Assert.Equal("Test", result.Name);
         VerifyHttpRequest(HttpMethod.Post, "/test/endpoint");
     }
 
@@ -227,7 +231,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.PostAsync<dynamic>("/test/endpoint", requestData);
+        var act = async () => await _apiConnection.PostAsync<TestDto>("/test/endpoint", requestData);
         await act.Should().ThrowAsync<PlanningCenterApiValidationException>();
     }
 
@@ -247,10 +251,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.PutAsync<dynamic>("/test/endpoint/456", requestData);
+        var result = await _apiConnection.PutAsync<TestDto>("/test/endpoint/456", requestData);
 
         // Assert
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal("456", result.Id);
+        Assert.Equal("Updated Test", result.Name);
         VerifyHttpRequest(HttpMethod.Put, "/test/endpoint/456");
     }
 
@@ -270,10 +276,12 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.PatchAsync<dynamic>("/test/endpoint/456", requestData);
+        var result = await _apiConnection.PatchAsync<TestDto>("/test/endpoint/456", requestData);
 
         // Assert
-        result.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal("456", result.Id);
+        Assert.Equal("Patched Test", result.Name);
         VerifyHttpRequest(HttpMethod.Patch, "/test/endpoint/456");
     }
 
@@ -318,13 +326,13 @@ public class ApiConnectionTests : IDisposable
         var parameters = new QueryParameters { PerPage = 25 };
 
         // Act
-        var result = await _apiConnection.GetPagedAsync<dynamic>("/test/endpoint", parameters);
+        var result = await _apiConnection.GetPagedAsync<TestDto>("/test/endpoint", parameters);
 
         // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
-        result.Meta.Should().NotBeNull();
-        result.Links.Should().NotBeNull();
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Data.Count());
+        Assert.NotNull(result.Meta);
+        Assert.NotNull(result.Links);
     }
 
     [Fact]
@@ -350,7 +358,7 @@ public class ApiConnectionTests : IDisposable
         };
 
         // Act
-        await _apiConnection.GetPagedAsync<dynamic>("/test/endpoint", parameters);
+        await _apiConnection.GetPagedAsync<TestDto>("/test/endpoint", parameters);
 
         // Assert
         _mockHttpMessageHandler.Protected()
@@ -374,7 +382,7 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Basic dGVzdDp0ZXN0"); // Basic auth format
 
         // Act
-        await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        await _apiConnection.GetAsync<TestDto>("/test/endpoint");
 
         // Assert
         _mockHttpMessageHandler.Protected()
@@ -414,6 +422,9 @@ public class ApiConnectionTests : IDisposable
     {
         // Arrange
         var callCount = 0;
+        var expectedData = new { Id = "123", Name = "Test" };
+        var jsonResponse = JsonSerializer.Serialize(expectedData);
+
         _mockHttpMessageHandler.Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
             .Returns(() =>
@@ -430,18 +441,20 @@ public class ApiConnectionTests : IDisposable
                 // Second call succeeds
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
                 {
-                    Content = new StringContent("{}")
+                    Content = new StringContent(jsonResponse)
                 });
             });
 
         SetupAuthenticator("Bearer token123");
 
         // Act
-        var result = await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var result = await _apiConnection.GetAsync<TestDto>("/test/endpoint");
 
         // Assert
-        result.Should().NotBeNull();
-        callCount.Should().Be(2); // Should have retried once
+        Assert.NotNull(result);
+        Assert.Equal("123", result.Id);
+        Assert.Equal("Test", result.Name);
+        Assert.Equal(2, callCount); // Should have retried once
     }
 
     [Fact]
@@ -463,9 +476,9 @@ public class ApiConnectionTests : IDisposable
         SetupAuthenticator("Bearer token123");
 
         // Act & Assert
-        var act = async () => await _apiConnection.GetAsync<dynamic>("/test/endpoint");
+        var act = async () => await _apiConnection.GetAsync<TestDto>("/test/endpoint");
         await act.Should().ThrowAsync<PlanningCenterApiNotFoundException>();
-        callCount.Should().Be(1); // Should not have retried
+        Assert.Equal(1, callCount); // Should not have retried
     }
 
     #endregion
@@ -511,4 +524,10 @@ public class ApiConnectionTests : IDisposable
     }
 
     #endregion
+
+    private class TestDto
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+    }
 }

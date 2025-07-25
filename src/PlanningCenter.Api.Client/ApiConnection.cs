@@ -401,7 +401,7 @@ public class ApiConnection : IApiConnection, IDisposable
         CancellationToken cancellationToken)
     {
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        string requestId = null;
+        string? requestId = null;
         if (response.Headers.TryGetValues("X-Request-Id", out var requestIdValues))
         {
             requestId = requestIdValues.FirstOrDefault();
@@ -410,7 +410,7 @@ public class ApiConnection : IApiConnection, IDisposable
         _logger.LogError("HTTP {StatusCode} error for {Method} {Endpoint}: {Content}", 
             response.StatusCode, method, endpoint, content);
 
-        string retryAfter = null;
+        string? retryAfter = null;
         if (response.Headers.TryGetValues("Retry-After", out var retryAfterValues))
         {
             retryAfter = retryAfterValues.FirstOrDefault();
@@ -448,8 +448,13 @@ public class ApiConnection : IApiConnection, IDisposable
                     content);
 
             case HttpStatusCode.TooManyRequests:
-                var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value.FirstOrDefault() ?? "");
-                throw PlanningCenterApiRateLimitException.FromHeaders(headers, requestId, endpoint, method);
+                var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
+                throw PlanningCenterApiRateLimitException.FromHeaders(
+                    "Rate limit exceeded",
+                    headers, 
+                    requestId, 
+                    endpoint, 
+                    method);
 
             case HttpStatusCode.BadRequest:
             case HttpStatusCode.UnprocessableEntity:

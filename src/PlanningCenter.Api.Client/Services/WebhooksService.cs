@@ -34,37 +34,24 @@ public class WebhooksService : ServiceBase, IWebhooksService
     /// </summary>
     public async Task<WebhookSubscription?> GetSubscriptionAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Subscription ID cannot be null or empty", nameof(id));
+        ValidateNotNullOrEmpty(id, nameof(id));
 
-        Logger.LogDebug("Getting webhook subscription with ID: {SubscriptionId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
-                $"{BaseEndpoint}/subscriptions/{id}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteGetAsync(
+            async () =>
             {
-                Logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
-                return null;
-            }
+                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WebhookSubscriptionDto>>(
+                    $"{BaseEndpoint}/subscriptions/{id}", cancellationToken);
 
-            var subscription = WebhooksMapper.MapToDomain(response.Data);
+                if (response?.Data == null)
+                {
+                    throw new PlanningCenterApiNotFoundException($"Webhook subscription with ID {id} not found");
+                }
 
-            Logger.LogInformation("Successfully retrieved webhook subscription: {SubscriptionId}", id);
-            return subscription;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogWarning("Webhook subscription not found: {SubscriptionId}", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error retrieving webhook subscription: {SubscriptionId}", id);
-            throw;
-        }
+                return WebhooksMapper.MapToDomain(response.Data);
+            },
+            "GetSubscription",
+            id,
+            cancellationToken);
     }
 
     /// <summary>
@@ -72,43 +59,23 @@ public class WebhooksService : ServiceBase, IWebhooksService
     /// </summary>
     public async Task<IPagedResponse<WebhookSubscription>> ListSubscriptionsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("Listing webhook subscriptions with parameters: {@Parameters}", parameters);
-
-        try
-        {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            
-            var response = await ApiConnection.GetAsync<PagedResponse<WebhookSubscriptionDto>>(
-                $"{BaseEndpoint}/subscriptions{queryString}", cancellationToken);
-
-            if (response?.Data == null)
+        return await ExecuteAsync(
+            async () =>
             {
-                Logger.LogWarning("No webhook subscriptions returned from API");
+                var response = await ApiConnection.GetPagedAsync<WebhookSubscriptionDto>(
+                    $"{BaseEndpoint}/subscriptions", parameters, cancellationToken);
+
+                var subscriptions = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
+
                 return new PagedResponse<WebhookSubscription>
                 {
-                    Data = new List<WebhookSubscription>(),
-                    Meta = new PagedResponseMeta { TotalCount = 0 },
-                    Links = new PagedResponseLinks()
+                    Data = subscriptions,
+                    Meta = response.Meta,
+                    Links = response.Links
                 };
-            }
-
-            var subscriptions = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
-            
-            var pagedResponse = new PagedResponse<WebhookSubscription>
-            {
-                Data = subscriptions,
-                Meta = response.Meta,
-                Links = response.Links
-            };
-
-            Logger.LogInformation("Successfully retrieved {Count} webhook subscriptions", subscriptions.Count);
-            return pagedResponse;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error listing webhook subscriptions");
-            throw;
-        }
+            },
+            "ListSubscriptions",
+            cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -602,8 +569,13 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
-                $"{BaseEndpoint}/available_events{queryString}", cancellationToken);
+            var endpoint = $"{BaseEndpoint}/available_events";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
+            var response = await ApiConnection.GetAsync<PagedResponse<AvailableEventDto>>(
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -616,7 +588,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
                 };
             }
 
-            var availableEvents = response.Data.Select<dynamic, AvailableEvent>(dto => WebhooksMapper.MapToDomain((AvailableEventDto)dto)).ToList();
+            var availableEvents = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<AvailableEvent>
             {
@@ -647,7 +619,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
             var queryString = parameters?.ToQueryString() ?? string.Empty;
             var moduleFilter = string.IsNullOrEmpty(queryString) ? $"?filter[module]={module}" : $"{queryString}&filter[module]={module}";
             
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<PagedResponse<AvailableEventDto>>(
                 $"{BaseEndpoint}/available_events{moduleFilter}", cancellationToken);
 
             if (response?.Data == null)
@@ -661,7 +633,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
                 };
             }
 
-            var availableEvents = response.Data.Select<dynamic, AvailableEvent>(dto => WebhooksMapper.MapToDomain((AvailableEventDto)dto)).ToList();
+            var availableEvents = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<AvailableEvent>
             {
@@ -689,7 +661,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
 
         try
         {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<WebhookEventDto>>(
                 $"{BaseEndpoint}/events/{id}", cancellationToken);
 
             if (response?.Data == null)
@@ -724,8 +696,13 @@ public class WebhooksService : ServiceBase, IWebhooksService
         try
         {
             var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var response = await ApiConnection.GetAsync<PagedResponse<dynamic>>(
-                $"{BaseEndpoint}/subscriptions/{subscriptionId}/events{queryString}", cancellationToken);
+            var endpoint = $"{BaseEndpoint}/subscriptions/{subscriptionId}/events";
+            if (!string.IsNullOrEmpty(queryString))
+            {
+                endpoint += $"?{queryString}";
+            }
+            var response = await ApiConnection.GetAsync<PagedResponse<WebhookEventDto>>(
+                endpoint, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -738,7 +715,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
                 };
             }
 
-            var events = response.Data.Select<dynamic, Event>(dto => WebhooksMapper.MapToDomain((WebhookEventDto)dto)).ToList();
+            var events = response.Data.Select(WebhooksMapper.MapToDomain).ToList();
             
             var pagedResponse = new PagedResponse<Event>
             {
@@ -766,7 +743,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
 
         try
         {
-            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<dynamic>>(
+            var response = await ApiConnection.PostAsync<JsonApiSingleResponse<WebhookEventDto>>(
                 $"{BaseEndpoint}/events/{eventId}/redeliver",null!, cancellationToken);
 
             if (response?.Data == null)

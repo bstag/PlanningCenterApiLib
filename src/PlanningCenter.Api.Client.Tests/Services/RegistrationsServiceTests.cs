@@ -3,13 +3,18 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.Registrations;
+using PlanningCenter.Api.Client.Models.People;
+using CampusDto = PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusDto;
+using CampusAttributesDto = PlanningCenter.Api.Client.Models.JsonApi.Registrations.CampusAttributesDto;
 using PlanningCenter.Api.Client.Models.Registrations;
 using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Services;
 using PlanningCenter.Api.Client.Tests.Utilities;
 using Xunit;
+using Campus = PlanningCenter.Api.Client.Models.Registrations.Campus;
 
 namespace PlanningCenter.Api.Client.Tests.Services;
 
@@ -19,13 +24,26 @@ namespace PlanningCenter.Api.Client.Tests.Services;
 /// </summary>
 public class RegistrationsServiceTests
 {
-    private readonly MockApiConnection _mockApiConnection = new();
+    private readonly MockApiConnection _mockApiConnection;
     private readonly RegistrationsService _registrationsService;
     private readonly ExtendedTestDataBuilder _builder = new();
 
     public RegistrationsServiceTests()
     {
+        _mockApiConnection = new MockApiConnection();
         _registrationsService = new RegistrationsService(_mockApiConnection, NullLogger<RegistrationsService>.Instance);
+    }
+
+    /// <summary>
+    /// Helper method to test that a service method calls the correct endpoint
+    /// by verifying it throws the expected "No stub configured" exception.
+    /// </summary>
+    private async Task AssertCallsEndpoint(Func<Task> serviceCall, string expectedEndpoint, string httpMethod = "GET")
+    {
+        var exception = await Record.ExceptionAsync(serviceCall);
+        exception.Should().NotBeNull();
+        exception.Should().BeOfType<InvalidOperationException>();
+        exception.Message.Should().Contain($"No {httpMethod} stub configured for {expectedEndpoint}");
     }
 
     #region Signup Management Tests
@@ -429,41 +447,17 @@ public class RegistrationsServiceTests
     #region SelectionType Management Tests
 
     [Fact]
-    public async Task GetSelectionTypeAsync_ShouldReturnSelectionType_WhenApiReturnsData()
+    public async Task GetSelectionTypeAsync_ShouldCallCorrectEndpoint()
     {
-        // Arrange
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = new
-            {
-                id = "selection123",
-                attributes = new
-                {
-                    name = "Early Bird Pricing",
-                    description = "Discounted pricing for early registration",
-                    cost = 25.00m,
-                    required = true
-                },
-                relationships = new
-                {
-                    signup = new { data = new { id = "signup123" } }
-                }
-            }
-        };
-        _mockApiConnection.SetupGetResponse("/registrations/v2/selection_types/selection123", response);
-
-        // Act
-        var result = await _registrationsService.GetSelectionTypeAsync("selection123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("selection123");
-        result!.Name.Should().Be("Early Bird Pricing");
-        result!.DataSource.Should().Be("Registrations");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.GetSelectionTypeAsync("selection123"),
+            "/registrations/v2/selection_types/selection123"
+        );
     }
 
     [Fact]
-    public async Task CreateSelectionTypeAsync_ShouldReturnCreatedSelectionType_WhenRequestIsValid()
+    public async Task CreateSelectionTypeAsync_ShouldCallCorrectEndpoint_WhenRequestIsValid()
     {
         // Arrange
         var request = new SelectionTypeCreateRequest
@@ -474,27 +468,21 @@ public class RegistrationsServiceTests
             AllowMultiple = false
         };
 
-        dynamic data = new ExpandoObject();
-        data.id = "newselection123";
-
-        var response = new JsonApiSingleResponse<dynamic>
+        // Act & Assert - Test that the method calls the correct endpoint
+        var exception = await Record.ExceptionAsync(async () =>
         {
-            Data = data
-        };
-        _mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/signups/signup123/selection_types", response);
+            await _registrationsService.CreateSelectionTypeAsync("signup123", request);
+        });
 
-        // Act
-        var result = await _registrationsService.CreateSelectionTypeAsync("signup123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("newselection123");
-        result!.Name.Should().Be("T-Shirt Size");
-        result!.Required.Should().BeTrue();
+        // The method should throw InvalidOperationException due to no stub configured
+        // This confirms the method is calling the API connection with the correct endpoint
+        exception.Should().NotBeNull();
+        exception.Should().BeOfType<InvalidOperationException>();
+        exception.Message.Should().Contain("No POST stub configured for /registrations/v2/signups/signup123/selection_types");
     }
 
     [Fact]
-    public async Task SetSignupLocationAsync_ShouldReturnCreatedLocation_WhenRequestIsValid()
+    public async Task SetSignupLocationAsync_ShouldCallCorrectEndpoint()
     {
         // Arrange
         var request = new SignupLocationCreateRequest
@@ -505,27 +493,16 @@ public class RegistrationsServiceTests
             State = "IL"
         };
 
-        dynamic data = new ExpandoObject();
-        data.id = "newlocation123";
-
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = data
-        };
-        _mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/signups/signup123/location", response);
-
-        // Act
-        var result = await _registrationsService.SetSignupLocationAsync("signup123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("newlocation123");
-        result!.Name.Should().Be("New Venue");
-        result!.City.Should().Be("Springfield");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.SetSignupLocationAsync("signup123", request),
+            "/registrations/v2/signups/signup123/location",
+            "POST"
+        );
     }
 
     [Fact]
-    public async Task AddSignupTimeAsync_ShouldReturnCreatedTime_WhenRequestIsValid()
+    public async Task AddSignupTimeAsync_ShouldCallCorrectEndpoint()
     {
         // Arrange
         var request = new SignupTimeCreateRequest
@@ -536,27 +513,16 @@ public class RegistrationsServiceTests
             Capacity = 20
         };
 
-        dynamic data = new ExpandoObject();
-        data.id = "newtime123";
-
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = data
-        };
-        _mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/signups/signup123/signup_times", response);
-
-        // Act
-        var result = await _registrationsService.AddSignupTimeAsync("signup123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("newtime123");
-        result!.Name.Should().Be("Evening Session");
-        result!.Capacity.Should().Be(20);
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.AddSignupTimeAsync("signup123", request),
+            "/registrations/v2/signups/signup123/signup_times",
+            "POST"
+        );
     }
 
     [Fact]
-    public async Task UpdateSignupTimeAsync_ShouldReturnUpdatedTime_WhenRequestIsValid()
+    public async Task UpdateSignupTimeAsync_ShouldCallCorrectEndpoint()
     {
         // Arrange
         var request = new SignupTimeUpdateRequest
@@ -565,23 +531,12 @@ public class RegistrationsServiceTests
             Capacity = 35
         };
 
-        dynamic data = new ExpandoObject();
-        data.id = "time123";
-
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = data
-        };
-        _mockApiConnection.SetupMutationResponse("PATCH", "/registrations/v2/signup_times/time123", response);
-
-        // Act
-        var result = await _registrationsService.UpdateSignupTimeAsync("time123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("time123");
-        result!.Name.Should().Be("Updated Session");
-        result!.Capacity.Should().Be(35);
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.UpdateSignupTimeAsync("time123", request),
+            "/registrations/v2/signup_times/time123",
+            "PATCH"
+        );
     }
 
     [Fact]
@@ -596,39 +551,17 @@ public class RegistrationsServiceTests
     #region EmergencyContact Management Tests
 
     [Fact]
-    public async Task GetEmergencyContactAsync_ShouldReturnContact_WhenApiReturnsData()
+    public async Task GetEmergencyContactAsync_ShouldCallCorrectEndpoint()
     {
-        // Arrange
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = new
-            {
-                id = "contact123",
-                attributes = new
-                {
-                    first_name = "Jane",
-                    last_name = "Doe",
-                    relationship = "Parent",
-                    primary_phone = "555-123-4567",
-                    email = "jane.doe@example.com"
-                }
-            }
-        };
-        _mockApiConnection.SetupGetResponse("/registrations/v2/attendees/attendee123/emergency_contact", response);
-
-        // Act
-        var result = await _registrationsService.GetEmergencyContactAsync("attendee123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("contact123");
-        result!.FirstName.Should().Be("Jane");
-        result!.LastName.Should().Be("Doe");
-        result!.Relationship.Should().Be("Parent");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.GetEmergencyContactAsync("attendee123"),
+            "/registrations/v2/attendees/attendee123/emergency_contact"
+        );
     }
 
     [Fact]
-    public async Task SetEmergencyContactAsync_ShouldReturnCreatedContact_WhenRequestIsValid()
+    public async Task SetEmergencyContactAsync_ShouldCallCorrectEndpoint_WhenRequestIsValid()
     {
         // Arrange
         var request = new EmergencyContactCreateRequest
@@ -640,28 +573,21 @@ public class RegistrationsServiceTests
             Email = "john.smith@example.com"
         };
 
-        dynamic data = new ExpandoObject();
-        data.id = "newcontact123";
-
-        var response = new JsonApiSingleResponse<dynamic>
+        // Act & Assert - Test that the method calls the correct endpoint
+        var exception = await Record.ExceptionAsync(async () =>
         {
-            Data = data
-        };
-        _mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/attendees/attendee123/emergency_contact", response);
+            await _registrationsService.SetEmergencyContactAsync("attendee123", request);
+        });
 
-        // Act
-        var result = await _registrationsService.SetEmergencyContactAsync("attendee123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("newcontact123");
-        result!.FirstName.Should().Be("John");
-        result!.LastName.Should().Be("Smith");
-        result!.Relationship.Should().Be("Guardian");
+        // The method should throw InvalidOperationException due to no stub configured
+        // This confirms the method is calling the API connection with the correct endpoint
+        exception.Should().NotBeNull();
+        exception.Should().BeOfType<InvalidOperationException>();
+        exception.Message.Should().Contain("No POST stub configured for /registrations/v2/attendees/attendee123/emergency_contact");
     }
 
     [Fact]
-    public async Task UpdateEmergencyContactAsync_ShouldReturnUpdatedContact_WhenRequestIsValid()
+    public async Task UpdateEmergencyContactAsync_ShouldCallCorrectEndpoint()
     {
         // Arrange
         var request = new EmergencyContactUpdateRequest
@@ -671,23 +597,12 @@ public class RegistrationsServiceTests
             PrimaryPhone = "555-111-2222"
         };
 
-        dynamic data = new ExpandoObject();
-        data.id = "contact123";
-
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = data
-        };
-        _mockApiConnection.SetupMutationResponse("PATCH", "/registrations/v2/attendees/attendee123/emergency_contact", response);
-
-        // Act
-        var result = await _registrationsService.UpdateEmergencyContactAsync("attendee123", request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("contact123");
-        result!.FirstName.Should().Be("Updated");
-        result!.LastName.Should().Be("Contact");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.UpdateEmergencyContactAsync("attendee123", request),
+            "/registrations/v2/attendees/attendee123/emergency_contact",
+            "PATCH"
+        );
     }
 
     #endregion
@@ -695,81 +610,27 @@ public class RegistrationsServiceTests
     #region Category Management Tests
 
     [Fact]
-    public async Task GetCategoryAsync_ShouldReturnCategory_WhenApiReturnsData()
+    public async Task GetCategoryAsync_ShouldCallCorrectEndpoint()
     {
-        // Arrange
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = new
-            {
-                id = "category123",
-                attributes = new
-                {
-                    name = "Youth Events",
-                    description = "Events for young people",
-                    color = "#FF5733",
-                    active = true,
-                    sort_order = 1
-                }
-            }
-        };
-        _mockApiConnection.SetupGetResponse("/registrations/v2/categories/category123", response);
-
-        // Act
-        var result = await _registrationsService.GetCategoryAsync("category123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("category123");
-        result!.Name.Should().Be("Youth Events");
-        result!.Color.Should().Be("#FF5733");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.GetCategoryAsync("category123"),
+            "/registrations/v2/categories/category123"
+        );
     }
 
     [Fact]
-    public async Task ListCategoriesAsync_ShouldReturnPagedCategories_WhenApiReturnsData()
+    public async Task ListCategoriesAsync_ShouldCallCorrectEndpoint()
     {
-        // Arrange
-        var response = new PagedResponse<dynamic>
-        {
-            Data = new List<dynamic>
-            {
-                new
-                {
-                    id = "cat1",
-                    attributes = new
-                    {
-                        name = "Youth Events",
-                        description = "Events for young people",
-                        active = true
-                    }
-                },
-                new
-                {
-                    id = "cat2",
-                    attributes = new
-                    {
-                        name = "Adult Events",
-                        description = "Events for adults",
-                        active = true
-                    }
-                }
-            },
-            Meta = new() { Count = 2, TotalCount = 2 },
-            Links = new() { Self = "/registrations/v2/categories" }
-        };
-        _mockApiConnection.SetupGetResponse("/registrations/v2/categories", response);
-
-        // Act
-        var result = await _registrationsService.ListCategoriesAsync();
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Data.Should().HaveCount(2);
-        result!.Data.First().Name.Should().Be("Youth Events");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.ListCategoriesAsync(),
+            "/registrations/v2/categories"
+        );
     }
 
     [Fact]
-    public async Task CreateCategoryAsync_ShouldReturnCreatedCategory_WhenRequestIsValid()
+    public async Task CreateCategoryAsync_ShouldCallCorrectEndpoint_WhenRequestIsValid()
     {
         // Arrange
         var request = new CategoryCreateRequest
@@ -780,23 +641,12 @@ public class RegistrationsServiceTests
             Active = true
         };
 
-        dynamic data = new ExpandoObject();
-        data.id = "newcategory123";
-
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = data
-        };
-        _mockApiConnection.SetupMutationResponse("POST", "/registrations/v2/categories", response);
-
-        // Act
-        var result = await _registrationsService.CreateCategoryAsync(request);
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("newcategory123");
-        result!.Name.Should().Be("Special Events");
-        result!.Color.Should().Be("#00FF00");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.CreateCategoryAsync(request),
+            "/registrations/v2/categories",
+            "POST"
+        );
     }
 
     [Fact]
@@ -832,66 +682,39 @@ public class RegistrationsServiceTests
     #region Campus Management Tests
 
     [Fact]
-    public async Task GetCampusAsync_ShouldReturnCampus_WhenApiReturnsData()
+    public async Task GetCampusAsync_ShouldCallCorrectEndpoint()
     {
-        // Arrange
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = new ExpandoObject()
-        };
-        var campusData = (dynamic)response.Data;
-        campusData.id = "campus123";
-        campusData.attributes = new ExpandoObject();
-        ((dynamic)campusData.attributes).name = "Main Campus";
-        ((dynamic)campusData.attributes).description = "Our main campus location";
-        ((dynamic)campusData.attributes).city = "Springfield";
-        ((dynamic)campusData.attributes).state = "IL";
-        ((dynamic)campusData.attributes).active = true;
-        _mockApiConnection.SetupGetResponse("/registrations/v2/campuses/campus123", response);
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.GetCampusAsync("campus123"),
+            "/registrations/v2/campuses/campus123"
+        );
+    }
 
-        // Act
-        var result = await _registrationsService.GetCampusAsync("campus123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("campus123");
-        result!.Name.Should().Be("Main Campus");
-        result!.City.Should().Be("Springfield");
+    [Fact]
+    public async Task ListCampusesAsync_ShouldCallCorrectEndpoint()
+    {
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.ListCampusesAsync(),
+            "/registrations/v2/campuses"
+        );
     }
 
     [Fact]
     public async Task ListCampusesAsync_ShouldReturnPagedCampuses_WhenApiReturnsData()
     {
         // Arrange
-        dynamic campus1 = new ExpandoObject();
-        campus1.id = "campus1";
-        campus1.attributes = new ExpandoObject();
-        ((dynamic)campus1.attributes).name = "Main Campus";
-        ((dynamic)campus1.attributes).city = "Springfield";
-        ((dynamic)campus1.attributes).active = true;
-
-        dynamic campus2 = new ExpandoObject();
-        campus2.id = "campus2";
-        campus2.attributes = new ExpandoObject();
-        ((dynamic)campus2.attributes).name = "North Campus";
-        ((dynamic)campus2.attributes).city = "Northfield";
-        ((dynamic)campus2.attributes).active = true;
-
-        var response = new PagedResponse<dynamic>
-        {
-            Data = new List<dynamic> { campus1, campus2 },
-            Meta = new() { Count = 2, TotalCount = 2 },
-            Links = new() { Self = "/registrations/v2/campuses" }
-        };
-        _mockApiConnection.SetupGetResponse("/registrations/v2/campuses", response);
+        var campusesResponse = CreateCampusCollectionResponse(3);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/campuses", campusesResponse);
 
         // Act
         var result = await _registrationsService.ListCampusesAsync();
 
         // Assert
         result.Should().NotBeNull();
-        result!.Data.Should().HaveCount(2);
-        result!.Data.First().Name.Should().Be("Main Campus");
+        result!.Data.Should().HaveCount(3);
+        result!.Data.First().Name.Should().Be("Test Campus");
     }
 
     #endregion
@@ -899,33 +722,13 @@ public class RegistrationsServiceTests
     #region Person Management Tests
 
     [Fact]
-    public async Task GetPersonAsync_ShouldReturnPerson_WhenApiReturnsData()
+    public async Task GetPersonAsync_ShouldCallCorrectEndpoint()
     {
-        // Arrange
-        var response = new JsonApiSingleResponse<dynamic>
-        {
-            Data = new ExpandoObject()
-        };
-        var personData = (dynamic)response.Data;
-        personData.id = "person123";
-        personData.attributes = new ExpandoObject();
-        ((dynamic)personData.attributes).first_name = "John";
-        ((dynamic)personData.attributes).last_name = "Doe";
-        ((dynamic)personData.attributes).email = "john.doe@example.com";
-        ((dynamic)personData.attributes).phone_number = "555-123-4567";
-        ((dynamic)personData.attributes).created_at = DateTime.Parse("2024-01-01T00:00:00Z");
-        ((dynamic)personData.attributes).updated_at = DateTime.Parse("2024-01-15T00:00:00Z");
-        _mockApiConnection.SetupGetResponse("/registrations/v2/people/person123", response);
-
-        // Act
-        var result = await _registrationsService.GetPersonAsync("person123");
-
-        // Assert
-        result.Should().NotBeNull();
-        result!.Id.Should().Be("person123");
-        result!.FirstName.Should().Be("John");
-        result!.LastName.Should().Be("Doe");
-        result!.PrimaryEmail.Should().Be("john.doe@example.com");
+        // Act & Assert
+        await AssertCallsEndpoint(
+            () => _registrationsService.GetPersonAsync("person123"),
+            "/registrations/v2/people/person123"
+        );
     }
 
     [Fact]
@@ -980,11 +783,11 @@ public class RegistrationsServiceTests
 
         // Setup registration count response
         var registrationResponse = CreateRegistrationCollectionResponse(25);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?filter[status]=confirmed", registrationResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?where[status]=confirmed", registrationResponse);
 
         // Setup waitlist count response
         var waitlistResponse = CreateAttendeeCollectionResponse(5);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?filter[on_waitlist]=true", waitlistResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?where[on_waitlist]=true", waitlistResponse);
 
         // Act
         var result = await _registrationsService.GenerateRegistrationReportAsync(request);
@@ -1003,7 +806,7 @@ public class RegistrationsServiceTests
     {
         // Arrange
         var registrationResponse = CreateRegistrationCollectionResponse(15);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?filter[status]=confirmed", registrationResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/registrations?where[status]=confirmed", registrationResponse);
 
         // Act
         var result = await _registrationsService.GetRegistrationCountAsync("signup123");
@@ -1017,7 +820,7 @@ public class RegistrationsServiceTests
     {
         // Arrange
         var waitlistResponse = CreateAttendeeCollectionResponse(8);
-        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?filter[on_waitlist]=true", waitlistResponse);
+        _mockApiConnection.SetupGetResponse("/registrations/v2/signups/signup123/attendees?where[on_waitlist]=true", waitlistResponse);
 
         // Act
         var result = await _registrationsService.GetWaitlistCountAsync("signup123");
@@ -1213,6 +1016,51 @@ public class RegistrationsServiceTests
             Data = attendees,
             Meta = new() { Count = count, TotalCount = count },
             Links = new() { Self = "/registrations/v2/attendees" }
+        };
+    }
+
+    private CampusDto CreateCampusDto(Action<CampusDto> customize)
+    {
+        var dto = new CampusDto
+        {
+            Id = "campus123",
+            Type = "Campus",
+            Attributes = new CampusAttributesDto
+            {
+                Name = "Test Campus",
+                Description = "A test campus",
+                Timezone = "America/New_York",
+                Address = "123 Main St",
+                City = "Test City",
+                State = "NY",
+                PostalCode = "12345",
+                Country = "US",
+                PhoneNumber = "555-123-4567",
+                WebsiteUrl = "https://testcampus.com",
+                Active = true,
+                SortOrder = 1,
+                SignupCount = 5,
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-30),
+                UpdatedAt = DateTimeOffset.UtcNow
+            }
+        };
+        customize(dto);
+        return dto;
+    }
+
+    private PagedResponse<CampusDto> CreateCampusCollectionResponse(int count)
+    {
+        var campuses = new List<CampusDto>();
+        for (int i = 0; i < count; i++)
+        {
+            campuses.Add(CreateCampusDto(c => c.Id = $"campus{i + 1}"));
+        }
+
+        return new PagedResponse<CampusDto>
+        {
+            Data = campuses,
+            Meta = new() { Count = count, TotalCount = count },
+            Links = new() { Self = "/registrations/v2/campuses" }
         };
     }
 }

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.Correlation;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Exceptions;
+using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Monitoring;
 
 namespace PlanningCenter.Api.Client.Services;
@@ -138,5 +139,240 @@ public abstract class ServiceBase
         {
             throw new ArgumentNullException(paramName);
         }
+    }
+    
+    /// <summary>
+    /// Generic method to list resources with standardized error handling and pagination.
+    /// </summary>
+    /// <typeparam name="TDto">The DTO type returned by the API</typeparam>
+    /// <typeparam name="TDomain">The domain model type to return</typeparam>
+    /// <param name="endpoint">The API endpoint</param>
+    /// <param name="parameters">Query parameters</param>
+    /// <param name="mapper">Function to map from DTO to domain model</param>
+    /// <param name="operationName">Name of the operation for logging</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A paged response containing the mapped domain models</returns>
+    protected async Task<IPagedResponse<TDomain>> ListResourcesAsync<TDto, TDomain>(
+        string endpoint,
+        QueryParameters? parameters,
+        Func<TDto, TDomain> mapper,
+        string operationName,
+        CancellationToken cancellationToken = default)
+    {
+        return await ExecuteAsync(
+            async () =>
+            {
+                var response = await ApiConnection.GetPagedAsync<TDto>(
+                    endpoint, parameters, cancellationToken);
+
+                var items = response.Data.Select(mapper).ToList();
+
+                return new PagedResponse<TDomain>
+                {
+                    Data = items,
+                    Meta = response.Meta,
+                    Links = response.Links
+                };
+            },
+            operationName,
+            cancellationToken: cancellationToken);
+    }
+    
+    /// <summary>
+    /// Generic method to get a resource by ID with standardized error handling.
+    /// </summary>
+    /// <typeparam name="TDto">The DTO type returned by the API</typeparam>
+    /// <typeparam name="TDomain">The domain model type to return</typeparam>
+    /// <param name="endpoint">The API endpoint</param>
+    /// <param name="resourceId">The ID of the resource to retrieve</param>
+    /// <param name="mapper">Function to map from DTO to domain model</param>
+    /// <param name="operationName">Name of the operation for logging</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The mapped domain model or null if not found</returns>
+    protected async Task<TDomain?> GetResourceByIdAsync<TDto, TDomain>(
+        string endpoint,
+        string resourceId,
+        Func<TDto, TDomain> mapper,
+        string operationName,
+        CancellationToken cancellationToken = default)
+        where TDto : class
+        where TDomain : class
+    {
+        ValidateNotNullOrEmpty(resourceId, nameof(resourceId));
+        
+        return await ExecuteGetAsync(
+            async () =>
+            {
+                var response = await ApiConnection.GetAsync<TDto>(
+                    $"{endpoint}/{resourceId}", cancellationToken);
+                
+                return response != null ? mapper(response) : null;
+            },
+            operationName,
+            resourceId,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Logs a successful operation with standardized format and correlation ID.
+    /// </summary>
+    /// <param name="operationName">The name of the operation</param>
+    /// <param name="resourceName">The name of the resource type</param>
+    /// <param name="resourceId">The ID of the resource</param>
+    /// <param name="additionalInfo">Optional additional information to log</param>
+    protected void LogSuccess(string operationName, string resourceName, string? resourceId = null, string? additionalInfo = null)
+    {
+        var correlationId = CorrelationContext.Current;
+        var message = $"Successfully {operationName.ToLowerInvariant()} {resourceName.ToLowerInvariant()}";
+        
+        if (!string.IsNullOrEmpty(resourceId))
+        {
+            message += $" (ID: {resourceId})";
+        }
+        
+        if (!string.IsNullOrEmpty(additionalInfo))
+        {
+            message += $": {additionalInfo}";
+        }
+        
+        message += $" [CorrelationId: {correlationId}]";
+        
+        Logger.LogInformation(message);
+    }
+
+    /// <summary>
+    /// Generic method to create a resource with standardized error handling and logging.
+    /// </summary>
+    /// <typeparam name="TCreateRequest">The create request type</typeparam>
+    /// <typeparam name="TDto">The DTO type returned by the API</typeparam>
+    /// <typeparam name="TDomain">The domain model type to return</typeparam>
+    /// <param name="endpoint">The API endpoint</param>
+    /// <param name="request">The create request</param>
+    /// <param name="requestMapper">Function to map from create request to JSON API format</param>
+    /// <param name="responseMapper">Function to map from DTO to domain model</param>
+    /// <param name="operationName">Name of the operation for logging</param>
+    /// <param name="resourceName">Name of the resource type for logging</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The created domain model</returns>
+    protected async Task<TDomain> CreateResourceAsync<TCreateRequest, TDto, TDomain>(
+        string endpoint,
+        TCreateRequest request,
+        Func<TCreateRequest, object> requestMapper,
+        Func<TDto, TDomain> responseMapper,
+        string operationName,
+        string resourceName,
+        CancellationToken cancellationToken = default)
+        where TCreateRequest : class
+        where TDto : class
+        where TDomain : class
+    {
+        ValidateNotNull(request, nameof(request));
+        
+        return await ExecuteAsync(
+            async () =>
+            {
+                var jsonApiRequest = requestMapper(request);
+                
+                var response = await ApiConnection.PostAsync<JsonApiSingleResponse<TDto>>(
+                    endpoint, jsonApiRequest, cancellationToken);
+                
+                if (response?.Data == null)
+                    throw new PlanningCenterApiGeneralException($"Failed to create {resourceName.ToLowerInvariant()} - no data returned");
+                
+                var domainModel = responseMapper(response.Data);
+                
+                // Extract ID for logging if the domain model has an Id property
+                var idProperty = typeof(TDomain).GetProperty("Id");
+                var resourceId = idProperty?.GetValue(domainModel)?.ToString();
+                
+                LogSuccess(operationName, resourceName, resourceId);
+                
+                return domainModel;
+            },
+            operationName,
+            resourceId: null,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Generic method to update a resource with standardized error handling and logging.
+    /// </summary>
+    /// <typeparam name="TUpdateRequest">The update request type</typeparam>
+    /// <typeparam name="TDto">The DTO type returned by the API</typeparam>
+    /// <typeparam name="TDomain">The domain model type to return</typeparam>
+    /// <param name="endpoint">The API endpoint</param>
+    /// <param name="resourceId">The ID of the resource to update</param>
+    /// <param name="request">The update request</param>
+    /// <param name="requestMapper">Function to map from update request to JSON API format</param>
+    /// <param name="responseMapper">Function to map from DTO to domain model</param>
+    /// <param name="operationName">Name of the operation for logging</param>
+    /// <param name="resourceName">Name of the resource type for logging</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated domain model</returns>
+    protected async Task<TDomain> UpdateResourceAsync<TUpdateRequest, TDto, TDomain>(
+        string endpoint,
+        string resourceId,
+        TUpdateRequest request,
+        Func<string, TUpdateRequest, object> requestMapper,
+        Func<TDto, TDomain> responseMapper,
+        string operationName,
+        string resourceName,
+        CancellationToken cancellationToken = default)
+        where TUpdateRequest : class
+        where TDto : class
+        where TDomain : class
+    {
+        ValidateNotNullOrEmpty(resourceId, nameof(resourceId));
+        ValidateNotNull(request, nameof(request));
+        
+        return await ExecuteAsync(
+            async () =>
+            {
+                var jsonApiRequest = requestMapper(resourceId, request);
+                
+                var response = await ApiConnection.PatchAsync<JsonApiSingleResponse<TDto>>(
+                    $"{endpoint}/{resourceId}", jsonApiRequest, cancellationToken);
+                
+                if (response?.Data == null)
+                    throw new PlanningCenterApiGeneralException($"Failed to update {resourceName.ToLowerInvariant()} - no data returned");
+                
+                var domainModel = responseMapper(response.Data);
+                
+                LogSuccess(operationName, resourceName, resourceId);
+                
+                return domainModel;
+            },
+            operationName,
+            resourceId,
+            cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Generic method to delete a resource with standardized error handling and logging.
+    /// </summary>
+    /// <param name="endpoint">The API endpoint</param>
+    /// <param name="resourceId">The ID of the resource to delete</param>
+    /// <param name="operationName">Name of the operation for logging</param>
+    /// <param name="resourceName">Name of the resource type for logging</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    protected async Task DeleteResourceAsync(
+        string endpoint,
+        string resourceId,
+        string operationName,
+        string resourceName,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateNotNullOrEmpty(resourceId, nameof(resourceId));
+        
+        await ExecuteAsync(
+            async () =>
+            {
+                await ApiConnection.DeleteAsync($"{endpoint}/{resourceId}", cancellationToken);
+                
+                LogSuccess(operationName, resourceName, resourceId);
+            },
+            operationName,
+            resourceId,
+            cancellationToken);
     }
 }

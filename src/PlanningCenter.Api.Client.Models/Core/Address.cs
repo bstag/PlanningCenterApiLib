@@ -41,6 +41,11 @@ public class Address
     public string Country { get; set; } = "US";
     
     /// <summary>
+    /// Country name (full name, e.g., "United States")
+    /// </summary>
+    public string? CountryName { get; set; }
+    
+    /// <summary>
     /// Address type or location (Home, Work, etc.)
     /// </summary>
     public string Location { get; set; } = "Home";

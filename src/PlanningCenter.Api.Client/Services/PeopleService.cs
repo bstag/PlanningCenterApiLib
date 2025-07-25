@@ -54,23 +54,11 @@ public class PeopleService : ServiceBase, IPeopleService
     /// </summary>
     public async Task<Person?> GetAsync(string id, CancellationToken cancellationToken = default)
     {
-        ValidateNotNullOrEmpty(id, nameof(id));
-
-        return await ExecuteGetAsync(
-            async () =>
-            {
-                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<PersonDto>>(
-                    $"{BaseEndpoint}/people/{id}", cancellationToken);
-
-                if (response?.Data == null)
-                {
-                    throw new PlanningCenterApiNotFoundException($"Person with ID {id} not found");
-                }
-
-                return PersonMapper.MapToDomain(response.Data);
-            },
-            "GetPerson",
+        return await GetResourceByIdAsync<PersonDto, Person>(
+            $"{BaseEndpoint}/people",
             id,
+            PersonMapper.MapToDomain,
+            "GetPerson",
             cancellationToken);
     }
 
@@ -80,35 +68,12 @@ public class PeopleService : ServiceBase, IPeopleService
     /// </summary>
     public async Task<IPagedResponse<Person>> ListAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
-        return await ExecuteAsync(
-            async () =>
-            {
-                var response = await ApiConnection.GetPagedAsync<PersonDto>(
-                    $"{BaseEndpoint}/people", parameters, cancellationToken);
-
-                // Map DTOs to domain models
-                var people = response.Data.Select(PersonMapper.MapToDomain).ToList();
-
-                // Create a new paged response with mapped data
-                var mappedResponse = new PagedResponse<Person>
-                {
-                    Data = people,
-                    Meta = response.Meta,
-                    Links = response.Links
-                };
-
-                // Copy navigation properties if the response is a concrete PagedResponse
-                if (response is PagedResponse<PersonDto> concreteResponse)
-                {
-                    mappedResponse.ApiConnection = concreteResponse.ApiConnection;
-                    mappedResponse.OriginalParameters = concreteResponse.OriginalParameters;
-                    mappedResponse.OriginalEndpoint = concreteResponse.OriginalEndpoint;
-                }
-
-                return mappedResponse;
-            },
+        return await ListResourcesAsync<PersonDto, Person>(
+            $"{BaseEndpoint}/people",
+            parameters,
+            PersonMapper.MapToDomain,
             "ListPeople",
-            cancellationToken: cancellationToken);
+            cancellationToken);
     }
 
     /// <summary>

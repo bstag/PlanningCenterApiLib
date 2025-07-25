@@ -254,7 +254,7 @@ public class OAuthAuthenticatorTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAccessTokenAsync_WithMissingAccessToken_ShouldThrowGeneralException()
+    public async Task GetAccessTokenAsync_WithMissingAccessToken_ShouldThrowAuthenticationException()
     {
         // Arrange
         var invalidResponse = new
@@ -268,7 +268,7 @@ public class OAuthAuthenticatorTests : IDisposable
 
         // Act & Assert
         var act = async () => await _authenticator.GetAccessTokenAsync();
-        await act.Should().ThrowAsync<PlanningCenterApiGeneralException>()
+        await act.Should().ThrowAsync<PlanningCenterApiAuthenticationException>()
             .WithMessage("*access_token*");
     }
 
