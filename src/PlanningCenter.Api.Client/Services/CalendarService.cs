@@ -36,23 +36,11 @@ public class CalendarService : ServiceBase, ICalendarService
     /// </summary>
     public async Task<Event?> GetEventAsync(string id, CancellationToken cancellationToken = default)
     {
-        ValidateNotNullOrEmpty(id, nameof(id));
-
-        return await ExecuteGetAsync(
-            async () =>
-            {
-                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<EventDto>>(
-                    $"{BaseEndpoint}/events/{id}", cancellationToken);
-
-                if (response?.Data == null)
-                {
-                    throw new PlanningCenterApiNotFoundException($"Event with ID {id} not found");
-                }
-
-                return CalendarMapper.MapToDomain(response.Data);
-            },
-            "GetEvent",
+        return await GetResourceByIdAsync<EventDto, Event>(
+            $"{BaseEndpoint}/events",
             id,
+            CalendarMapper.MapToDomain,
+            "GetEvent",
             cancellationToken);
     }
 
@@ -180,23 +168,11 @@ public class CalendarService : ServiceBase, ICalendarService
     /// </summary>
     public async Task<Resource?> GetResourceAsync(string id, CancellationToken cancellationToken = default)
     {
-        ValidateNotNullOrEmpty(id, nameof(id));
-
-        return await ExecuteGetAsync(
-            async () =>
-            {
-                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<ResourceDto>>(
-                    $"{BaseEndpoint}/resources/{id}", cancellationToken);
-
-                if (response?.Data == null)
-                {
-                    throw new PlanningCenterApiNotFoundException($"Resource with ID {id} not found");
-                }
-
-                return CalendarMapper.MapResourceToDomain(response.Data);
-            },
-            "GetResource",
+        return await GetResourceByIdAsync<ResourceDto, Resource>(
+            $"{BaseEndpoint}/resources",
             id,
+            CalendarMapper.MapResourceToDomain,
+            "GetResource",
             cancellationToken);
     }
 

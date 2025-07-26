@@ -35,23 +35,11 @@ public class GivingService : ServiceBase, IGivingService
     /// </summary>
     public async Task<Donation?> GetDonationAsync(string id, CancellationToken cancellationToken = default)
     {
-        ValidateNotNullOrEmpty(id, nameof(id));
-
-        return await ExecuteGetAsync(
-            async () =>
-            {
-                var response = await ApiConnection.GetAsync<JsonApiSingleResponse<DonationDto>>(
-                    $"{BaseEndpoint}/donations/{id}", cancellationToken);
-
-                if (response?.Data == null)
-                {
-                    throw new PlanningCenterApiNotFoundException($"Donation with ID {id} not found");
-                }
-
-                return GivingMapper.MapToDomain(response.Data);
-            },
-            "GetDonation",
+        return await GetResourceByIdAsync<DonationDto, Donation>(
+            $"{BaseEndpoint}/donations",
             id,
+            GivingMapper.MapToDomain,
+            "GetDonation",
             cancellationToken);
     }
 
@@ -176,36 +164,12 @@ public class GivingService : ServiceBase, IGivingService
     /// </summary>
     public async Task<Fund?> GetFundAsync(string id, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(id))
-            throw new ArgumentException("Fund ID cannot be null or empty", nameof(id));
-
-        Logger.LogDebug("Getting fund with ID: {FundId}", id);
-
-        try
-        {
-            var response = await ApiConnection.GetAsync<JsonApiSingleResponse<FundDto>>(
-                $"{BaseEndpoint}/funds/{id}", cancellationToken);
-
-            if (response?.Data == null)
-            {
-                Logger.LogWarning("Fund not found: {FundId}", id);
-                return null;
-            }
-
-            var fund = GivingMapper.MapToDomain(response.Data);
-            Logger.LogInformation("Successfully retrieved fund: {FundId}", id);
-            return fund;
-        }
-        catch (PlanningCenterApiNotFoundException)
-        {
-            Logger.LogWarning("Fund not found: {FundId}", id);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error retrieving fund: {FundId}", id);
-            throw;
-        }
+        return await GetResourceByIdAsync<FundDto, Fund>(
+            $"{BaseEndpoint}/funds",
+            id,
+            GivingMapper.MapToDomain,
+            "GetFund",
+            cancellationToken);
     }
 
     /// <summary>

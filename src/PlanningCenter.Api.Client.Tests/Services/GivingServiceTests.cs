@@ -49,7 +49,7 @@ public class GivingServiceTests
         // Act & Assert
         await _givingService.Invoking(s => s.GetDonationAsync(""))
             .Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Donation ID cannot be null or empty*");
+            .WithMessage("resourceId cannot be null or empty*");
     }
 
     [Fact]
