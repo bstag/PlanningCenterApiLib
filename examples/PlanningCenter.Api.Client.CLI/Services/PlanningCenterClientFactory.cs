@@ -19,7 +19,7 @@ public interface IPlanningCenterClientFactory
     /// <summary>
     /// Creates an authenticated Planning Center client
     /// </summary>
-    Task<IPlanningCenterClient> CreateClientAsync(string token);
+    IPlanningCenterClient CreateClient(string token);
 
     /// <summary>
     /// Validates the token format
@@ -37,7 +37,7 @@ public class PlanningCenterClientFactory : IPlanningCenterClientFactory
     /// </summary>
     /// <param name="token">The Personal Access Token (format: app-id:secret)</param>
     /// <returns>Configured Planning Center client</returns>
-    public async Task<IPlanningCenterClient> CreateClientAsync(string token)
+    public IPlanningCenterClient CreateClient(string token)
     {
         if (string.IsNullOrEmpty(token))
         {

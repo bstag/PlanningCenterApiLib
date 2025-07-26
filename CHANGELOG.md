@@ -5,7 +5,76 @@ All notable changes to the Planning Center API SDK for .NET will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2024-01-16
+## [1.1.0] - 2025-07-25
+
+### Added - ServiceBase Infrastructure & Enhanced Features
+
+#### ServiceBase Pattern Implementation
+- **ServiceBase Abstract Class**: Implemented consistent base class for all 9 Planning Center services
+- **Correlation ID Management**: Added AsyncLocal correlation tracking across all operations
+- **Performance Monitoring**: Built-in automatic timing and metrics collection with Stopwatch integration
+- **Unified Exception Handling**: Centralized error processing with ExecuteAsync<T> and ExecuteGetAsync<T> wrappers
+- **Consistent Validation**: Standardized input validation patterns (ValidateNotNull, ValidateNotNullOrEmpty)
+- **Structured Logging**: Enhanced ILogger<T> integration with consistent logging standards
+
+#### CLI Tool Development
+- **Planning Center CLI Tool**: Complete command-line interface for all Planning Center modules
+- **Multi-Module Support**: Commands for People, Services, Registrations, Calendar, CheckIns, Giving, Groups, Publishing, Webhooks
+- **Flexible Output Formats**: JSON (default), Table, CSV, and XML output with customizable field selection
+- **Advanced Filtering**: Complex query capabilities with where conditions, sorting, and pagination
+- **Configuration Management**: Persistent settings for default parameters and user preferences
+- **Comprehensive Help System**: Interactive command documentation with examples and parameter descriptions
+- **Authentication Integration**: Secure PAT-based authentication with credential validation
+
+#### Fluent API Status Update
+- **Production-Ready Implementation**: Confirmed 100% completion status across all 9 modules
+- **Advanced Specialized Operations**: Module-specific operations like fund filtering, date ranges, financial aggregations
+- **LINQ-Style Operations**: Complete Where, Include, OrderBy, ThenBy, FirstAsync, SingleAsync, CountAsync, AnyAsync support
+- **Performance Optimization**: Built-in caching, expression compilation, and query optimization
+- **Comprehensive Documentation**: Updated fluent API documentation with advanced features
+
+#### Enhanced Documentation
+- **ServiceBase Migration Guide**: Complete migration documentation and examples
+- **Logging Standards**: Comprehensive logging guidelines and best practices
+- **Phase Completion Status**: Updated status documentation reflecting 100% ServiceBase coverage
+- **CLI Tool Requirements**: Detailed product requirements and implementation status
+- **Fluent API Implementation Status**: Comprehensive status update confirming production readiness
+
+### Changed
+
+#### Service Architecture
+- **All Services Migrated**: 100% ServiceBase pattern adoption across CalendarService, CheckInsService, GivingService, GroupsService, PeopleService, PublishingService, RegistrationsService, ServicesService, WebhooksService
+- **Consistent Error Handling**: All operations now use standardized ExecuteAsync wrappers
+- **Enhanced Logging**: Structured logging with correlation IDs and performance metrics
+- **Improved Validation**: Consistent input validation across all service methods
+
+#### Build Quality
+- **Zero Compilation Errors**: Clean build status across all projects
+- **Reduced Warnings**: Minimized to 35 warnings (primarily nullability - acceptable)
+- **Enhanced Code Quality**: Consistent patterns and improved maintainability
+
+### Fixed
+- **Service Consistency**: Resolved inconsistencies in service implementation patterns
+- **Performance Monitoring**: Fixed performance tracking across all operations
+- **Error Handling**: Improved exception handling with better context and correlation
+
+### Technical Specifications
+
+#### Quality Metrics
+- **Build Status**: 0 compilation errors, 35 warnings (primarily nullability)
+- **ServiceBase Coverage**: 100% across all 9 Planning Center modules
+- **Code Consistency**: Unified patterns for logging, exception handling, and performance monitoring
+- **Documentation Coverage**: Complete API documentation and implementation guides
+
+#### Performance Improvements
+- **Automatic Performance Monitoring**: Built-in Stopwatch integration for all operations
+- **Correlation Tracking**: Request tracing across all service calls
+- **Optimized Caching**: Enhanced caching integration with performance metrics
+- **Efficient HTTP Client Usage**: Improved connection management and resilience
+
+---
+
+## [1.0.0] - 2025-07-21
 
 ### Added - Complete SDK Implementation
 

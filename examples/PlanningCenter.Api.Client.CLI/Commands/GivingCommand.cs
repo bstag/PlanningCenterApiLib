@@ -76,7 +76,7 @@ public class GivingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)donationsCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)donationsCommand.Subcommands[0]).Options[8]);
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -147,7 +147,7 @@ public class GivingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching donation with ID: {Id}", id);
                 var donation = await givingService.GetDonationAsync(id!);
@@ -219,7 +219,7 @@ public class GivingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)fundsCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)fundsCommand.Subcommands[0]).Options[8]);
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -290,7 +290,7 @@ public class GivingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching fund with ID: {Id}", id);
                 var fund = await givingService.GetFundAsync(id!);
@@ -362,7 +362,7 @@ public class GivingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)batchesCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)batchesCommand.Subcommands[0]).Options[8]);
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -433,7 +433,7 @@ public class GivingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching batch with ID: {Id}", id);
                 var batch = await givingService.GetBatchAsync(id!);
@@ -505,7 +505,7 @@ public class GivingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)pledgesCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)pledgesCommand.Subcommands[0]).Options[8]);
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -576,7 +576,7 @@ public class GivingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching pledge with ID: {Id}", id);
                 var pledge = await givingService.GetPledgeAsync(id!);
@@ -648,7 +648,7 @@ public class GivingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)recurringCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)recurringCommand.Subcommands[0]).Options[8]);
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -719,7 +719,7 @@ public class GivingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var givingService = await GetServiceAsync<IGivingService>(token, detailedLogging);
+                var givingService = GetService<IGivingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching recurring donation with ID: {Id}", id);
                 var recurringDonation = await givingService.GetRecurringDonationAsync(id!);

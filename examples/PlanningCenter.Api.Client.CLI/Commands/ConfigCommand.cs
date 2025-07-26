@@ -85,11 +85,11 @@ public class ConfigCommand : BaseCommand
     {
         var getTokenCommand = new Command("get-token", "Display the stored Personal Access Token (masked for security)");
 
-        getTokenCommand.SetHandler(async () =>
+        getTokenCommand.SetHandler(() =>
         {
             try
             {
-                var token = await AuthenticationService.GetTokenAsync();
+                var token = AuthenticationService.GetToken();
                 
                 if (string.IsNullOrEmpty(token))
                 {
@@ -123,7 +123,7 @@ public class ConfigCommand : BaseCommand
         {
             try
             {
-                var testToken = token ?? await AuthenticationService.GetTokenAsync();
+                var testToken = token ?? AuthenticationService.GetToken();
                 
                 if (string.IsNullOrEmpty(testToken))
                 {
@@ -142,7 +142,7 @@ public class ConfigCommand : BaseCommand
                     // Try to get some basic info to show the token works
                     try
                     {
-                        var client = await _clientFactory.CreateClientAsync(testToken);
+                        var client = _clientFactory.CreateClient(testToken);
                         var userInfo = await client.GetCurrentUserAsync();
                          
                          if (userInfo != null)
@@ -176,7 +176,7 @@ public class ConfigCommand : BaseCommand
     {
         var showConfigCommand = new Command("show", "Display current configuration settings");
 
-        showConfigCommand.SetHandler(async () =>
+        showConfigCommand.SetHandler(() =>
         {
             try
             {
@@ -184,7 +184,7 @@ public class ConfigCommand : BaseCommand
                 Console.WriteLine("=====================");
                 
                 // Token status
-                var token = await AuthenticationService.GetTokenAsync();
+                var token = AuthenticationService.GetToken();
                 var tokenStatus = string.IsNullOrEmpty(token) ? "Not set" : MaskToken(token);
                 Console.WriteLine($"Personal Access Token: {tokenStatus}");
                 

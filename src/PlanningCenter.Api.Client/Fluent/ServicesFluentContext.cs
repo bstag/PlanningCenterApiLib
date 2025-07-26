@@ -275,7 +275,7 @@ public class ServicesFluentContext : IServicesFluentContext
         if (string.IsNullOrWhiteSpace(titleFragment))
             throw new ArgumentException("Title fragment cannot be null or empty", nameof(titleFragment));
 
-        return Where(p => p.Title.Contains(titleFragment));
+        return Where(p => p.Title != null && p.Title.Contains(titleFragment));
     }
 
     // Additional service-specific filtering methods
@@ -293,7 +293,7 @@ public class ServicesFluentContext : IServicesFluentContext
         if (string.IsNullOrWhiteSpace(status))
             throw new ArgumentException("Status cannot be null or empty", nameof(status));
 
-        return Where(p => p.PlanningCenterUrl.Contains(status)); // Note: Adjust based on actual status property
+        return Where(p => p.PlanningCenterUrl != null && p.PlanningCenterUrl.Contains(status)); // Note: Adjust based on actual status property
     }
 
     public IServicesFluentContext WithSeries()
@@ -323,7 +323,7 @@ public class ServicesFluentContext : IServicesFluentContext
         if (string.IsNullOrWhiteSpace(planType))
             throw new ArgumentException("Plan type cannot be null or empty", nameof(planType));
 
-        return Where(p => p.PlanningCenterUrl.Contains(planType)); // Note: Adjust based on actual plan type property
+        return Where(p => p.PlanningCenterUrl != null && p.PlanningCenterUrl.Contains(planType)); // Note: Adjust based on actual plan type property
     }
 
     public IServicesFluentContext WithSongs()
@@ -348,7 +348,7 @@ public class ServicesFluentContext : IServicesFluentContext
         if (string.IsNullOrWhiteSpace(teamRole))
             throw new ArgumentException("Team role cannot be null or empty", nameof(teamRole));
 
-        return Where(p => p.PlanPeople.Any(pp => pp.TeamPositionName.Contains(teamRole)));
+        return Where(p => p.PlanPeople.Any(pp => pp.TeamPositionName != null && pp.TeamPositionName.Contains(teamRole)));
     }
 
     public IServicesFluentContext ByTeamPosition(string teamPosition)
@@ -407,7 +407,8 @@ public class ServicesFluentContext : IServicesFluentContext
         if (!plans.Any())
             return 0;
             
-        return plans.Where(p => p.Length.HasValue).Average(p => p.Length.Value);
+        var plansWithLength = plans.Where(p => p.Length.HasValue).Select(p => p.Length!.Value).ToList();
+        return plansWithLength.Any() ? plansWithLength.Average() : 0;
     }
 
     #endregion

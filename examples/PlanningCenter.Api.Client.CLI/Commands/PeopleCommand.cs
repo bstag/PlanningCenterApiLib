@@ -66,17 +66,17 @@ public class PeopleCommand : BaseCommand
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var pageSize = context.ParseResult.GetValueForOption((Option<int>)listCommand.Options[0]);
-                var page = context.ParseResult.GetValueForOption((Option<int>)listCommand.Options[1]);
-                var where = context.ParseResult.GetValueForOption((Option<string?>)listCommand.Options[2]);
-                var order = context.ParseResult.GetValueForOption((Option<string?>)listCommand.Options[3]);
-                var include = context.ParseResult.GetValueForOption((Option<string?>)listCommand.Options[4]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)listCommand.Options[5]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)listCommand.Options[6]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)listCommand.Options[7]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)listCommand.Options[8]);
+                var pageSize = GetOptionValue<int>(context, listCommand, 0, 25);
+                var page = GetOptionValue<int>(context, listCommand, 1, 1);
+                var where = GetOptionValue<string?>(context, listCommand, 2);
+                var order = GetOptionValue<string?>(context, listCommand, 3);
+                var include = GetOptionValue<string?>(context, listCommand, 4);
+                var includeProps = GetOptionValue<string[]?>(context, listCommand, 5);
+                var excludeProps = GetOptionValue<string[]?>(context, listCommand, 6);
+                var outputFile = GetOptionValue<string?>(context, listCommand, 7);
+                var includeNulls = GetOptionValue<bool>(context, listCommand, 8);
                 
-                var peopleService = await GetServiceAsync<IPeopleService>(token, detailedLogging);
+                var peopleService = GetService<IPeopleService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching people list");
                 var queryParams = new QueryParameters();
@@ -154,7 +154,7 @@ public class PeopleCommand : BaseCommand
         {
             try
             {
-                var id = context.ParseResult.GetValueForArgument((Argument<string>)getCommand.Arguments[0]);
+                var id = GetArgumentValue<string>(context, getCommand, 0);
                 
                 // Get global options
                 var token = GetTokenOption(context);
@@ -162,15 +162,15 @@ public class PeopleCommand : BaseCommand
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = context.ParseResult.GetValueForOption((Option<string?>)getCommand.Options[0]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)getCommand.Options[1]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)getCommand.Options[2]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)getCommand.Options[3]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)getCommand.Options[4]);
+                var include = GetOptionValue<string?>(context, getCommand, 0);
+                var includeProps = GetOptionValue<string[]?>(context, getCommand, 1);
+                var excludeProps = GetOptionValue<string[]?>(context, getCommand, 2);
+                var outputFile = GetOptionValue<string?>(context, getCommand, 3);
+                var includeNulls = GetOptionValue<bool>(context, getCommand, 4);
                 
                 ValidateRequiredParameter(id, "id");
                 
-                var peopleService = await GetServiceAsync<IPeopleService>(token, detailedLogging);
+                var peopleService = GetService<IPeopleService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching person: {PersonId}", id);
                 
@@ -232,7 +232,7 @@ public class PeopleCommand : BaseCommand
         {
             try
             {
-                var query = context.ParseResult.GetValueForArgument((Argument<string>)searchCommand.Arguments[0]);
+                var query = GetArgumentValue<string>(context, searchCommand, 0);
                 
                 // Get global options
                 var token = GetTokenOption(context);
@@ -240,16 +240,16 @@ public class PeopleCommand : BaseCommand
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var limit = context.ParseResult.GetValueForOption((Option<int>)searchCommand.Options[0]);
-                var include = context.ParseResult.GetValueForOption((Option<string?>)searchCommand.Options[1]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)searchCommand.Options[2]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)searchCommand.Options[3]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)searchCommand.Options[4]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)searchCommand.Options[5]);
+                var limit = GetOptionValue<int>(context, searchCommand, 0, 25);
+                var include = GetOptionValue<string?>(context, searchCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, searchCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, searchCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, searchCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, searchCommand, 5);
                 
                 ValidateRequiredParameter(query, "query");
                 
-                var peopleService = await GetServiceAsync<IPeopleService>(token, detailedLogging);
+                var peopleService = GetService<IPeopleService>(token, detailedLogging);
 
                 Logger.LogDebug("Searching people with query: {Query}", query);
                 
@@ -317,12 +317,12 @@ public class PeopleCommand : BaseCommand
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)meCommand.Options[0]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)meCommand.Options[1]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)meCommand.Options[2]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)meCommand.Options[3]);
+                var includeProps = GetOptionValue<string[]?>(context, meCommand, 0);
+                var excludeProps = GetOptionValue<string[]?>(context, meCommand, 1);
+                var outputFile = GetOptionValue<string?>(context, meCommand, 2);
+                var includeNulls = GetOptionValue<bool>(context, meCommand, 3);
                 
-                var peopleService = await GetServiceAsync<IPeopleService>(token, detailedLogging);
+                var peopleService = GetService<IPeopleService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching current user information");
                 var currentUser = await peopleService.GetMeAsync();
@@ -377,21 +377,21 @@ public class PeopleCommand : BaseCommand
             try
             {
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var pageSize = context.ParseResult.GetValueForOption((Option<int>)householdsCommand.Options[0]);
-                var page = context.ParseResult.GetValueForOption((Option<int>)householdsCommand.Options[1]);
-                var where = context.ParseResult.GetValueForOption((Option<string?>)householdsCommand.Options[2]);
-                var order = context.ParseResult.GetValueForOption((Option<string?>)householdsCommand.Options[3]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)householdsCommand.Options[4]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)householdsCommand.Options[5]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)householdsCommand.Options[6]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)householdsCommand.Options[7]);
+                var pageSize = GetOptionValue<int>(context, householdsCommand, 0, 25);
+                var page = GetOptionValue<int>(context, householdsCommand, 1, 1);
+                var where = GetOptionValue<string?>(context, householdsCommand, 2);
+                var order = GetOptionValue<string?>(context, householdsCommand, 3);
+                var includeProps = GetOptionValue<string[]?>(context, householdsCommand, 4);
+                var excludeProps = GetOptionValue<string[]?>(context, householdsCommand, 5);
+                var outputFile = GetOptionValue<string?>(context, householdsCommand, 6);
+                var includeNulls = GetOptionValue<bool>(context, householdsCommand, 7);
                 
-                var peopleService = await GetServiceAsync<IPeopleService>(token, detailedLogging);
+                var peopleService = GetService<IPeopleService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching households list");
                 // Note: This is a placeholder - households would need a separate service or endpoint
@@ -461,21 +461,21 @@ public class PeopleCommand : BaseCommand
         {
             try
             {
-                var personId = context.ParseResult.GetValueForArgument((Argument<string>)fieldDataCommand.Arguments[0]);
+                var personId = GetArgumentValue<string>(context, fieldDataCommand, 0);
                 
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)fieldDataCommand.Options[0]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)fieldDataCommand.Options[1]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)fieldDataCommand.Options[2]);
+                var includeProps = GetOptionValue<string[]?>(context, fieldDataCommand, 0);
+                var excludeProps = GetOptionValue<string[]?>(context, fieldDataCommand, 1);
+                var outputFile = GetOptionValue<string?>(context, fieldDataCommand, 2);
                 
                 ValidateRequiredParameter(personId, "person-id");
                 
-                var peopleService = await GetServiceAsync<IPeopleService>(token, detailedLogging);
+                var peopleService = GetService<IPeopleService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching field data for person: {PersonId}", personId);
                 // Note: Field data would need a separate method or endpoint

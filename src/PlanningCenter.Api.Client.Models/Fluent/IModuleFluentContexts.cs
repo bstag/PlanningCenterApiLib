@@ -624,7 +624,7 @@ public interface ICalendarFluentContext
     /// <param name="keySelector">Function to extract the grouping key from each event</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A dictionary where keys are the grouping values and values are lists of events</returns>
-    Task<Dictionary<TKey, List<Calendar.Event>>> GroupByAsync<TKey>(Expression<Func<Calendar.Event, TKey>> keySelector, CancellationToken cancellationToken = default);
+    Task<Dictionary<TKey, List<Calendar.Event>>> GroupByAsync<TKey>(Expression<Func<Calendar.Event, TKey>> keySelector, CancellationToken cancellationToken = default) where TKey : notnull;
 }
 
 /// <summary>

@@ -32,7 +32,7 @@ public class AuthenticationService : IAuthenticationService
     /// </summary>
     /// <param name="tokenParameter">Token provided via parameter</param>
     /// <returns>The Personal Access Token or null if not found</returns>
-    public async Task<string?> GetTokenAsync(string? tokenParameter = null)
+    public string? GetToken(string? tokenParameter = null)
     {
         // Priority order:
         // 1. Parameter

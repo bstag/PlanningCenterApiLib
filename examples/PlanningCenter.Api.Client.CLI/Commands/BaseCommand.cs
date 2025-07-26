@@ -53,12 +53,12 @@ public abstract class BaseCommand : Command
     /// <summary>
     /// Configures authentication for the current request
     /// </summary>
-    protected async Task ConfigureAuthenticationAsync(string? token, bool? enableDetailedLogging = null)
+    protected void ConfigureAuthentication(string? token, bool? enableDetailedLogging = null)
     {
         try
         {
             // Get token from parameter or configuration
-            var authToken = await AuthenticationService.GetTokenAsync(token);
+            var authToken = AuthenticationService.GetToken(token);
             
             if (string.IsNullOrEmpty(authToken))
             {
@@ -87,9 +87,9 @@ public abstract class BaseCommand : Command
     /// <summary>
     /// Gets a service instance with authentication configured
     /// </summary>
-    protected async Task<T> GetServiceAsync<T>(string? token, bool? enableDetailedLogging = null) where T : class
+    protected T GetService<T>(string? token, bool? enableDetailedLogging = null) where T : class
     {
-        await ConfigureAuthenticationAsync(token, enableDetailedLogging);
+        ConfigureAuthentication(token, enableDetailedLogging);
         return ServiceProvider.GetRequiredService<T>();
     }
 
@@ -271,5 +271,37 @@ public abstract class BaseCommand : Command
         var detailedLoggingOption = context.ParseResult.RootCommandResult.Command.Options
             .OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging"));
         return detailedLoggingOption != null ? context.ParseResult.GetValueForOption(detailedLoggingOption) : false;
+    }
+
+    /// <summary>
+    /// Safely gets an option value by index from a command's options
+    /// </summary>
+    protected T GetOptionValue<T>(InvocationContext context, Command command, int optionIndex, T defaultValue = default(T)!)
+    {
+        if (optionIndex < 0 || optionIndex >= command.Options.Count)
+            return defaultValue;
+            
+        var option = command.Options[optionIndex] as Option<T>;
+        if (option == null)
+            return defaultValue;
+            
+        var value = context.ParseResult.GetValueForOption(option);
+        return value ?? defaultValue;
+    }
+
+    /// <summary>
+    /// Safely gets an argument value by index from a command's arguments
+    /// </summary>
+    protected T GetArgumentValue<T>(InvocationContext context, Command command, int argumentIndex, T defaultValue = default(T)!)
+    {
+        if (argumentIndex < 0 || argumentIndex >= command.Arguments.Count)
+            return defaultValue;
+            
+        var argument = command.Arguments[argumentIndex] as Argument<T>;
+        if (argument == null)
+            return defaultValue;
+            
+        var value = context.ParseResult.GetValueForArgument(argument);
+        return value ?? defaultValue;
     }
 }

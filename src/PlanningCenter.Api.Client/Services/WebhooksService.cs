@@ -790,12 +790,12 @@ public class WebhooksService : ServiceBase, IWebhooksService
                     try
                     {
                         var created = await CreateSubscriptionAsync(subscription, cancellationToken);
-                        return new { Success = true, Subscription = created, Error = (string?)null };
+                        return new { Success = true, Subscription = (WebhookSubscription?)created, Error = (string?)null };
                     }
                     catch (Exception ex)
                     {
                         Logger.LogWarning(ex, "Failed to create subscription for URL: {Url}", subscription.Url);
-                        return new { Success = false, Subscription = (WebhookSubscription?)null, Error = ex.Message };
+                        return new { Success = false, Subscription = (WebhookSubscription?)null, Error = (string?)ex.Message };
                     }
                 });
 
@@ -881,7 +881,7 @@ public class WebhooksService : ServiceBase, IWebhooksService
                     catch (Exception ex)
                     {
                         Logger.LogWarning(ex, "Failed to delete subscription: {SubscriptionId}", subscriptionId);
-                        return new { Success = false, SubscriptionId = subscriptionId, Error = ex.Message };
+                        return new { Success = false, SubscriptionId = subscriptionId, Error = (string?)ex.Message };
                     }
                 });
 

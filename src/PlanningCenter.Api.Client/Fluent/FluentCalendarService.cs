@@ -14,7 +14,7 @@ namespace PlanningCenter.Api.Client.Fluent;
 /// </summary>
 public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFluentCalendarService
 {
-    private const string BaseEndpoint = "/calendar/v2";
+    private new const string BaseEndpoint = "/calendar/v2";
     
     /// <summary>
     /// Initializes a new instance of the FluentCalendarService class.
@@ -302,7 +302,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// <param name="field">The field to filter by</param>
     /// <param name="value">The value to filter for</param>
     /// <returns>A fluent query builder instance with the filter applied</returns>
-    public IFluentQueryBuilder<Event> Where(string field, object value)
+    public new IFluentQueryBuilder<Event> Where(string field, object value)
     {
         return Query().Where(field, value);
     }
@@ -312,7 +312,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="filters">Dictionary of field-value pairs to filter by</param>
     /// <returns>A fluent query builder instance with the filters applied</returns>
-    public IFluentQueryBuilder<Event> Where(Dictionary<string, object> filters)
+    public new IFluentQueryBuilder<Event> Where(Dictionary<string, object> filters)
     {
         IFluentQueryBuilder<Event> builder = Query();
         foreach (var filter in filters)
@@ -327,7 +327,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="relationships">The relationships to include</param>
     /// <returns>A fluent query builder instance with the includes applied</returns>
-    public IFluentQueryBuilder<Event> Include(params string[] relationships)
+    public new IFluentQueryBuilder<Event> Include(params string[] relationships)
     {
         return Query().Include(relationships);
     }
@@ -338,7 +338,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// <param name="field">The field to order by</param>
     /// <param name="descending">Whether to order in descending order</param>
     /// <returns>A fluent query builder instance with the ordering applied</returns>
-    public IFluentQueryBuilder<Event> OrderBy(string field, bool descending = false)
+    public new IFluentQueryBuilder<Event> OrderBy(string field, bool descending = false)
     {
         return Query().OrderBy(field, descending);
     }
@@ -348,7 +348,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="field">The field to order by</param>
     /// <returns>A fluent query builder instance with the descending ordering applied</returns>
-    public IFluentQueryBuilder<Event> OrderByDescending(string field)
+    public new IFluentQueryBuilder<Event> OrderByDescending(string field)
     {
         return Query().OrderByDescending(field);
     }
@@ -358,7 +358,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="count">The maximum number of results to return</param>
     /// <returns>A fluent query builder instance with the limit applied</returns>
-    public IFluentQueryBuilder<Event> Take(int count)
+    public new IFluentQueryBuilder<Event> Take(int count)
     {
         return Query().Take(count);
     }
@@ -369,7 +369,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// <param name="page">The page number (1-based)</param>
     /// <param name="pageSize">The number of items per page</param>
     /// <returns>A fluent query builder instance with the pagination applied</returns>
-    public IFluentQueryBuilder<Event> Page(int page, int pageSize)
+    public new IFluentQueryBuilder<Event> Page(int page, int pageSize)
     {
         return Query().Page(page, pageSize);
     }
@@ -379,7 +379,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A paged response containing all events</returns>
-    public Task<IPagedResponse<Event>> AllAsync(CancellationToken cancellationToken = default)
+    public new Task<IPagedResponse<Event>> AllAsync(CancellationToken cancellationToken = default)
     {
         return Query().ExecuteAsync(cancellationToken);
     }
@@ -389,7 +389,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The first event or null</returns>
-    public Task<Event?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public new Task<Event?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         return Query().FirstOrDefaultAsync(cancellationToken);
     }
@@ -400,7 +400,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The single event</returns>
     /// <exception cref="InvalidOperationException">Thrown when zero or more than one result is found</exception>
-    public Task<Event> SingleAsync(CancellationToken cancellationToken = default)
+    public new Task<Event> SingleAsync(CancellationToken cancellationToken = default)
     {
         return Query().SingleAsync(cancellationToken);
     }
@@ -411,7 +411,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The single event or null</returns>
     /// <exception cref="InvalidOperationException">Thrown when more than one result is found</exception>
-    public Task<Event?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
+    public new Task<Event?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         return Query().SingleOrDefaultAsync(cancellationToken);
     }
@@ -421,7 +421,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The count of events</returns>
-    public Task<int> CountAsync(CancellationToken cancellationToken = default)
+    public new Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         return Query().CountAsync(cancellationToken);
     }
@@ -431,7 +431,7 @@ public class FluentCalendarService : FluentApiServiceBase<Event, EventDto>, IFlu
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if any events exist, false otherwise</returns>
-    public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
+    public new Task<bool> AnyAsync(CancellationToken cancellationToken = default)
     {
         return Query().AnyAsync(cancellationToken);
     }

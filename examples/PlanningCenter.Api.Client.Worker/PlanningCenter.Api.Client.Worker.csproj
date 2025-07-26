@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>dotnet-PlanningCenter.Api.Client.Worker-0edb03da-410e-4e2d-bac3-ffe338acaac4</UserSecretsId>
+
   </PropertyGroup>
 
   <ItemGroup>

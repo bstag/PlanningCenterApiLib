@@ -982,7 +982,7 @@ public abstract class FluentQueryBuilderBase<T, TDto> : IFluentQueryExecutor<T>
     {
         if (expression is ConstantExpression constantExpression)
         {
-            return constantExpression.Value;
+            return constantExpression.Value ?? throw new InvalidOperationException("Constant expression value is null");
         }
         
         if (expression is MemberExpression memberExpression)
@@ -995,7 +995,7 @@ public abstract class FluentQueryBuilderBase<T, TDto> : IFluentQueryExecutor<T>
         
         // For more complex expressions, compile and execute
         var lambda = Expression.Lambda(expression);
-        return lambda.Compile().DynamicInvoke();
+        return lambda.Compile().DynamicInvoke() ?? throw new InvalidOperationException("Expression evaluation resulted in null");
     }
     
     /// <summary>
@@ -1004,7 +1004,7 @@ public abstract class FluentQueryBuilderBase<T, TDto> : IFluentQueryExecutor<T>
     protected virtual object GetPropertyValue(T item, string propertyName)
     {
         var property = typeof(T).GetProperty(propertyName, System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-        return property?.GetValue(item);
+        return property?.GetValue(item) ?? throw new InvalidOperationException($"Property '{propertyName}' not found or returned null");
     }
     
     /// <summary>

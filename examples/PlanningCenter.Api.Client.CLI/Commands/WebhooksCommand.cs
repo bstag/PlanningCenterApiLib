@@ -90,7 +90,7 @@ public class WebhooksCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)subscriptionsCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)subscriptionsCommand.Subcommands[0]).Options[8]);
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -161,7 +161,7 @@ public class WebhooksCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching webhook subscription with ID: {Id}", id);
                 var subscription = await webhooksService.GetSubscriptionAsync(id!);
@@ -201,7 +201,7 @@ public class WebhooksCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 Logger.LogDebug("Testing webhook subscription with ID: {Id}", id);
                 var testResult = await webhooksService.TestSubscriptionAsync(id!);
@@ -237,7 +237,7 @@ public class WebhooksCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 Logger.LogDebug("Activating webhook subscription with ID: {Id}", id);
                 await webhooksService.ActivateSubscriptionAsync(id!);
@@ -262,7 +262,7 @@ public class WebhooksCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 Logger.LogDebug("Deactivating webhook subscription with ID: {Id}", id);
                 await webhooksService.DeactivateSubscriptionAsync(id!);
@@ -325,7 +325,7 @@ public class WebhooksCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)eventsCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)eventsCommand.Subcommands[0]).Options[8]);
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -399,7 +399,7 @@ public class WebhooksCommand : BaseCommand
                 ValidateRequiredParameter(signature, "signature");
                 ValidateRequiredParameter(payload, "payload");
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 Logger.LogDebug("Validating webhook event with ID: {EventId}", eventId);
                 var isValid = await webhooksService.ValidateEventSignatureAsync(payload!, signature!, eventId!);
@@ -472,7 +472,7 @@ public class WebhooksCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)historyCommand.Subcommands[0]).Options[8]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)historyCommand.Subcommands[0]).Options[9]);
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -546,7 +546,7 @@ public class WebhooksCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching webhook event with ID: {Id}", id);
                 var eventHistory = await webhooksService.GetEventAsync(id!);
@@ -581,7 +581,7 @@ public class WebhooksCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var webhooksService = await GetServiceAsync<IWebhooksService>(token, detailedLogging);
+                var webhooksService = GetService<IWebhooksService>(token, detailedLogging);
 
                 Logger.LogDebug("Redelivering webhook event with ID: {Id}", id);
                 await webhooksService.RedeliverEventAsync(id!);

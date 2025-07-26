@@ -200,13 +200,13 @@ public abstract class ServiceBase
     {
         ValidateNotNullOrEmpty(resourceId, nameof(resourceId));
         
-        return await ExecuteGetAsync(
+        return await ExecuteGetAsync<TDomain>(
             async () =>
             {
                 var response = await ApiConnection.GetAsync<TDto>(
                     $"{endpoint}/{resourceId}", cancellationToken);
                 
-                return response != null ? mapper(response) : null;
+                return response != null ? mapper(response) : default(TDomain)!;
             },
             operationName,
             resourceId,

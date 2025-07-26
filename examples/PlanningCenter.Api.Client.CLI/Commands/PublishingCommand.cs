@@ -76,7 +76,7 @@ public class PublishingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)episodesCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)episodesCommand.Subcommands[0]).Options[8]);
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -147,7 +147,7 @@ public class PublishingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching episode with ID: {Id}", id);
                 var episode = await publishingService.GetEpisodeAsync(id!);
@@ -219,7 +219,7 @@ public class PublishingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)seriesCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)seriesCommand.Subcommands[0]).Options[8]);
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -290,7 +290,7 @@ public class PublishingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching series with ID: {Id}", id);
                 var series = await publishingService.GetSeriesAsync(id!);
@@ -362,7 +362,7 @@ public class PublishingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)speakersCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)speakersCommand.Subcommands[0]).Options[8]);
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -433,7 +433,7 @@ public class PublishingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching speaker with ID: {Id}", id);
                 var speaker = await publishingService.GetSpeakerAsync(id!);
@@ -498,7 +498,7 @@ public class PublishingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)speakershipsCommand.Subcommands[0]).Options[8]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)speakershipsCommand.Subcommands[0]).Options[9]);
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -606,7 +606,7 @@ public class PublishingCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)mediaCommand.Subcommands[0]).Options[8]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)mediaCommand.Subcommands[0]).Options[9]);
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -679,7 +679,7 @@ public class PublishingCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var publishingService = await GetServiceAsync<IPublishingService>(token, detailedLogging);
+                var publishingService = GetService<IPublishingService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching media with ID: {Id}", id);
                 var media = await publishingService.GetMediaAsync(id!);

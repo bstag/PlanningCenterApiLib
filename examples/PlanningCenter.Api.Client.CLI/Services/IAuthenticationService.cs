@@ -8,7 +8,7 @@ public interface IAuthenticationService
     /// <summary>
     /// Gets the Personal Access Token from parameter or configuration
     /// </summary>
-    Task<string?> GetTokenAsync(string? tokenParameter = null);
+    string? GetToken(string? tokenParameter = null);
 
     /// <summary>
     /// Stores the Personal Access Token securely

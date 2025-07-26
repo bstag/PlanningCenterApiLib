@@ -48,7 +48,7 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
         }
 
         // Only the Base64 encoded credentials, no 'Basic ' prefix for GetAccessTokenAsync
-        var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
+        var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken!));
         _basicAuthHeader = $"Basic {encodedCredentials}";
         _logger.LogDebug("Personal Access Token authenticator initialized");
     }
@@ -64,7 +64,7 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
     {
         cancellationToken.ThrowIfCancellationRequested();
         //_logger.LogDebug("Returning Personal Access Token for authentication (Base64 only, no 'Basic ' prefix)");
-        var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
+        var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken!));
         var _basicAuthHeader = $"Basic {encodedCredentials}";
         //var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
         return Task.FromResult(_basicAuthHeader);

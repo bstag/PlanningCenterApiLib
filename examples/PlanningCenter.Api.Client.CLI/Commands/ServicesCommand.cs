@@ -56,17 +56,17 @@ public class ServicesCommand : BaseCommand
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var pageSize = context.ParseResult.GetValueForOption((Option<int>)plansListCommand.Options[0]);
-                var page = context.ParseResult.GetValueForOption((Option<int>)plansListCommand.Options[1]);
-                var where = context.ParseResult.GetValueForOption((Option<string?>)plansListCommand.Options[2]);
-                var order = context.ParseResult.GetValueForOption((Option<string?>)plansListCommand.Options[3]);
-                var include = context.ParseResult.GetValueForOption((Option<string?>)plansListCommand.Options[4]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)plansListCommand.Options[5]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)plansListCommand.Options[6]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)plansListCommand.Options[7]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)plansListCommand.Options[8]);
+                var pageSize = GetOptionValue<int>(context, plansListCommand, 0, 25);
+                var page = GetOptionValue<int>(context, plansListCommand, 1, 1);
+                var where = GetOptionValue<string?>(context, plansListCommand, 2);
+                var order = GetOptionValue<string?>(context, plansListCommand, 3);
+                var include = GetOptionValue<string?>(context, plansListCommand, 4);
+                var includeProps = GetOptionValue<string[]?>(context, plansListCommand, 5);
+                var excludeProps = GetOptionValue<string[]?>(context, plansListCommand, 6);
+                var outputFile = GetOptionValue<string?>(context, plansListCommand, 7);
+                var includeNulls = GetOptionValue<bool>(context, plansListCommand, 8);
                 
-                var servicesService = await GetServiceAsync<IServicesService>(token, detailedLogging);
+                var servicesService = GetService<IServicesService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching service plans list");
                 var queryParams = new QueryParameters();
@@ -141,15 +141,15 @@ public class ServicesCommand : BaseCommand
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = context.ParseResult.GetValueForOption((Option<string?>)plansGetCommand.Options[0]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)plansGetCommand.Options[1]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)plansGetCommand.Options[2]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)plansGetCommand.Options[3]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)plansGetCommand.Options[4]);
+                var include = GetOptionValue<string?>(context, plansGetCommand, 0);
+                var includeProps = GetOptionValue<string[]?>(context, plansGetCommand, 1);
+                var excludeProps = GetOptionValue<string[]?>(context, plansGetCommand, 2);
+                var outputFile = GetOptionValue<string?>(context, plansGetCommand, 3);
+                var includeNulls = GetOptionValue<bool>(context, plansGetCommand, 4);
                 
                 ValidateRequiredParameter(id, "id");
                 
-                var servicesService = await GetServiceAsync<IServicesService>(token, detailedLogging);
+                var servicesService = GetService<IServicesService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching service plan: {PlanId}", id);
                 
@@ -211,22 +211,22 @@ public class ServicesCommand : BaseCommand
             try
             {
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var pageSize = context.ParseResult.GetValueForOption((Option<int>)serviceTypesListCommand.Options[0]);
-                var page = context.ParseResult.GetValueForOption((Option<int>)serviceTypesListCommand.Options[1]);
-                var where = context.ParseResult.GetValueForOption((Option<string?>)serviceTypesListCommand.Options[2]);
-                var order = context.ParseResult.GetValueForOption((Option<string?>)serviceTypesListCommand.Options[3]);
-                var include = context.ParseResult.GetValueForOption((Option<string?>)serviceTypesListCommand.Options[4]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)serviceTypesListCommand.Options[5]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)serviceTypesListCommand.Options[6]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)serviceTypesListCommand.Options[7]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)serviceTypesListCommand.Options[8]);
+                var pageSize = GetOptionValue<int>(context, serviceTypesListCommand, 0, 25);
+                var page = GetOptionValue<int>(context, serviceTypesListCommand, 1, 1);
+                var where = GetOptionValue<string?>(context, serviceTypesListCommand, 2);
+                var order = GetOptionValue<string?>(context, serviceTypesListCommand, 3);
+                var include = GetOptionValue<string?>(context, serviceTypesListCommand, 4);
+                var includeProps = GetOptionValue<string[]?>(context, serviceTypesListCommand, 5);
+                var excludeProps = GetOptionValue<string[]?>(context, serviceTypesListCommand, 6);
+                var outputFile = GetOptionValue<string?>(context, serviceTypesListCommand, 7);
+                var includeNulls = GetOptionValue<bool>(context, serviceTypesListCommand, 8);
                 
-                var servicesService = await GetServiceAsync<IServicesService>(token, detailedLogging);
+                var servicesService = GetService<IServicesService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching service types list");
                 var queryParams = new QueryParameters();
@@ -293,23 +293,23 @@ public class ServicesCommand : BaseCommand
         {
             try
             {
-                var id = context.ParseResult.GetValueForArgument((Argument<string>)serviceTypesGetCommand.Arguments[0]);
+                var id = GetArgumentValue<string>(context, serviceTypesGetCommand, 0);
                 
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = context.ParseResult.GetValueForOption((Option<string?>)serviceTypesGetCommand.Options[0]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)serviceTypesGetCommand.Options[1]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)serviceTypesGetCommand.Options[2]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)serviceTypesGetCommand.Options[3]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)serviceTypesGetCommand.Options[4]);
+                var include = GetOptionValue<string?>(context, serviceTypesGetCommand, 0);
+                var includeProps = GetOptionValue<string[]?>(context, serviceTypesGetCommand, 1);
+                var excludeProps = GetOptionValue<string[]?>(context, serviceTypesGetCommand, 2);
+                var outputFile = GetOptionValue<string?>(context, serviceTypesGetCommand, 3);
+                var includeNulls = GetOptionValue<bool>(context, serviceTypesGetCommand, 4);
                 
                 ValidateRequiredParameter(id, "id");
                 
-                var servicesService = await GetServiceAsync<IServicesService>(token, detailedLogging);
+                var servicesService = GetService<IServicesService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching service type: {ServiceTypeId}", id);
                 
@@ -371,22 +371,22 @@ public class ServicesCommand : BaseCommand
             try
             {
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var pageSize = context.ParseResult.GetValueForOption((Option<int>)songsListCommand.Options[0]);
-                var page = context.ParseResult.GetValueForOption((Option<int>)songsListCommand.Options[1]);
-                var where = context.ParseResult.GetValueForOption((Option<string?>)songsListCommand.Options[2]);
-                var order = context.ParseResult.GetValueForOption((Option<string?>)songsListCommand.Options[3]);
-                var include = context.ParseResult.GetValueForOption((Option<string?>)songsListCommand.Options[4]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)songsListCommand.Options[5]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)songsListCommand.Options[6]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)songsListCommand.Options[7]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)songsListCommand.Options[8]);
+                var pageSize = GetOptionValue<int>(context, songsListCommand, 0, 25);
+                var page = GetOptionValue<int>(context, songsListCommand, 1, 1);
+                var where = GetOptionValue<string?>(context, songsListCommand, 2);
+                var order = GetOptionValue<string?>(context, songsListCommand, 3);
+                var include = GetOptionValue<string?>(context, songsListCommand, 4);
+                var includeProps = GetOptionValue<string[]?>(context, songsListCommand, 5);
+                var excludeProps = GetOptionValue<string[]?>(context, songsListCommand, 6);
+                var outputFile = GetOptionValue<string?>(context, songsListCommand, 7);
+                var includeNulls = GetOptionValue<bool>(context, songsListCommand, 8);
                 
-                var servicesService = await GetServiceAsync<IServicesService>(token, detailedLogging);
+                var servicesService = GetService<IServicesService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching songs list");
                 var queryParams = new QueryParameters();
@@ -453,23 +453,23 @@ public class ServicesCommand : BaseCommand
         {
             try
             {
-                var id = context.ParseResult.GetValueForArgument((Argument<string>)songsGetCommand.Arguments[0]);
+                var id = GetArgumentValue<string>(context, songsGetCommand, 0);
                 
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = context.ParseResult.GetValueForOption((Option<string?>)songsGetCommand.Options[0]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)songsGetCommand.Options[1]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)songsGetCommand.Options[2]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)songsGetCommand.Options[3]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)songsGetCommand.Options[4]);
+                var include = GetOptionValue<string?>(context, songsGetCommand, 0);
+                var includeProps = GetOptionValue<string[]?>(context, songsGetCommand, 1);
+                var excludeProps = GetOptionValue<string[]?>(context, songsGetCommand, 2);
+                var outputFile = GetOptionValue<string?>(context, songsGetCommand, 3);
+                var includeNulls = GetOptionValue<bool>(context, songsGetCommand, 4);
                 
                 ValidateRequiredParameter(id, "id");
                 
-                var servicesService = await GetServiceAsync<IServicesService>(token, detailedLogging);
+                var servicesService = GetService<IServicesService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching song: {SongId}", id);
                 

@@ -68,8 +68,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 return new PagedResponse<Signup>
                 {
                     Data = signups,
-                    Meta = response.Meta,
-                    Links = response.Links
+                    Meta = response.Meta ?? new PagedResponseMeta(),
+                    Links = response.Links ?? new PagedResponseLinks()
                 };
             },
             "ListSignups",
@@ -242,8 +242,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<Registration>
             {
                 Data = registrations,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} registrations for signup: {SignupId}", registrations.Count, signupId);
@@ -368,8 +368,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<Attendee>
             {
                 Data = attendees,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} attendees for signup: {SignupId}", attendees.Count, signupId);
@@ -523,7 +523,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
-                $"{BaseEndpoint}/attendees/{attendeeId}/remove_from_waitlist", null, cancellationToken);
+                $"{BaseEndpoint}/attendees/{attendeeId}/remove_from_waitlist", new { }, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -554,7 +554,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
         try
         {
             var response = await ApiConnection.PostAsync<JsonApiSingleResponse<AttendeeDto>>(
-                $"{BaseEndpoint}/attendees/{attendeeId}/promote_from_waitlist", null!, cancellationToken);
+                $"{BaseEndpoint}/attendees/{attendeeId}/promote_from_waitlist", new { }, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -871,8 +871,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<SelectionType>
             {
                 Data = selectionTypes,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} selection types for signup: {SignupId}", selectionTypes.Count, signupId);
@@ -1176,8 +1176,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<SignupTime>
             {
                 Data = signupTimes,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} signup times for signup: {SignupId}", signupTimes.Count, signupId);
@@ -1549,8 +1549,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<Category>
             {
                 Data = categories,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} categories", categories.Count);
@@ -1702,8 +1702,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<Models.Registrations.Campus>
             {
                 Data = campuses,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} campuses", campuses.Count);
@@ -1748,7 +1748,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             };
 
             // Add phone number to the PhoneNumbers collection if available
-            var phoneNumber = response.Data.Attributes?.PhoneNumber;
+            string? phoneNumber = response.Data.Attributes?.PhoneNumber;
             if (!string.IsNullOrWhiteSpace(phoneNumber))
             {
                 person.PhoneNumbers.Add(new PhoneNumber
@@ -1819,8 +1819,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<Attendee>
             {
                 Data = attendees,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} attendees for person: {PersonId}", attendees.Count, personId);
@@ -1867,8 +1867,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             var pagedResponse = new PagedResponse<Signup>
             {
                 Data = signups,
-                Meta = response.Meta,
-                Links = response.Links
+                Meta = response.Meta ?? new PagedResponseMeta(),
+                Links = response.Links ?? new PagedResponseLinks()
             };
 
             Logger.LogInformation("Successfully retrieved {Count} signups for person: {PersonId}", signups.Count, personId);

@@ -72,7 +72,7 @@ public class GroupsCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)groupsCommand.Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)groupsCommand.Options[8]);
 
-                var groupsService = await GetServiceAsync<IGroupsService>(token, detailedLogging);
+                var groupsService = GetService<IGroupsService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -143,7 +143,7 @@ public class GroupsCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var groupsService = await GetServiceAsync<IGroupsService>(token, detailedLogging);
+                var groupsService = GetService<IGroupsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching group with ID: {Id}", id);
                 var group = await groupsService.GetGroupAsync(id!);
@@ -216,7 +216,7 @@ public class GroupsCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)groupTypesCommand.Subcommands[0]).Options[7]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)groupTypesCommand.Subcommands[0]).Options[8]);
 
-                var groupsService = await GetServiceAsync<IGroupsService>(token, detailedLogging);
+                var groupsService = GetService<IGroupsService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -287,7 +287,7 @@ public class GroupsCommand : BaseCommand
 
                 ValidateRequiredParameter(id, "id");
 
-                var groupsService = await GetServiceAsync<IGroupsService>(token, detailedLogging);
+                var groupsService = GetService<IGroupsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching group type with ID: {Id}", id);
                 var groupType = await groupsService.GetGroupTypeAsync(id!);
@@ -362,7 +362,7 @@ public class GroupsCommand : BaseCommand
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)((Command)membershipsCommand.Subcommands[0]).Options[8]);
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)((Command)membershipsCommand.Subcommands[0]).Options[9]);
 
-                var groupsService = await GetServiceAsync<IGroupsService>(token, detailedLogging);
+                var groupsService = GetService<IGroupsService>(token, detailedLogging);
 
                 var parameters = new QueryParameters
                 {
@@ -437,7 +437,7 @@ public class GroupsCommand : BaseCommand
                 ValidateRequiredParameter(groupId, "group-id");
                 ValidateRequiredParameter(membershipId, "membership-id");
 
-                var groupsService = await GetServiceAsync<IGroupsService>(token, detailedLogging);
+                var groupsService = GetService<IGroupsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching membership with ID: {MembershipId} for group: {GroupId}", membershipId, groupId);
                 var membership = await groupsService.GetGroupMembershipAsync(groupId!, membershipId!);

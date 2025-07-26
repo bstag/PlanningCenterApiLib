@@ -326,9 +326,9 @@ public static class PublishingMapper
             ContentType = dto.Attributes.ContentType ?? "application/octet-stream",
             MediaType = dto.Attributes.MediaType ?? "unknown",
             Quality = dto.Attributes.Quality,
-            IsPrimary = dto.Attributes.IsPrimary,
-            CreatedAt = dto.Attributes.CreatedAt,
-            UpdatedAt = dto.Attributes.UpdatedAt,
+            IsPrimary = dto.Attributes?.IsPrimary ?? false,
+            CreatedAt = dto.Attributes?.CreatedAt ?? DateTime.MinValue,
+            UpdatedAt = dto.Attributes?.UpdatedAt ?? DateTime.MinValue,
             DataSource = "Publishing"
         };
     }
@@ -393,12 +393,12 @@ public static class PublishingMapper
             Id = dto.Id,
             EpisodeId = dto.Relationships?.Episode?.Id ?? string.Empty,
             SpeakerId = dto.Relationships?.Speaker?.Id ?? string.Empty,
-            Role = dto.Attributes.Role,
-            Notes = dto.Attributes.Notes,
-            SortOrder = dto.Attributes.Order ?? 0,
-            IsPrimary = dto.Attributes.IsPrimary,
-            CreatedAt = dto.Attributes.CreatedAt,
-            UpdatedAt = dto.Attributes.UpdatedAt,
+            Role = dto.Attributes?.Role,
+            Notes = dto.Attributes?.Notes,
+            SortOrder = dto.Attributes?.Order ?? 0,
+            IsPrimary = dto.Attributes?.IsPrimary ?? false,
+            CreatedAt = dto.Attributes?.CreatedAt ?? DateTime.MinValue,
+            UpdatedAt = dto.Attributes?.UpdatedAt ?? DateTime.MinValue,
             DataSource = "Publishing"
         };
     }
@@ -437,13 +437,13 @@ public static class PublishingMapper
     {
         return new EpisodeAnalytics
         {
-            EpisodeId = dto.Attributes.EpisodeId,
-            ViewCount = dto.Attributes.ViewCount ?? 0,
-            DownloadCount = dto.Attributes.DownloadCount ?? 0,
-            AverageWatchTimeSeconds = dto.Attributes.AverageWatchTimeSeconds ?? 0.0,
-            PeriodStart = dto.Attributes.PeriodStart?.DateTime ?? DateTime.MinValue,
-            PeriodEnd = dto.Attributes.PeriodEnd?.DateTime ?? DateTime.MinValue,
-            AdditionalData = dto.Attributes.AdditionalData
+            EpisodeId = dto.Attributes?.EpisodeId ?? string.Empty,
+            ViewCount = dto.Attributes?.ViewCount ?? 0,
+            DownloadCount = dto.Attributes?.DownloadCount ?? 0,
+            AverageWatchTimeSeconds = dto.Attributes?.AverageWatchTimeSeconds ?? 0.0,
+            PeriodStart = dto.Attributes?.PeriodStart?.DateTime ?? DateTime.MinValue,
+            PeriodEnd = dto.Attributes?.PeriodEnd?.DateTime ?? DateTime.MinValue,
+            AdditionalData = dto.Attributes?.AdditionalData ?? new Dictionary<string, object>()
         };
     }
 
@@ -454,13 +454,13 @@ public static class PublishingMapper
     {
         return new SeriesAnalytics
         {
-            SeriesId = "", // Placeholder, as SeriesId is not directly in SeriesAnalyticsAttributesDto
-            TotalViewCount = dto.Attributes.TotalViews ?? 0,
-            TotalDownloadCount = dto.Attributes.TotalDownloads ?? 0,
+            SeriesId = dto.Id ?? string.Empty,
+            TotalViewCount = dto.Attributes?.TotalViews ?? 0,
+            TotalDownloadCount = dto.Attributes?.TotalDownloads ?? 0,
             EpisodeCount = 0, // Placeholder
             PeriodStart = DateTime.MinValue, // Placeholder
             PeriodEnd = DateTime.MinValue, // Placeholder
-            AdditionalData = null // Placeholder
+            AdditionalData = new Dictionary<string, object>() // Placeholder
         };
     }
 
@@ -475,11 +475,11 @@ public static class PublishingMapper
     {
         return new DistributionResult
         {
-            Success = dto.Attributes.Success ?? false,
-            Message = dto.Attributes.Message,
-            DistributedAt = dto.Attributes.DistributedAt?.DateTime ?? DateTime.MinValue,
-            ExternalUrl = dto.Attributes.ExternalUrl,
-            Metadata = dto.Attributes.Metadata
+            Success = dto.Attributes?.Success ?? false,
+            Message = dto.Attributes?.Message ?? string.Empty,
+            DistributedAt = dto.Attributes?.DistributedAt?.DateTime ?? DateTime.MinValue,
+            ExternalUrl = dto.Attributes?.ExternalUrl,
+            Metadata = dto.Attributes?.Metadata ?? new Dictionary<string, object>()
         };
     }
 

@@ -56,17 +56,17 @@ public class RegistrationsCommand : BaseCommand
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var pageSize = context.ParseResult.GetValueForOption((Option<int>)signupsListCommand.Options[0]);
-                var page = context.ParseResult.GetValueForOption((Option<int>)signupsListCommand.Options[1]);
-                var where = context.ParseResult.GetValueForOption((Option<string?>)signupsListCommand.Options[2]);
-                var order = context.ParseResult.GetValueForOption((Option<string?>)signupsListCommand.Options[3]);
-                var include = context.ParseResult.GetValueForOption((Option<string?>)signupsListCommand.Options[4]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)signupsListCommand.Options[5]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)signupsListCommand.Options[6]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)signupsListCommand.Options[7]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)signupsListCommand.Options[8]);
+                var pageSize = GetOptionValue<int>(context, signupsListCommand, 0, 25);
+                var page = GetOptionValue<int>(context, signupsListCommand, 1, 1);
+                var where = GetOptionValue<string?>(context, signupsListCommand, 2);
+                var order = GetOptionValue<string?>(context, signupsListCommand, 3);
+                var include = GetOptionValue<string?>(context, signupsListCommand, 4);
+                var includeProps = GetOptionValue<string[]?>(context, signupsListCommand, 5);
+                var excludeProps = GetOptionValue<string[]?>(context, signupsListCommand, 6);
+                var outputFile = GetOptionValue<string?>(context, signupsListCommand, 7);
+                var includeNulls = GetOptionValue<bool>(context, signupsListCommand, 8);
                 
-                var registrationsService = await GetServiceAsync<IRegistrationsService>(token, detailedLogging);
+                var registrationsService = GetService<IRegistrationsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching event signups list");
                 var queryParams = new QueryParameters();
@@ -133,23 +133,23 @@ public class RegistrationsCommand : BaseCommand
         {
             try
             {
-                var id = context.ParseResult.GetValueForArgument((Argument<string>)signupsGetCommand.Arguments[0]);
+                var id = GetArgumentValue<string>(context, signupsGetCommand, 0);
                 
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = context.ParseResult.GetValueForOption((Option<string?>)signupsGetCommand.Options[0]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)signupsGetCommand.Options[1]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)signupsGetCommand.Options[2]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)signupsGetCommand.Options[3]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)signupsGetCommand.Options[4]);
+                var include = GetOptionValue<string?>(context, signupsGetCommand, 0);
+                var includeProps = GetOptionValue<string[]?>(context, signupsGetCommand, 1);
+                var excludeProps = GetOptionValue<string[]?>(context, signupsGetCommand, 2);
+                var outputFile = GetOptionValue<string?>(context, signupsGetCommand, 3);
+                var includeNulls = GetOptionValue<bool>(context, signupsGetCommand, 4);
                 
                 ValidateRequiredParameter(id, "id");
                 
-                var registrationsService = await GetServiceAsync<IRegistrationsService>(token, detailedLogging);
+                var registrationsService = GetService<IRegistrationsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching event signup: {SignupId}", id);
                 

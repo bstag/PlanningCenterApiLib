@@ -17,7 +17,7 @@ namespace PlanningCenter.Api.Client.Fluent;
 /// </summary>
 public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
 {
-    private const string BaseEndpoint = "/people/v2";
+    private new const string BaseEndpoint = "/people/v2";
     
     public FluentPeopleService(
         ILogger<FluentPeopleService> logger,
@@ -121,7 +121,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// <param name="field">The field to filter by</param>
     /// <param name="value">The value to filter for</param>
     /// <returns>A fluent query builder instance with the filter applied</returns>
-    public IFluentQueryBuilder<Person> Where(string field, object value)
+    public new IFluentQueryBuilder<Person> Where(string field, object value)
     {
         return Query().Where(field, value);
     }
@@ -131,7 +131,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="filters">Dictionary of field-value pairs to filter by</param>
     /// <returns>A fluent query builder instance with the filters applied</returns>
-    public IFluentQueryBuilder<Person> Where(Dictionary<string, object> filters)
+    public new IFluentQueryBuilder<Person> Where(Dictionary<string, object> filters)
     {
         return Query().Where(filters);
     }
@@ -141,7 +141,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="relationships">The relationships to include</param>
     /// <returns>A fluent query builder instance with the includes applied</returns>
-    public IFluentQueryBuilder<Person> Include(params string[] relationships)
+    public new IFluentQueryBuilder<Person> Include(params string[] relationships)
     {
         return Query().Include(relationships);
     }
@@ -152,7 +152,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// <param name="field">The field to order by</param>
     /// <param name="descending">Whether to order in descending order</param>
     /// <returns>A fluent query builder instance with the ordering applied</returns>
-    public IFluentQueryBuilder<Person> OrderBy(string field, bool descending = false)
+    public new IFluentQueryBuilder<Person> OrderBy(string field, bool descending = false)
     {
         return Query().OrderBy(field, descending);
     }
@@ -162,7 +162,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="field">The field to order by</param>
     /// <returns>A fluent query builder instance with the descending ordering applied</returns>
-    public IFluentQueryBuilder<Person> OrderByDescending(string field)
+    public new IFluentQueryBuilder<Person> OrderByDescending(string field)
     {
         return Query().OrderByDescending(field);
     }
@@ -172,7 +172,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="count">The maximum number of results to return</param>
     /// <returns>A fluent query builder instance with the limit applied</returns>
-    public IFluentQueryBuilder<Person> Take(int count)
+    public new IFluentQueryBuilder<Person> Take(int count)
     {
         return Query().Take(count);
     }
@@ -183,7 +183,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// <param name="page">The page number (1-based)</param>
     /// <param name="pageSize">The number of items per page</param>
     /// <returns>A fluent query builder instance with the pagination applied</returns>
-    public IFluentQueryBuilder<Person> Page(int page, int pageSize)
+    public new IFluentQueryBuilder<Person> Page(int page, int pageSize)
     {
         return Query().Page(page, pageSize);
     }
@@ -193,7 +193,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A paged response containing all people</returns>
-    public Task<IPagedResponse<Person>> AllAsync(CancellationToken cancellationToken = default)
+    public new Task<IPagedResponse<Person>> AllAsync(CancellationToken cancellationToken = default)
     {
         return Query().ExecuteAsync(cancellationToken);
     }
@@ -203,7 +203,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The first person or null</returns>
-    public Task<Person?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
+    public new Task<Person?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         return Query().FirstOrDefaultAsync(cancellationToken);
     }
@@ -214,7 +214,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The single person</returns>
     /// <exception cref="InvalidOperationException">Thrown when zero or more than one result is found</exception>
-    public Task<Person> SingleAsync(CancellationToken cancellationToken = default)
+    public new Task<Person> SingleAsync(CancellationToken cancellationToken = default)
     {
         return Query().SingleAsync(cancellationToken);
     }
@@ -225,7 +225,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The single person or null</returns>
     /// <exception cref="InvalidOperationException">Thrown when more than one result is found</exception>
-    public Task<Person?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
+    public new Task<Person?> SingleOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         return Query().SingleOrDefaultAsync(cancellationToken);
     }
@@ -235,7 +235,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The count of people</returns>
-    public Task<int> CountAsync(CancellationToken cancellationToken = default)
+    public new Task<int> CountAsync(CancellationToken cancellationToken = default)
     {
         return Query().CountAsync(cancellationToken);
     }
@@ -245,7 +245,7 @@ public class FluentPeopleService : FluentApiServiceBase<Person, PersonDto>
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if any people exist, false otherwise</returns>
-    public Task<bool> AnyAsync(CancellationToken cancellationToken = default)
+    public new Task<bool> AnyAsync(CancellationToken cancellationToken = default)
     {
         return Query().AnyAsync(cancellationToken);
     }

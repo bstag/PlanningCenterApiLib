@@ -302,7 +302,7 @@ public class CalendarFluentContext : ICalendarFluentContext
             .Average(e => (e.EndsAt!.Value - e.StartsAt!.Value).TotalHours);
     }
 
-    public async Task<Dictionary<TKey, List<Event>>> GroupByAsync<TKey>(Expression<Func<Event, TKey>> keySelector, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<TKey, List<Event>>> GroupByAsync<TKey>(Expression<Func<Event, TKey>> keySelector, CancellationToken cancellationToken = default) where TKey : notnull
     {
         var events = await GetAllAsync(cancellationToken: cancellationToken);
         

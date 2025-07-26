@@ -65,7 +65,7 @@ public class CheckInsCommand : BaseCommand
                 var outputFile = context.ParseResult.GetValueForOption((Option<string?>)eventsListCommand.Options[7]);
                 var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)eventsListCommand.Options[8]);
                 
-                var checkInsService = await GetServiceAsync<ICheckInsService>(token, detailedLogging);
+                var checkInsService = GetService<ICheckInsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching check-in events list");
                 var queryParams = new QueryParameters();
@@ -132,23 +132,23 @@ public class CheckInsCommand : BaseCommand
         {
             try
             {
-                var id = context.ParseResult.GetValueForArgument((Argument<string>)eventsGetCommand.Arguments[0]);
+                var id = GetArgumentValue<string>(context, eventsGetCommand, 0);
                 
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = context.ParseResult.GetValueForOption((Option<string?>)eventsGetCommand.Options[0]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)eventsGetCommand.Options[1]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)eventsGetCommand.Options[2]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)eventsGetCommand.Options[3]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)eventsGetCommand.Options[4]);
+                var include = GetOptionValue<string?>(context, eventsGetCommand, 0);
+                var includeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 1);
+                var excludeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 2);
+                var outputFile = GetOptionValue<string?>(context, eventsGetCommand, 3);
+                var includeNulls = GetOptionValue<bool>(context, eventsGetCommand, 4);
                 
                 ValidateRequiredParameter(id, "id");
                 
-                var checkInsService = await GetServiceAsync<ICheckInsService>(token, detailedLogging);
+                var checkInsService = GetService<ICheckInsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching check-in event: {EventId}", id);
                 
@@ -212,22 +212,22 @@ public class CheckInsCommand : BaseCommand
             try
             {
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var pageSize = context.ParseResult.GetValueForOption((Option<int>)checkInsListCommand.Options[0]);
-                var page = context.ParseResult.GetValueForOption((Option<int>)checkInsListCommand.Options[1]);
-                var where = context.ParseResult.GetValueForOption((Option<string?>)checkInsListCommand.Options[2]);
-                var order = context.ParseResult.GetValueForOption((Option<string?>)checkInsListCommand.Options[3]);
-                var include = context.ParseResult.GetValueForOption((Option<string?>)checkInsListCommand.Options[4]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)checkInsListCommand.Options[5]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)checkInsListCommand.Options[6]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)checkInsListCommand.Options[7]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)checkInsListCommand.Options[8]);
+                var pageSize = GetOptionValue<int>(context, checkInsListCommand, 0, 25);
+                var page = GetOptionValue<int>(context, checkInsListCommand, 1, 1);
+                var where = GetOptionValue<string?>(context, checkInsListCommand, 2);
+                var order = GetOptionValue<string?>(context, checkInsListCommand, 3);
+                var include = GetOptionValue<string?>(context, checkInsListCommand, 4);
+                var includeProps = GetOptionValue<string[]?>(context, checkInsListCommand, 5);
+                var excludeProps = GetOptionValue<string[]?>(context, checkInsListCommand, 6);
+                var outputFile = GetOptionValue<string?>(context, checkInsListCommand, 7);
+                var includeNulls = GetOptionValue<bool>(context, checkInsListCommand, 8);
                 
-                var checkInsService = await GetServiceAsync<ICheckInsService>(token, detailedLogging);
+                var checkInsService = GetService<ICheckInsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching check-ins list");
                 var queryParams = new QueryParameters();
@@ -294,23 +294,23 @@ public class CheckInsCommand : BaseCommand
         {
             try
             {
-                var id = context.ParseResult.GetValueForArgument((Argument<string>)checkInsGetCommand.Arguments[0]);
+                var id = GetArgumentValue<string>(context, checkInsGetCommand, 0);
                 
                 // Get global options
-                var token = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<string?>>().FirstOrDefault(o => o.HasAlias("--token")));
-                var format = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<OutputFormat>>().FirstOrDefault(o => o.HasAlias("--format")));
-                var detailedLogging = context.ParseResult.GetValueForOption(context.ParseResult.RootCommandResult.Command.Options.OfType<Option<bool>>().FirstOrDefault(o => o.HasAlias("--detailed-logging")));
+                var token = GetTokenOption(context);
+                var format = GetFormatOption(context);
+                var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = context.ParseResult.GetValueForOption((Option<string?>)checkInsGetCommand.Options[0]);
-                var includeProps = context.ParseResult.GetValueForOption((Option<string[]?>)checkInsGetCommand.Options[1]);
-                var excludeProps = context.ParseResult.GetValueForOption((Option<string[]?>)checkInsGetCommand.Options[2]);
-                var outputFile = context.ParseResult.GetValueForOption((Option<string?>)checkInsGetCommand.Options[3]);
-                var includeNulls = context.ParseResult.GetValueForOption((Option<bool>)checkInsGetCommand.Options[4]);
+                var include = GetOptionValue<string?>(context, checkInsGetCommand, 0);
+                var includeProps = GetOptionValue<string[]?>(context, checkInsGetCommand, 1);
+                var excludeProps = GetOptionValue<string[]?>(context, checkInsGetCommand, 2);
+                var outputFile = GetOptionValue<string?>(context, checkInsGetCommand, 3);
+                var includeNulls = GetOptionValue<bool>(context, checkInsGetCommand, 4);
                 
                 ValidateRequiredParameter(id, "id");
                 
-                var checkInsService = await GetServiceAsync<ICheckInsService>(token, detailedLogging);
+                var checkInsService = GetService<ICheckInsService>(token, detailedLogging);
 
                 Logger.LogDebug("Fetching check-in: {CheckInId}", id);
                 
