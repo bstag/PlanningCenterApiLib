@@ -121,7 +121,7 @@ public class RegistrationsCommand : BaseCommand
         // Add signups get command
         var signupsGetCommand = new Command("get", "Get a specific event signup by ID")
         {
-            new Argument<string>("id", "Event signup ID"),
+            new Option<string>("--id", "Event signup ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include (e.g., 'person,event')"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -133,19 +133,18 @@ public class RegistrationsCommand : BaseCommand
         {
             try
             {
-                var id = GetArgumentValue<string>(context, signupsGetCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, signupsGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, signupsGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, signupsGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, signupsGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, signupsGetCommand, 4);
+                var id = GetOptionValue<string>(context, signupsGetCommand, 0);
+                var include = GetOptionValue<string?>(context, signupsGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, signupsGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, signupsGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, signupsGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, signupsGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 

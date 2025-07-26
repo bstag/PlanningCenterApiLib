@@ -135,7 +135,7 @@ public class PeopleCommand : BaseCommand
     {
         var getCommand = new Command("get", "Get a specific person by ID")
         {
-            new Argument<string>("id", "Person ID"),
+            new Option<string>("--id", "Person ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -143,30 +143,29 @@ public class PeopleCommand : BaseCommand
             new Option<bool>("--include-nulls", "Include null values in output")
         };
 
-        var idArgument = getCommand.Arguments[0];
-        var getIncludeOption = getCommand.Options[0];
-        var getIncludePropsOption = getCommand.Options[1];
-        var getExcludePropsOption = getCommand.Options[2];
-        var getOutputFileOption = getCommand.Options[3];
-        var getIncludeNullsOption = getCommand.Options[4];
+        var getIdOption = getCommand.Options[0];
+        var getIncludeOption = getCommand.Options[1];
+        var getIncludePropsOption = getCommand.Options[2];
+        var getExcludePropsOption = getCommand.Options[3];
+        var getOutputFileOption = getCommand.Options[4];
+        var getIncludeNullsOption = getCommand.Options[5];
 
         getCommand.SetHandler(async (InvocationContext context) =>
         {
             try
             {
-                var id = GetArgumentValue<string>(context, getCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, getCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, getCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, getCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, getCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, getCommand, 4);
+                var id = GetOptionValue<string>(context, getCommand, 0);
+                var include = GetOptionValue<string?>(context, getCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, getCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, getCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, getCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, getCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 

@@ -1,11 +1,11 @@
 # Planning Center API SDK - Complete API Reference
 
-This document provides comprehensive reference documentation for all services in the Planning Center API SDK.
+This document provides comprehensive reference documentation for all services, methods, and models in the Planning Center API SDK for .NET.
 
 ## Table of Contents
 
 1. [Authentication](#authentication)
-2. [Service Interfaces](#service-interfaces)
+2. [ServiceBase Architecture](#servicebase-architecture)
 3. [Common Patterns](#common-patterns)
 4. [People Service](#people-service)
 5. [Giving Service](#giving-service)
@@ -41,6 +41,58 @@ For simple token-based authentication.
 ```csharp
 services.AddPlanningCenterApiClientWithToken("your-access-token");
 ```
+
+## ServiceBase Architecture
+
+All services in the SDK inherit from the `ServiceBase` class, providing consistent functionality across all modules:
+
+### Core Features
+
+- **Correlation ID Management**: Automatic request tracking
+- **Performance Monitoring**: Built-in timing and metrics
+- **Unified Exception Handling**: Consistent error responses
+- **Automatic Retry Logic**: Configurable retry policies
+- **Rate Limiting**: Built-in rate limit handling
+- **Caching Support**: Optional response caching
+- **Logging Integration**: Structured logging throughout
+
+### ServiceBase Methods
+
+Every service provides these core methods:
+
+```csharp
+// Basic CRUD operations
+Task<T> GetAsync<T>(string endpoint)
+Task<T> PostAsync<T>(string endpoint, object data)
+Task<T> PutAsync<T>(string endpoint, object data)
+Task<T> PatchAsync<T>(string endpoint, object data)
+Task DeleteAsync(string endpoint)
+
+// Paginated operations
+Task<PagedResponse<T>> GetPagedAsync<T>(string endpoint, int page = 1, int perPage = 25)
+IAsyncEnumerable<T> GetAllAsync<T>(string endpoint)
+
+// Bulk operations
+Task<BulkResponse<T>> BulkCreateAsync<T>(string endpoint, IEnumerable<object> items)
+Task<BulkResponse<T>> BulkUpdateAsync<T>(string endpoint, IEnumerable<object> items)
+Task<BulkResponse> BulkDeleteAsync(string endpoint, IEnumerable<string> ids)
+```
+
+### Service Status
+
+All 9 Planning Center modules are fully implemented with 100% ServiceBase coverage:
+
+| Module | Status | ServiceBase | Fluent API | Tests |
+|--------|--------|-------------|------------|---------|
+| People | ✅ Complete | ✅ | ✅ | ✅ |
+| Giving | ✅ Complete | ✅ | ✅ | ✅ |
+| Calendar | ✅ Complete | ✅ | ✅ | ✅ |
+| Check-Ins | ✅ Complete | ✅ | ✅ | ✅ |
+| Groups | ✅ Complete | ✅ | ✅ | ✅ |
+| Registrations | ✅ Complete | ✅ | ✅ | ✅ |
+| Services | ✅ Complete | ✅ | ✅ | ✅ |
+| Publishing | ✅ Complete | ✅ | ✅ | ✅ |
+| Webhooks | ✅ Complete | ✅ | ✅ | ✅ |
 
 ## Service Interfaces
 

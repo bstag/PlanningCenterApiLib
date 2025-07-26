@@ -120,7 +120,7 @@ public class CheckInsCommand : BaseCommand
         // Add events get command
         var eventsGetCommand = new Command("get", "Get a specific check-in event by ID")
         {
-            new Argument<string>("id", "Check-in event ID"),
+            new Option<string>("--id", "Check-in event ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include (e.g., 'locations,check_ins')"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -132,19 +132,18 @@ public class CheckInsCommand : BaseCommand
         {
             try
             {
-                var id = GetArgumentValue<string>(context, eventsGetCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, eventsGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, eventsGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, eventsGetCommand, 4);
+                var id = GetOptionValue<string>(context, eventsGetCommand, 0);
+                var include = GetOptionValue<string?>(context, eventsGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, eventsGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, eventsGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 
@@ -282,7 +281,7 @@ public class CheckInsCommand : BaseCommand
         // Add check-ins get command
         var checkInsGetCommand = new Command("get", "Get a specific check-in by ID")
         {
-            new Argument<string>("id", "Check-in ID"),
+            new Option<string>("--id", "Check-in ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include (e.g., 'person,event,location')"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -294,19 +293,18 @@ public class CheckInsCommand : BaseCommand
         {
             try
             {
-                var id = GetArgumentValue<string>(context, checkInsGetCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, checkInsGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, checkInsGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, checkInsGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, checkInsGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, checkInsGetCommand, 4);
+                var id = GetOptionValue<string>(context, checkInsGetCommand, 0);
+                var include = GetOptionValue<string?>(context, checkInsGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, checkInsGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, checkInsGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, checkInsGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, checkInsGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 

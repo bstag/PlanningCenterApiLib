@@ -125,10 +125,10 @@ public class GroupAttributes
     public string? PublicChurchCenterWebUrl { get; set; }
 
     /// <summary>
-    /// Gets or sets the group header image.
+    /// Gets or sets the group header image object.
     /// </summary>
     [JsonPropertyName("header_image")]
-    public string? HeaderImage { get; set; }
+    public HeaderImageDto? HeaderImage { get; set; }
 
     /// <summary>
     /// Gets or sets the widget status.

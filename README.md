@@ -5,16 +5,18 @@ A comprehensive, production-ready .NET SDK for the [Planning Center API](https:/
 ## Features
 
 - **Complete API Coverage**: Full implementation of all 9 Planning Center modules
+- **ServiceBase Architecture**: Unified service pattern with correlation ID management and performance monitoring
 - **Multiple Authentication Methods**: Personal Access Tokens (PAT), OAuth 2.0, and Access Tokens
 - **Automatic Pagination**: Built-in pagination helpers eliminate manual pagination logic
 - **Memory-Efficient Streaming**: Stream large datasets without loading everything into memory
-- **Fluent API**: LINQ-like interface for intuitive query building
-- **Comprehensive Error Handling**: Detailed exceptions with proper error context
+- **Fluent API**: LINQ-like interface for intuitive query building across all modules
+- **Comprehensive Error Handling**: Detailed exceptions with proper error context and correlation tracking
 - **Built-in Caching**: Configurable response caching for improved performance
 - **Dependency Injection**: Full support for .NET dependency injection
 - **Async/Await**: Modern async patterns throughout
 - **Strongly Typed**: Rich type system with comprehensive models
-- **Production Ready**: Logging, monitoring, and configuration support
+- **Production Ready**: Logging, monitoring, correlation tracking, and configuration support
+- **CLI Tool**: Complete command-line interface for all 9 modules with advanced features
 
 ## Quick Start
 
@@ -75,6 +77,92 @@ The SDK supports three authentication methods:
 
 See the [Authentication Guide](docs/AUTHENTICATION.md) for detailed information on each method.
 
+## ServiceBase Architecture
+
+All services in the SDK are built on a unified **ServiceBase** pattern that provides enterprise-grade reliability and observability:
+
+### Core Features
+- **Correlation ID Management**: Every request gets a unique correlation ID for end-to-end tracking
+- **Performance Monitoring**: Built-in timing and performance metrics for all operations
+- **Unified Exception Handling**: Consistent error handling with detailed context and correlation tracking
+- **Automatic Retry Logic**: Configurable retry policies for transient failures with exponential backoff
+- **Request/Response Logging**: Structured logging with correlation IDs for debugging and monitoring
+- **Rate Limit Handling**: Automatic rate limit detection and intelligent backoff strategies
+- **Circuit Breaker Pattern**: Prevents cascading failures during API outages
+- **Request Deduplication**: Prevents duplicate requests within configurable time windows
+
+### Observability & Monitoring
+```csharp
+// All services inherit from ServiceBase and provide consistent behavior
+var peopleService = host.Services.GetRequiredService<IPeopleService>();
+
+// Every operation includes comprehensive tracking
+var people = await peopleService.ListAsync();
+// Logs: [CorrelationId: abc123] PeopleService.ListAsync started
+// Logs: [CorrelationId: abc123] HTTP GET /people/v2/people completed in 245ms (Status: 200)
+// Logs: [CorrelationId: abc123] PeopleService.ListAsync completed successfully (Duration: 267ms)
+
+// Performance metrics are automatically collected
+// - Request duration
+// - Success/failure rates
+// - Rate limit status
+// - Cache hit/miss ratios
+```
+
+### Error Handling & Context
+```csharp
+// Errors include full context and correlation tracking
+try 
+{
+    var person = await peopleService.GetAsync("invalid-id");
+}
+catch (PlanningCenterApiNotFoundException ex)
+{
+    // Rich exception context
+    // ex.CorrelationId = "abc123"
+    // ex.RequestId = "req-xyz789"
+    // ex.StatusCode = 404
+    // ex.ErrorDetails contains full API response
+    // ex.RequestUrl = "https://api.planningcenteronline.com/people/v2/people/invalid-id"
+    // ex.RequestDuration = TimeSpan.FromMilliseconds(156)
+    
+    _logger.LogWarning("Person not found: {PersonId} [CorrelationId: {CorrelationId}]", 
+        "invalid-id", ex.CorrelationId);
+}
+catch (PlanningCenterApiRateLimitException ex)
+{
+    // Automatic retry will be attempted based on configuration
+    _logger.LogInformation("Rate limit hit, retrying in {RetryAfter}s [CorrelationId: {CorrelationId}]", 
+        ex.RetryAfter.TotalSeconds, ex.CorrelationId);
+}
+```
+
+### Configuration & Customization
+```csharp
+// Configure ServiceBase behavior
+builder.Services.Configure<PlanningCenterOptions>(options =>
+{
+    // Performance monitoring
+    options.EnablePerformanceLogging = true;
+    options.SlowRequestThreshold = TimeSpan.FromSeconds(2);
+    
+    // Retry configuration
+    options.MaxRetryAttempts = 3;
+    options.RetryBaseDelay = TimeSpan.FromSeconds(1);
+    options.RetryMaxDelay = TimeSpan.FromSeconds(30);
+    
+    // Circuit breaker
+    options.CircuitBreakerFailureThreshold = 5;
+    options.CircuitBreakerRecoveryTime = TimeSpan.FromMinutes(1);
+    
+    // Request deduplication
+    options.EnableRequestDeduplication = true;
+    options.DeduplicationWindow = TimeSpan.FromSeconds(10);
+});
+```
+
+The ServiceBase architecture ensures that all 9 Planning Center modules provide consistent, reliable, and observable behavior. See the [Performance Guide](docs/PERFORMANCE.md) for optimization strategies and the [Best Practices](docs/BEST_PRACTICES.md) for recommended usage patterns.
+
 ## CLI Tool
 
 🚀 **NEW: Command-Line Interface** - A powerful CLI tool for interacting with Planning Center from the terminal!
@@ -85,33 +173,81 @@ cd examples/PlanningCenter.Api.Client.CLI
 
 # Set your token and start using
 dotnet run -- config set-token "your-app-id:your-secret"
-dotnet run -- people list
-dotnet run -- services list-plans
-dotnet run -- calendar list-events
-dotnet run -- giving list-donations
-dotnet run -- groups list
-dotnet run -- publishing list-episodes
-dotnet run -- webhooks list-subscriptions
+
+# People module
+dotnet run -- people list --format table --limit 10
+dotnet run -- people get 12345 --include emails,phone-numbers
+dotnet run -- people search --name "John Smith" --status active
+
+# Services module
+dotnet run -- services list-plans --service-type-id 1 --future
+dotnet run -- services list-songs --arrangement "Key of C"
+
+# Calendar module
+dotnet run -- calendar list-events --start-date 2024-01-01 --end-date 2024-12-31
+
+# Giving module
+dotnet run -- giving list-donations --fund-id 1 --date-range "2024-01-01,2024-12-31"
+
+# Advanced usage with filtering and export
+dotnet run -- people list --where "status=active" --sort "last_name" --format csv --output people.csv
+dotnet run -- services list-plans --include "plan_times,contributors" --format json --output plans.json
 ```
 
 **Features:**
 - **9 Complete Modules**: All Planning Center modules (People, Services, Registrations, Calendar, Check-Ins, Giving, Groups, Publishing, Webhooks)
-- **Multiple Output Formats**: JSON (default), CSV, XML, Table
-- **Advanced Filtering**: Complex queries with sorting and pagination
-- **Secure Authentication**: Encrypted token storage
-- **Export Capabilities**: Save results to files
-- **Production Ready**: Comprehensive error handling and logging
+- **Multiple Output Formats**: JSON (default), CSV, XML, Table with customizable columns
+- **Advanced Filtering**: Complex queries with WHERE clauses, sorting, and pagination
+- **Secure Authentication**: Encrypted token storage with multiple authentication methods
+- **Export Capabilities**: Save results to files with various formats
+- **Include Related Data**: Fetch related resources in single requests
+- **Batch Operations**: Process multiple items efficiently
+- **Production Ready**: Comprehensive error handling, logging, and retry logic
+- **Interactive Mode**: Step-by-step guided operations
+- **Configuration Management**: Multiple environment support
 
-See the [CLI Documentation](examples/PlanningCenter.Api.Client.CLI/README.md) for complete usage guide.
+**Quick Examples:**
+```bash
+# Get person with all related data
+dotnet run -- people get 12345 --include "emails,phone-numbers,addresses,field-data"
+
+# Export active people to CSV
+dotnet run -- people list --where "status=active" --format csv --output active-people.csv
+
+# List upcoming service plans
+dotnet run -- services list-plans --future --include "plan-times,contributors" --format table
+
+# Search for events in date range
+dotnet run -- calendar list-events --start-date 2024-06-01 --end-date 2024-06-30 --format json
+```
+
+See the [CLI Documentation](examples/PlanningCenter.Api.Client.CLI/README.md) for complete usage guide and advanced scenarios.
 
 ## Documentation
 
+### Getting Started
+- **[Getting Started Guide](docs/GETTING_STARTED.md)** - Step-by-step guide to get up and running quickly
+- **[Authentication Guide](docs/AUTHENTICATION.md)** - Complete guide to all authentication methods
+- **[Best Practices](docs/BEST_PRACTICES.md)** - SDK usage best practices and patterns
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Migration Guide](docs/MIGRATION_GUIDE.md)** - Upgrade from older versions or other SDKs
+
+### API Documentation
 - **[Fluent API Guide](docs/FLUENT_API.md)** - Complete guide to the LINQ-like fluent interface
-- **[Authentication Guide](planning-center-sdk-plan/architecture/AUTHENTICATION.md)** - Complete guide to all authentication methods
+- **[API Reference](planning-center-sdk-plan/api-reference/)** - Detailed API documentation
+- **[ServiceBase Architecture](planning-center-sdk-plan/architecture/)** - SDK architecture and design decisions
+
+### Advanced Topics
+- **[Performance Guide](docs/PERFORMANCE.md)** - Optimization strategies and best practices
+- **[Testing Guide](docs/TESTING.md)** - Unit testing, integration testing, and mocking
+- **[Issues & Status](docs/ISSUES.md)** - Known issues and current development status
+
+### Tools and Examples
 - **[CLI Tool Guide](examples/PlanningCenter.Api.Client.CLI/README.md)** - Complete command-line interface documentation
 - **[Examples](examples/)** - Working examples for different scenarios
-- **[API Reference](planning-center-sdk-plan/api-reference/)** - Detailed API documentation
-- **[Architecture](planning-center-sdk-plan/architecture/)** - SDK architecture and design decisions
+- **[Console Examples](examples/PlanningCenter.Api.Client.Console/README.md)** - Basic API usage examples
+- **[Fluent Examples](examples/PlanningCenter.Api.Client.Fluent.Console/README.md)** - Fluent API examples
+- **[Worker Service Examples](examples/PlanningCenter.Api.Client.Worker/README.md)** - Background service patterns
 
 ## Examples
 

@@ -135,7 +135,7 @@ public class CalendarCommand : BaseCommand
         // Add events get command
         var eventsGetCommand = new Command("get", "Get a specific calendar event by ID")
         {
-            new Argument<string>("id", "Calendar event ID"),
+            new Option<string>("--id", "Calendar event ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include (e.g., 'event_instances,resource_bookings')"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -147,19 +147,18 @@ public class CalendarCommand : BaseCommand
         {
             try
             {
-                var id = GetArgumentValue<string>(context, eventsGetCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, eventsGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, eventsGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, eventsGetCommand, 4);
+                var id = GetOptionValue<string>(context, eventsGetCommand, 0);
+                var include = GetOptionValue<string?>(context, eventsGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, eventsGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, eventsGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, eventsGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 
@@ -295,7 +294,7 @@ public class CalendarCommand : BaseCommand
         // Add resources get command
         var resourcesGetCommand = new Command("get", "Get a specific calendar resource by ID")
         {
-            new Argument<string>("id", "Calendar resource ID"),
+            new Option<string>("--id", "Calendar resource ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include (e.g., 'resource_bookings')"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -307,19 +306,18 @@ public class CalendarCommand : BaseCommand
         {
             try
             {
-                var id = GetArgumentValue<string>(context, resourcesGetCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, resourcesGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, resourcesGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, resourcesGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, resourcesGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, resourcesGetCommand, 4);
+                var id = GetOptionValue<string>(context, resourcesGetCommand, 0);
+                var include = GetOptionValue<string?>(context, resourcesGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, resourcesGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, resourcesGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, resourcesGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, resourcesGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 

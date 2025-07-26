@@ -203,10 +203,10 @@ public abstract class ServiceBase
         return await ExecuteGetAsync<TDomain>(
             async () =>
             {
-                var response = await ApiConnection.GetAsync<TDto>(
+                var envelope = await ApiConnection.GetAsync<JsonApiSingleResponse<TDto>>(
                     $"{endpoint}/{resourceId}", cancellationToken);
-                
-                return response != null ? mapper(response) : default(TDomain)!;
+
+                return envelope?.Data != null ? mapper(envelope.Data) : default(TDomain)!;
             },
             operationName,
             resourceId,

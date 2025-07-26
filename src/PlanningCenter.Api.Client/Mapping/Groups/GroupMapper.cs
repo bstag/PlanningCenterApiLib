@@ -41,7 +41,7 @@ public static class GroupMapper
             CanCreateConversation = dto.Attributes.CanCreateConversation,
             ChatEnabled = dto.Attributes.ChatEnabled,
             PublicChurchCenterWebUrl = dto.Attributes.PublicChurchCenterWebUrl,
-            HeaderImage = dto.Attributes.HeaderImage,
+            HeaderImage = dto.Attributes.HeaderImage?.Original,
             WidgetStatus = dto.Attributes.WidgetStatus,
             GroupTypeId = dto.Relationships?.GroupType?.Id,
             LocationId = dto.Relationships?.Location?.Id,

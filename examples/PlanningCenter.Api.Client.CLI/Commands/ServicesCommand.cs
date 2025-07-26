@@ -121,7 +121,7 @@ public class ServicesCommand : BaseCommand
         // Add plans get command
         var plansGetCommand = new Command("get", "Get a specific service plan by ID")
         {
-            new Argument<string>("id", "Service plan ID"),
+            new Option<string>("--id", "Service plan ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include (e.g., 'service_type,items')"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -133,19 +133,18 @@ public class ServicesCommand : BaseCommand
         {
             try
             {
-                var id = context.ParseResult.GetValueForArgument((Argument<string>)plansGetCommand.Arguments[0]);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, plansGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, plansGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, plansGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, plansGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, plansGetCommand, 4);
+                var id = GetOptionValue<string>(context, plansGetCommand, 0);
+                var include = GetOptionValue<string?>(context, plansGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, plansGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, plansGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, plansGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, plansGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 
@@ -281,7 +280,7 @@ public class ServicesCommand : BaseCommand
         // Add service-types get command
         var serviceTypesGetCommand = new Command("get", "Get a specific service type by ID")
         {
-            new Argument<string>("id", "Service type ID"),
+            new Option<string>("--id", "Service type ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -293,19 +292,18 @@ public class ServicesCommand : BaseCommand
         {
             try
             {
-                var id = GetArgumentValue<string>(context, serviceTypesGetCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, serviceTypesGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, serviceTypesGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, serviceTypesGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, serviceTypesGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, serviceTypesGetCommand, 4);
+                var id = GetOptionValue<string>(context, serviceTypesGetCommand, 0);
+                var include = GetOptionValue<string?>(context, serviceTypesGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, serviceTypesGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, serviceTypesGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, serviceTypesGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, serviceTypesGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 
@@ -441,7 +439,7 @@ public class ServicesCommand : BaseCommand
         // Add songs get command
         var songsGetCommand = new Command("get", "Get a specific song by ID")
         {
-            new Argument<string>("id", "Song ID"),
+            new Option<string>("--id", "Song ID") { IsRequired = true },
             new Option<string?>("--include", "Related resources to include (e.g., 'arrangements')"),
             new Option<string[]?>("--include-props", "Properties to include in output"),
             new Option<string[]?>("--exclude-props", "Properties to exclude from output"),
@@ -453,19 +451,18 @@ public class ServicesCommand : BaseCommand
         {
             try
             {
-                var id = GetArgumentValue<string>(context, songsGetCommand, 0);
-                
                 // Get global options
                 var token = GetTokenOption(context);
                 var format = GetFormatOption(context);
                 var detailedLogging = GetDetailedLoggingOption(context);
                 
                 // Get local options
-                var include = GetOptionValue<string?>(context, songsGetCommand, 0);
-                var includeProps = GetOptionValue<string[]?>(context, songsGetCommand, 1);
-                var excludeProps = GetOptionValue<string[]?>(context, songsGetCommand, 2);
-                var outputFile = GetOptionValue<string?>(context, songsGetCommand, 3);
-                var includeNulls = GetOptionValue<bool>(context, songsGetCommand, 4);
+                var id = GetOptionValue<string>(context, songsGetCommand, 0);
+                var include = GetOptionValue<string?>(context, songsGetCommand, 1);
+                var includeProps = GetOptionValue<string[]?>(context, songsGetCommand, 2);
+                var excludeProps = GetOptionValue<string[]?>(context, songsGetCommand, 3);
+                var outputFile = GetOptionValue<string?>(context, songsGetCommand, 4);
+                var includeNulls = GetOptionValue<bool>(context, songsGetCommand, 5);
                 
                 ValidateRequiredParameter(id, "id");
                 

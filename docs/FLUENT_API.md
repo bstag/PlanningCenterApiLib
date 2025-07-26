@@ -1,6 +1,6 @@
 # Planning Center Fluent API
 
-The Planning Center SDK provides a fluent API that offers LINQ-like syntax for querying and manipulating data. This API is built on top of the standard API calls and provides a more developer-friendly interface without affecting the underlying functionality.
+The Planning Center SDK provides a fluent API that offers LINQ-like syntax for querying and manipulating data. This API is built on top of the ServiceBase architecture and provides a more developer-friendly interface without affecting the underlying functionality.
 
 ## Overview
 
@@ -12,6 +12,7 @@ The fluent API provides:
 - **Memory-efficient streaming** for processing large amounts of data
 - **Fluent creation** of entities with related data
 - **Performance monitoring** and query optimization insights
+- **ServiceBase integration** for consistent error handling and caching
 
 ## Getting Started
 
@@ -33,6 +34,55 @@ var checkIns = fluentClient.CheckIns;      // ✅ Full implementation
 var registrations = fluentClient.Registrations; // ✅ Full implementation
 var publishing = fluentClient.Publishing;  // ✅ Full implementation
 var webhooks = fluentClient.Webhooks;      // ✅ Full implementation
+```
+
+## ServiceBase Integration
+
+The Fluent API is built on top of the ServiceBase architecture, providing:
+
+### Automatic Performance Monitoring
+
+```csharp
+// All fluent queries are automatically monitored
+var people = await client.Fluent().People
+    .Where(p => p.FirstName == "John")
+    .GetPagedAsync(); // Performance metrics logged automatically
+```
+
+### Built-in Error Handling
+
+```csharp
+try
+{
+    var person = await client.Fluent().People
+        .Where(p => p.Email == "invalid@example.com")
+        .FirstOrDefaultAsync();
+}
+catch (PlanningCenterApiException ex)
+{
+    // Unified exception handling from ServiceBase
+    Console.WriteLine($"API Error: {ex.Message}");
+    Console.WriteLine($"Correlation ID: {ex.CorrelationId}");
+}
+```
+
+### Caching Support
+
+```csharp
+// Caching is handled automatically by the underlying ServiceBase
+var cachedPeople = await client.Fluent().People
+    .Where(p => p.FirstName == "John")
+    .GetPagedAsync(); // Results cached based on ServiceBase configuration
+```
+
+### Correlation ID Tracking
+
+```csharp
+// All fluent operations include correlation IDs for tracking
+var people = await client.Fluent().People
+    .Where(p => p.CreatedAt > DateTime.Now.AddDays(-30))
+    .GetPagedAsync();
+// Correlation ID automatically included in logs and error tracking
 ```
 
 ### Simple Queries
@@ -512,14 +562,213 @@ var person = await client.Fluent().People.GetAsync("123");
 // Choose based on your preference and use case
 ```
 
+## Performance Optimization
+
+### Leverage ServiceBase Caching
+
+The ServiceBase architecture provides automatic caching for improved performance:
+
+```csharp
+// Frequently accessed data is automatically cached
+var activePeople = await client.Fluent().People
+    .Where(p => p.Status == "active")
+    .GetAllAsync(); // Cached for subsequent requests
+```
+
+### Use Efficient Pagination
+
+Always use pagination for large datasets with built-in performance monitoring:
+
+```csharp
+var pagedPeople = await client.Fluent().People
+    .Where(p => p.Status == "active")
+    .GetPagedAsync(pageSize: 100);
+// Performance metrics automatically logged
+```
+
+### Optimize Field Selection
+
+Only request the fields you need to reduce payload size:
+
+```csharp
+// Use includes to specify exactly what data you need
+var people = await client.Fluent().People
+    .Include(p => p.Emails)
+    .GetPagedAsync();
+```
+
+### Smart Include Usage
+
+Use includes strategically with performance monitoring:
+
+```csharp
+// Good - targeted includes
+var peopleWithEmails = await client.Fluent().People
+    .Include(p => p.Emails)
+    .GetPagedAsync();
+
+// Monitor performance for complex includes
+var peopleWithDetails = await client.Fluent().People
+    .Include(p => p.Emails)
+    .Include(p => p.PhoneNumbers)
+    .GetPagedAsync();
+```
+
+### Bulk Operations
+
+Use bulk operations for better performance:
+
+```csharp
+// Use GetAllAsync for bulk retrieval with automatic pagination
+var allActivePeople = await client.Fluent().People
+    .Where(p => p.Status == "active")
+    .GetAllAsync();
+```
+
+### Async Enumeration for Large Datasets
+
+Use async enumeration for memory-efficient processing:
+
+```csharp
+await foreach (var person in client.Fluent().People
+    .Where(p => p.Status == "active")
+    .AsAsyncEnumerable())
+{
+    // Process each person without loading all into memory
+    await ProcessPersonAsync(person);
+}
+```
+
 ## Best Practices
 
-1. **Use streaming for large datasets** to maintain constant memory usage
-2. **Configure pagination options** to optimize performance
-3. **Combine fluent creation** when creating entities with related data
-4. **Use LINQ-like operations** for familiar .NET patterns
-5. **Handle exceptions** appropriately for your use case
-6. **Choose the right method** based on your data size and processing needs
+### Query Design
+
+1. **Use specific filters** to reduce the amount of data transferred:
+   ```csharp
+   // Good - specific filter
+   var recentPeople = await client.Fluent().People
+       .Where(p => p.CreatedAt > DateTime.Now.AddDays(-7))
+       .GetAllAsync();
+   
+   // Avoid - fetching all data
+   var allPeople = await client.Fluent().People
+       .GetAllAsync();
+   ```
+
+2. **Leverage pagination** for large datasets:
+   ```csharp
+   var pagedResults = await client.Fluent().People
+       .GetPagedAsync(pageSize: 50);
+   ```
+
+3. **Include only necessary related data**:
+   ```csharp
+   // Good - targeted includes
+   var peopleWithEmails = await client.Fluent().People
+       .Include(p => p.Emails)
+       .GetPagedAsync();
+   ```
+
+### Error Handling
+
+4. **Use proper exception handling** with ServiceBase correlation IDs:
+   ```csharp
+   try
+   {
+       var person = await client.Fluent().People
+           .Where(p => p.Id == personId)
+           .FirstOrDefaultAsync();
+   }
+   catch (PlanningCenterApiException ex)
+   {
+       _logger.LogError("API error {CorrelationId}: {Message}", 
+           ex.CorrelationId, ex.Message);
+   }
+   ```
+
+### Performance
+
+5. **Use async/await properly** to avoid blocking:
+   ```csharp
+   // Good - proper async usage
+   var people = await client.Fluent().People
+       .Where(p => p.Status == "active")
+       .GetAllAsync();
+   
+   // Avoid - blocking calls
+   var people = client.Fluent().People
+       .Where(p => p.Status == "active")
+       .GetAllAsync().Result;
+   ```
+
+6. **Choose the right method** based on data size:
+   ```csharp
+   // For small datasets
+   var fewPeople = await client.Fluent().People
+       .GetPagedAsync(pageSize: 10);
+   
+   // For large datasets
+   await foreach (var person in client.Fluent().People
+       .AsAsyncEnumerable())
+   {
+       await ProcessPersonAsync(person);
+   }
+   ```
+
+### Monitoring and Optimization
+
+7. **Monitor performance metrics** using ServiceBase features:
+   ```csharp
+   // Performance is automatically monitored
+   var stopwatch = Stopwatch.StartNew();
+   var people = await client.Fluent().People
+       .Where(p => p.Status == "active")
+       .GetAllAsync();
+   _logger.LogInformation("Query completed in {ElapsedMs}ms", 
+       stopwatch.ElapsedMilliseconds);
+   ```
+
+8. **Leverage ServiceBase caching** for frequently accessed data:
+   ```csharp
+   // Caching is handled automatically by ServiceBase
+   var cachedData = await client.Fluent().People
+       .Where(p => p.Status == "active")
+       .GetAllAsync(); // Subsequent calls may use cached results
+   ```
+
+### Testing
+
+9. **Write testable code** using dependency injection:
+   ```csharp
+   public class PersonService
+   {
+       private readonly IPlanningCenterClient _client;
+       
+       public PersonService(IPlanningCenterClient client)
+       {
+           _client = client;
+       }
+       
+       public async Task<List<Person>> GetActivePeopleAsync()
+       {
+           return await _client.Fluent().People
+               .Where(p => p.Status == "active")
+               .GetAllAsync();
+       }
+   }
+   ```
+
+10. **Use correlation IDs** for debugging and monitoring:
+    ```csharp
+    using var scope = _logger.BeginScope(new Dictionary<string, object>
+    {
+        ["CorrelationId"] = Guid.NewGuid().ToString()
+    });
+    
+    var people = await client.Fluent().People
+        .Where(p => p.Status == "active")
+        .GetAllAsync();
+    ```
 
 ## Module-Specific Examples
 
