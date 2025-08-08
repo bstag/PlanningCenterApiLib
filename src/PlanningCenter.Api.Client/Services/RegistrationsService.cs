@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.Mapping.Registrations;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.Registrations;
@@ -683,31 +684,58 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
     /// This method automatically handles pagination behind the scenes.
     /// </summary>
     public async Task<IReadOnlyList<Signup>> GetAllSignupsAsync(
-        QueryParameters? parameters = null,
-        PaginationOptions? options = null,
-        CancellationToken cancellationToken = default)
+     QueryParameters? parameters = null,
+     PaginationOptions? options = null,
+     CancellationToken cancellationToken = default)
     {
         Logger.LogDebug("Getting all signups with parameters: {@Parameters}", parameters);
 
         var allSignups = new List<Signup>();
         var pageSize = options?.PageSize ?? 100;
-        var maxPages = options?.MaxItems ?? int.MaxValue;
+        var maxItems = options?.MaxItems;
         var currentPage = 0;
 
         try
         {
-            var currentParameters = parameters ?? new QueryParameters();
+            // Create a copy to avoid mutating the original parameters
+            var currentParameters = parameters?.Clone() ?? new QueryParameters();
             currentParameters.PerPage = pageSize;
 
             IPagedResponse<Signup> response;
             do
             {
+                // Check cancellation before each API call
+                cancellationToken.ThrowIfCancellationRequested();
+
                 response = await ListSignupsAsync(currentParameters, cancellationToken);
-                allSignups.AddRange(response.Data);
-                
+
+                // Respect MaxItems limit when adding items
+                var itemsToAdd = response.Data;
+                if (maxItems.HasValue)
+                {
+                    var remainingItems = maxItems.Value - allSignups.Count;
+                    if (remainingItems <= 0)
+                        break;
+
+                    if (itemsToAdd.Count > remainingItems)
+                    {
+                        itemsToAdd = itemsToAdd.Take(remainingItems).ToList();
+                    }
+                }
+
+                allSignups.AddRange(itemsToAdd);
+
                 currentPage++;
-                if (currentPage >= maxPages)
+
+                // Break if we've reached the MaxItems limit
+                if (maxItems.HasValue && allSignups.Count >= maxItems.Value)
                     break;
+
+                // Add delay between pages if specified
+                if (options?.DelayBetweenPages.HasValue == true)
+                {
+                    await Task.Delay(options.DelayBetweenPages.Value, cancellationToken);
+                }
 
                 // Update parameters for next page
                 if (!string.IsNullOrEmpty(response.Links?.Next))
@@ -718,7 +746,7 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
                 {
                     break;
                 }
-            } while (!string.IsNullOrEmpty(response.Links?.Next));
+            } while (!string.IsNullOrEmpty(response.Links?.Next) && !cancellationToken.IsCancellationRequested);
 
             Logger.LogInformation("Retrieved {Count} total signups across {Pages} pages", allSignups.Count, currentPage);
             return allSignups.AsReadOnly();
@@ -909,6 +937,8 @@ public class RegistrationsService : ServiceBase, IRegistrationsService
             {
                 Id = response.Data.Id,
                 Name = response.Data.Attributes?.Name ?? request.Name,
+                Description = response.Data.Attributes?.Description ?? request.Description,
+                Required = response.Data.Attributes?.Required ?? request.Required,
                 Cost = response.Data.Attributes?.PriceCents / 100m, // Convert cents to decimal
                 Currency = response.Data.Attributes?.PriceCurrency ?? string.Empty,
                 CreatedAt = response.Data.Attributes?.CreatedAt?.DateTime ?? DateTime.MinValue,

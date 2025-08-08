@@ -1,7 +1,9 @@
+
+using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Services;
 using PlanningCenter.Api.Client.Models.Requests;
 
-namespace PlanningCenter.Api.Client.Models;
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Service interface for the Planning Center Services module.

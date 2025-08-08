@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.Mapping.Publishing;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Publishing;
 using PlanningCenter.Api.Client.Models.Requests;
@@ -684,14 +685,8 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"{BaseEndpoint}/episodes/{episodeId}/speakerships";
-            if (!string.IsNullOrEmpty(queryString))
-            {
-                endpoint += $"?{queryString}";
-            }
-            var response = await ApiConnection.GetAsync<PagedResponse<SpeakershipDto>>(
-                endpoint, cancellationToken);
+            var response = await ApiConnection.GetPagedAsync<SpeakershipDto>(
+                $"{BaseEndpoint}/episodes/{episodeId}/speakerships", parameters, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -732,14 +727,8 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"{BaseEndpoint}/speakers/{speakerId}/speakerships";
-            if (!string.IsNullOrEmpty(queryString))
-            {
-                endpoint += $"?{queryString}";
-            }
-            var response = await ApiConnection.GetAsync<PagedResponse<SpeakershipDto>>(
-                endpoint, cancellationToken);
+            var response = await ApiConnection.GetPagedAsync<SpeakershipDto>(
+                $"{BaseEndpoint}/speakers/{speakerId}/speakerships", parameters, cancellationToken);
 
             if (response?.Data == null)
             {
@@ -865,14 +854,8 @@ public class PublishingService : ServiceBase, IPublishingService
 
         try
         {
-            var queryString = parameters?.ToQueryString() ?? string.Empty;
-            var endpoint = $"{BaseEndpoint}/episodes/{episodeId}/media";
-            if (!string.IsNullOrEmpty(queryString))
-            {
-                endpoint += $"?{queryString}";
-            }
-            var response = await ApiConnection.GetAsync<PagedResponse<MediaDto>>(
-                endpoint, cancellationToken);
+            var response = await ApiConnection.GetPagedAsync<MediaDto>(
+                $"{BaseEndpoint}/episodes/{episodeId}/media", parameters, cancellationToken);
 
             if (response?.Data == null)
             {

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Exceptions;
 using System.Net;
@@ -351,7 +352,7 @@ public class ApiConnection : IApiConnection, IDisposable
         while (true)
         {
             attempt++;
-            
+            _logger.LogInformation("Attempt {Attempt} to execute request", attempt);
             try
             {
                 return await operation();

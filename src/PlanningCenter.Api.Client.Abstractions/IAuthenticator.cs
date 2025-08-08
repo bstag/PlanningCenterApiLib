@@ -1,4 +1,4 @@
-namespace PlanningCenter.Api.Client.Models;
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Interface for handling Planning Center API authentication.

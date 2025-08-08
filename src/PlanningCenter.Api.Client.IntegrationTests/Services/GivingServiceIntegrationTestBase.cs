@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Giving;
 using PlanningCenter.Api.Client.Models.Requests;
@@ -138,6 +139,7 @@ public abstract class GivingServiceIntegrationTestBase : IClassFixture<TestFixtu
             {
                 // Note: Funds typically cannot be deleted, only archived
                 // This is a placeholder for cleanup logic
+                await Task.CompletedTask;
             }
             catch
             {
@@ -175,6 +177,7 @@ public abstract class GivingServiceIntegrationTestBase : IClassFixture<TestFixtu
             {
                 // Note: Committed batches typically cannot be deleted
                 // This is a placeholder for cleanup logic
+                await Task.CompletedTask;
             }
             catch
             {
@@ -194,6 +197,7 @@ public abstract class GivingServiceIntegrationTestBase : IClassFixture<TestFixtu
             {
                 // Note: Pledges typically cannot be deleted, only archived
                 // This is a placeholder for cleanup logic
+                await Task.CompletedTask;
             }
             catch
             {
@@ -213,6 +217,7 @@ public abstract class GivingServiceIntegrationTestBase : IClassFixture<TestFixtu
             {
                 // Note: Recurring donations are typically cancelled, not deleted
                 // This is a placeholder for cleanup logic
+                await Task.CompletedTask;
             }
             catch
             {

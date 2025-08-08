@@ -1,7 +1,10 @@
+
+using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.Giving;
 using PlanningCenter.Api.Client.Models.Requests;
 
-namespace PlanningCenter.Api.Client.Models;
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Service interface for the Planning Center Giving module.
@@ -252,7 +255,7 @@ public interface IGivingService
     /// <param name="id">The person's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The person, or null if not found</returns>
-    Task<Core.Person?> GetPersonAsync(string id, CancellationToken cancellationToken = default);
+    Task<Person?> GetPersonAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets donations for a specific person.

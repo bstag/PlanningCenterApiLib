@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Exceptions;
 using System.Net.Http.Headers;
@@ -276,7 +277,7 @@ public class OAuthAuthenticator : IAuthenticator, IDisposable
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
                 // Patch: Exception message must mention 'access_token' for test alignment
-                throw new PlanningCenterApiGeneralException("Missing access_token in token response", 200, "missing_access_token");
+                throw new PlanningCenterApiAuthenticationException("Missing access_token in token response");
             }
 
             _accessToken = tokenResponse.AccessToken;

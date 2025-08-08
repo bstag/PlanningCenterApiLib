@@ -1,5 +1,6 @@
 using FluentAssertions;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Services;
 using PlanningCenter.Api.Client.Models.Requests;

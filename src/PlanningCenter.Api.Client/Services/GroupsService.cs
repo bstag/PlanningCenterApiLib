@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.Mapping.Groups;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Exceptions;
 using PlanningCenter.Api.Client.Models.JsonApi;

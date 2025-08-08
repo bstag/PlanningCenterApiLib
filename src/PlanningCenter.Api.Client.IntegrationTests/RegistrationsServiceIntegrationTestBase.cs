@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Registrations;
 using PlanningCenter.Api.Client.Models.Requests;
@@ -76,6 +77,7 @@ public abstract class RegistrationsServiceIntegrationTestBase : IClassFixture<Te
         {
             // Note: Registration deletion may not be supported in the API
             // await _registrationsService.DeleteRegistrationAsync(registrationId);
+            await Task.CompletedTask;
         }
         catch
         {

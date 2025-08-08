@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Exceptions;
 using PlanningCenter.Api.Client.Models.JsonApi;
@@ -358,7 +359,7 @@ public class ServiceBaseTests
     {
         // Arrange
         var request = new TestCreateRequest { Name = "Test Plan" };
-        _mockApiConnection.SetupPostResponse<JsonApiSingleResponse<TestDto>>("/plans", null);
+        _mockApiConnection.SetupPostResponse<JsonApiSingleResponse<TestDto>>("/plans", null!);
 
         // Act & Assert
         var act = async () => await _testService.TestCreateResourceAsync<TestCreateRequest, TestDto, TestDomain>(

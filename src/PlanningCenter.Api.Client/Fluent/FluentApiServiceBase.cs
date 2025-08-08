@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.Fluent;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Services;
 

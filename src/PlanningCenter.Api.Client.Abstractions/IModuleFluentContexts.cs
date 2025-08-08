@@ -1,6 +1,18 @@
 using System.Linq.Expressions;
 
-namespace PlanningCenter.Api.Client.Models.Fluent;
+using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.CheckIns;
+using PlanningCenter.Api.Client.Models.Core;
+using PlanningCenter.Api.Client.Models.Giving;
+using PlanningCenter.Api.Client.Models.Groups;
+using PlanningCenter.Api.Client.Models.Publishing;
+using PlanningCenter.Api.Client.Models.Registrations;
+using PlanningCenter.Api.Client.Models.Services;
+using PlanningCenter.Api.Client.Models.Webhooks;
+using CalendarEvent = PlanningCenter.Api.Client.Models.Calendar.Event;
+using CheckInEvent = PlanningCenter.Api.Client.Models.CheckIns.Event;
+
+namespace PlanningCenter.Api.Client.Abstractions;
 
 // Placeholder interfaces for other modules - will be fully implemented in future phases
 
@@ -18,42 +30,42 @@ public interface IGivingFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGivingFluentContext Where(Expression<Func<Giving.Donation, bool>> predicate);
+    IGivingFluentContext Where(Expression<Func<Donation, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGivingFluentContext Include(Expression<Func<Giving.Donation, object>> include);
+    IGivingFluentContext Include(Expression<Func<Donation, object>> include);
     
     /// <summary>
     /// Specifies the primary sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGivingFluentContext OrderBy(Expression<Func<Giving.Donation, object>> orderBy);
+    IGivingFluentContext OrderBy(Expression<Func<Donation, object>> orderBy);
     
     /// <summary>
     /// Specifies the primary sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGivingFluentContext OrderByDescending(Expression<Func<Giving.Donation, object>> orderBy);
+    IGivingFluentContext OrderByDescending(Expression<Func<Donation, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGivingFluentContext ThenBy(Expression<Func<Giving.Donation, object>> thenBy);
+    IGivingFluentContext ThenBy(Expression<Func<Donation, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGivingFluentContext ThenByDescending(Expression<Func<Giving.Donation, object>> thenBy);
+    IGivingFluentContext ThenByDescending(Expression<Func<Donation, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -63,7 +75,7 @@ public interface IGivingFluentContext
     /// <param name="id">The donation's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The donation, or null if not found</returns>
-    Task<Giving.Donation?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<Donation?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -72,7 +84,7 @@ public interface IGivingFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Giving.Donation>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Donation>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -81,7 +93,7 @@ public interface IGivingFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Giving.Donation>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Donation>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all donations matching the query criteria.
@@ -91,7 +103,7 @@ public interface IGivingFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All donations matching the criteria</returns>
-    Task<IReadOnlyList<Giving.Donation>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Donation>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams donations matching the query criteria for memory-efficient processing.
@@ -100,7 +112,7 @@ public interface IGivingFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields donations from all pages</returns>
-    IAsyncEnumerable<Giving.Donation> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Donation> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -110,14 +122,14 @@ public interface IGivingFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first donation matching the criteria</returns>
-    Task<Giving.Donation> FirstAsync(CancellationToken cancellationToken = default);
+    Task<Donation> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first donation matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first donation matching the criteria, or null</returns>
-    Task<Giving.Donation?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Donation?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first donation matching the additional predicate.
@@ -125,7 +137,7 @@ public interface IGivingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first donation matching all criteria</returns>
-    Task<Giving.Donation> FirstAsync(Expression<Func<Giving.Donation, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Donation> FirstAsync(Expression<Func<Donation, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first donation matching the additional predicate, or null if none found.
@@ -133,7 +145,7 @@ public interface IGivingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first donation matching all criteria, or null</returns>
-    Task<Giving.Donation?> FirstOrDefaultAsync(Expression<Func<Giving.Donation, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Donation?> FirstOrDefaultAsync(Expression<Func<Donation, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single donation matching the query criteria.
@@ -141,7 +153,7 @@ public interface IGivingFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single donation matching the criteria</returns>
-    Task<Giving.Donation> SingleAsync(CancellationToken cancellationToken = default);
+    Task<Donation> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single donation matching the query criteria, or null if none found.
@@ -149,7 +161,7 @@ public interface IGivingFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single donation matching the criteria, or null</returns>
-    Task<Giving.Donation?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Donation?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single donation matching the additional predicate.
@@ -158,7 +170,7 @@ public interface IGivingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single donation matching all criteria</returns>
-    Task<Giving.Donation> SingleAsync(Expression<Func<Giving.Donation, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Donation> SingleAsync(Expression<Func<Donation, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single donation matching the additional predicate, or null if none found.
@@ -167,7 +179,7 @@ public interface IGivingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single donation matching all criteria, or null</returns>
-    Task<Giving.Donation?> SingleOrDefaultAsync(Expression<Func<Giving.Donation, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Donation?> SingleOrDefaultAsync(Expression<Func<Donation, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all donations matching the query criteria across all pages.
@@ -189,7 +201,7 @@ public interface IGivingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any donations match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<Giving.Donation, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<Donation, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized giving operations
     
@@ -380,42 +392,42 @@ public interface ICalendarFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICalendarFluentContext Where(Expression<Func<Calendar.Event, bool>> predicate);
+    ICalendarFluentContext Where(Expression<Func<CalendarEvent, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICalendarFluentContext Include(Expression<Func<Calendar.Event, object>> include);
+    ICalendarFluentContext Include(Expression<Func<CalendarEvent, object>> include);
     
     /// <summary>
     /// Specifies the primary sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICalendarFluentContext OrderBy(Expression<Func<Calendar.Event, object>> orderBy);
+    ICalendarFluentContext OrderBy(Expression<Func<CalendarEvent, object>> orderBy);
     
     /// <summary>
     /// Specifies the primary sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICalendarFluentContext OrderByDescending(Expression<Func<Calendar.Event, object>> orderBy);
+    ICalendarFluentContext OrderByDescending(Expression<Func<CalendarEvent, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICalendarFluentContext ThenBy(Expression<Func<Calendar.Event, object>> thenBy);
+    ICalendarFluentContext ThenBy(Expression<Func<CalendarEvent, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICalendarFluentContext ThenByDescending(Expression<Func<Calendar.Event, object>> thenBy);
+    ICalendarFluentContext ThenByDescending(Expression<Func<CalendarEvent, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -425,7 +437,7 @@ public interface ICalendarFluentContext
     /// <param name="id">The event's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The calendar event, or null if not found</returns>
-    Task<Calendar.Event?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<CalendarEvent?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -434,7 +446,7 @@ public interface ICalendarFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Calendar.Event>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<CalendarEvent>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -443,7 +455,7 @@ public interface ICalendarFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Calendar.Event>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<CalendarEvent>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all calendar events matching the query criteria.
@@ -453,7 +465,7 @@ public interface ICalendarFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All calendar events matching the criteria</returns>
-    Task<IReadOnlyList<Calendar.Event>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<CalendarEvent>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams calendar events matching the query criteria for memory-efficient processing.
@@ -462,7 +474,7 @@ public interface ICalendarFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields calendar events from all pages</returns>
-    IAsyncEnumerable<Calendar.Event> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<CalendarEvent> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -472,14 +484,14 @@ public interface ICalendarFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first calendar event matching the criteria</returns>
-    Task<Calendar.Event> FirstAsync(CancellationToken cancellationToken = default);
+    Task<CalendarEvent> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first calendar event matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first calendar event matching the criteria, or null</returns>
-    Task<Calendar.Event?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<CalendarEvent?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first calendar event matching the additional predicate.
@@ -487,7 +499,7 @@ public interface ICalendarFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first calendar event matching all criteria</returns>
-    Task<Calendar.Event> FirstAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<CalendarEvent> FirstAsync(Expression<Func<CalendarEvent, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first calendar event matching the additional predicate, or null if none found.
@@ -495,7 +507,7 @@ public interface ICalendarFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first calendar event matching all criteria, or null</returns>
-    Task<Calendar.Event?> FirstOrDefaultAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<CalendarEvent?> FirstOrDefaultAsync(Expression<Func<CalendarEvent, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single calendar event matching the query criteria.
@@ -503,7 +515,7 @@ public interface ICalendarFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single calendar event matching the criteria</returns>
-    Task<Calendar.Event> SingleAsync(CancellationToken cancellationToken = default);
+    Task<CalendarEvent> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single calendar event matching the query criteria, or null if none found.
@@ -511,7 +523,7 @@ public interface ICalendarFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single calendar event matching the criteria, or null</returns>
-    Task<Calendar.Event?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<CalendarEvent?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single calendar event matching the additional predicate.
@@ -520,7 +532,7 @@ public interface ICalendarFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single calendar event matching all criteria</returns>
-    Task<Calendar.Event> SingleAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<CalendarEvent> SingleAsync(Expression<Func<CalendarEvent, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single calendar event matching the additional predicate, or null if none found.
@@ -529,7 +541,7 @@ public interface ICalendarFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single calendar event matching all criteria, or null</returns>
-    Task<Calendar.Event?> SingleOrDefaultAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<CalendarEvent?> SingleOrDefaultAsync(Expression<Func<CalendarEvent, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all calendar events matching the query criteria across all pages.
@@ -551,7 +563,7 @@ public interface ICalendarFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any calendar events match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<Calendar.Event, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<CalendarEvent, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized calendar operations
     
@@ -624,12 +636,16 @@ public interface ICalendarFluentContext
     /// <param name="keySelector">Function to extract the grouping key from each event</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A dictionary where keys are the grouping values and values are lists of events</returns>
-    Task<Dictionary<TKey, List<Calendar.Event>>> GroupByAsync<TKey>(Expression<Func<Calendar.Event, TKey>> keySelector, CancellationToken cancellationToken = default) where TKey : notnull;
+    Task<Dictionary<TKey, List<CalendarEvent>>> GroupByAsync<TKey>(Expression<Func<CalendarEvent, TKey>> keySelector, CancellationToken cancellationToken = default) where TKey : notnull;
 }
 
 /// <summary>
 /// Fluent API context for the Check-Ins module.
 /// Provides LINQ-like syntax for querying and manipulating check-in data with built-in pagination support.
+/// </summary>
+/// <summary>
+/// Fluent API context for the Check-Ins module.
+/// Provides LINQ-like syntax for querying and manipulating check-in records with built-in pagination support.
 /// </summary>
 public interface ICheckInsFluentContext
 {
@@ -641,42 +657,42 @@ public interface ICheckInsFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext Where(Expression<Func<CheckIns.CheckIn, bool>> predicate);
+    ICheckInsFluentContext Where(Expression<Func<CheckIn, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext Include(Expression<Func<CheckIns.CheckIn, object>> include);
+    ICheckInsFluentContext Include(params string[] include);
     
     /// <summary>
-    /// Specifies the primary sort order.
+    /// Specifies the sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext OrderBy(Expression<Func<CheckIns.CheckIn, object>> orderBy);
+    ICheckInsFluentContext OrderBy(Expression<Func<CheckIn, object>> orderBy);
     
     /// <summary>
-    /// Specifies the primary sort order in descending order.
+    /// Specifies the sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext OrderByDescending(Expression<Func<CheckIns.CheckIn, object>> orderBy);
+    ICheckInsFluentContext OrderByDescending(Expression<Func<CheckIn, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ThenBy(Expression<Func<CheckIns.CheckIn, object>> thenBy);
+    ICheckInsFluentContext ThenBy(Expression<Func<CheckIn, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ThenByDescending(Expression<Func<CheckIns.CheckIn, object>> thenBy);
+    ICheckInsFluentContext ThenByDescending(Expression<Func<CheckIn, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -686,7 +702,7 @@ public interface ICheckInsFluentContext
     /// <param name="id">The check-in's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The check-in, or null if not found</returns>
-    Task<CheckIns.CheckIn?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<CheckIn?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -695,7 +711,7 @@ public interface ICheckInsFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<CheckIns.CheckIn>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<CheckIn>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -704,7 +720,7 @@ public interface ICheckInsFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<CheckIns.CheckIn>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<CheckIn>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all check-ins matching the query criteria.
@@ -714,7 +730,7 @@ public interface ICheckInsFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All check-ins matching the criteria</returns>
-    Task<IReadOnlyList<CheckIns.CheckIn>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<CheckIn>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams check-ins matching the query criteria for memory-efficient processing.
@@ -723,7 +739,7 @@ public interface ICheckInsFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields check-ins from all pages</returns>
-    IAsyncEnumerable<CheckIns.CheckIn> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<CheckIn> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -733,14 +749,14 @@ public interface ICheckInsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first check-in matching the criteria</returns>
-    Task<CheckIns.CheckIn> FirstAsync(CancellationToken cancellationToken = default);
+    Task<CheckIn> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first check-in matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first check-in matching the criteria, or null</returns>
-    Task<CheckIns.CheckIn?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<CheckIn?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first check-in matching the additional predicate.
@@ -748,7 +764,7 @@ public interface ICheckInsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first check-in matching all criteria</returns>
-    Task<CheckIns.CheckIn> FirstAsync(Expression<Func<CheckIns.CheckIn, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<CheckIn> FirstAsync(Expression<Func<CheckIn, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first check-in matching the additional predicate, or null if none found.
@@ -756,7 +772,230 @@ public interface ICheckInsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first check-in matching all criteria, or null</returns>
-    Task<CheckIns.CheckIn?> FirstOrDefaultAsync(Expression<Func<CheckIns.CheckIn, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<CheckIn?> FirstOrDefaultAsync(Expression<Func<CheckIn, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the only check-in matching the query criteria.
+    /// Throws an exception if no check-in is found or if multiple check-ins match.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single check-in matching the criteria</returns>
+    Task<CheckIn> SingleAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the only check-in matching the query criteria, or null if none found.
+    /// Throws an exception if multiple check-ins match.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The single check-in matching the criteria, or null</returns>
+    Task<CheckIn?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Counts the total number of check-ins matching the query criteria.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The total count of check-ins matching the criteria</returns>
+    Task<int> CountAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Checks if any check-ins match the query criteria.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>True if any check-ins match the criteria, false otherwise</returns>
+    Task<bool> AnyAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Checks if any check-ins match the additional predicate.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>True if any check-ins match all criteria, false otherwise</returns>
+    Task<bool> AnyAsync(Expression<Func<CheckIn, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    // Advanced operations
+    
+    /// <summary>
+    /// Groups check-ins by the specified key selector.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the grouping key</typeparam>
+    /// <param name="keySelector">Function to extract the grouping key from each check-in</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A dictionary where keys are the grouping values and values are lists of check-ins</returns>
+    Task<Dictionary<TKey, List<CheckIn>>> GroupByAsync<TKey>(Expression<Func<CheckIn, TKey>> keySelector, CancellationToken cancellationToken = default) where TKey : notnull;
+    
+    // Specialized Check-Ins Operations
+    
+    /// <summary>
+    /// Filters check-ins to only today's records.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInsFluentContext Today();
+    
+    /// <summary>
+    /// Filters to check-ins that have been marked as checked in.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInsFluentContext CheckedIn();
+    
+    /// <summary>
+    /// Filters to check-ins that have been confirmed.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInsFluentContext Confirmed();
+    
+    /// <summary>
+    /// Includes member information in the check-in records.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInsFluentContext Members();
+    
+    /// <summary>
+    /// Filters check-ins to only this week's records.
+    /// </summary>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInsFluentContext ThisWeek();
+    
+    /// <summary>
+    /// Filters check-ins to only those by a specific person.
+    /// </summary>
+    /// <param name="personId">The person's unique identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInsFluentContext ByPerson(string personId);
+    
+    /// <summary>
+    /// Filters check-ins to only those for a specific event.
+    /// </summary>
+    /// <param name="eventId">The event's unique identifier</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInsFluentContext ByEvent(string eventId);
+}
+
+public interface ICheckInEventsFluentContext
+{
+    // Query building methods
+    
+    /// <summary>
+    /// Adds a where condition to filter check-ins.
+    /// Multiple where clauses are combined with AND logic.
+    /// </summary>
+    /// <param name="predicate">The filter condition</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInEventsFluentContext Where(Expression<Func<CheckInEvent, bool>> predicate);
+    
+    /// <summary>
+    /// Specifies related data to include in the response.
+    /// </summary>
+    /// <param name="include">The related data to include</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInEventsFluentContext Include(Expression<Func<CheckInEvent, object>> include);
+    
+    /// <summary>
+    /// Specifies the primary sort order.
+    /// </summary>
+    /// <param name="orderBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInEventsFluentContext OrderBy(Expression<Func<CheckInEvent, object>> orderBy);
+    
+    /// <summary>
+    /// Specifies the primary sort order in descending order.
+    /// </summary>
+    /// <param name="orderBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInEventsFluentContext OrderByDescending(Expression<Func<CheckInEvent, object>> orderBy);
+    
+    /// <summary>
+    /// Specifies a secondary sort order.
+    /// </summary>
+    /// <param name="thenBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInEventsFluentContext ThenBy(Expression<Func<CheckInEvent, object>> thenBy);
+    
+    /// <summary>
+    /// Specifies a secondary sort order in descending order.
+    /// </summary>
+    /// <param name="thenBy">The field to sort by</param>
+    /// <returns>The fluent context for method chaining</returns>
+    ICheckInEventsFluentContext ThenByDescending(Expression<Func<CheckInEvent, object>> thenBy);
+    
+    // Execution methods with built-in pagination support
+    
+    /// <summary>
+    /// Gets a single check-in by ID.
+    /// </summary>
+    /// <param name="id">The check-in's unique identifier</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The check-in, or null if not found</returns>
+    Task<CheckInEvent?> GetAsync(string id, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets a paginated response with the specified page size.
+    /// Returns the first page with built-in navigation helpers.
+    /// </summary>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A paginated response with built-in navigation helpers</returns>
+    Task<IPagedResponse<CheckInEvent>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets a specific page of results.
+    /// </summary>
+    /// <param name="page">The page number (1-based)</param>
+    /// <param name="pageSize">Number of items per page</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>A paginated response with built-in navigation helpers</returns>
+    Task<IPagedResponse<CheckInEvent>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets all check-ins matching the query criteria.
+    /// This method automatically handles pagination behind the scenes.
+    /// Use with caution for large datasets - consider using AsAsyncEnumerable for memory efficiency.
+    /// </summary>
+    /// <param name="options">Pagination options for performance tuning</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>All check-ins matching the criteria</returns>
+    Task<IReadOnlyList<CheckInEvent>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Streams check-ins matching the query criteria for memory-efficient processing.
+    /// This method automatically handles pagination while using minimal memory.
+    /// </summary>
+    /// <param name="options">Pagination options for performance tuning</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>An async enumerable that yields check-ins from all pages</returns>
+    IAsyncEnumerable<CheckInEvent> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    
+    // LINQ-like terminal operations
+    
+    /// <summary>
+    /// Gets the first check-in matching the query criteria.
+    /// Throws an exception if no check-in is found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first check-in matching the criteria</returns>
+    Task<CheckInEvent> FirstAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first check-in matching the query criteria, or null if none found.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first check-in matching the criteria, or null</returns>
+    Task<CheckInEvent?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first check-in matching the additional predicate.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first check-in matching all criteria</returns>
+    Task<CheckInEvent> FirstAsync(Expression<Func<CheckInEvent, bool>> predicate, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Gets the first check-in matching the additional predicate, or null if none found.
+    /// </summary>
+    /// <param name="predicate">Additional filter condition</param>
+    /// <param name="cancellationToken">Cancellation token for the operation</param>
+    /// <returns>The first check-in matching all criteria, or null</returns>
+    Task<CheckInEvent?> FirstOrDefaultAsync(Expression<Func<CheckInEvent, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single check-in matching the query criteria.
@@ -764,7 +1003,7 @@ public interface ICheckInsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single check-in matching the criteria</returns>
-    Task<CheckIns.CheckIn> SingleAsync(CancellationToken cancellationToken = default);
+    Task<CheckInEvent> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single check-in matching the query criteria, or null if none found.
@@ -772,7 +1011,7 @@ public interface ICheckInsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single check-in matching the criteria, or null</returns>
-    Task<CheckIns.CheckIn?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<CheckInEvent?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all check-ins matching the query criteria across all pages.
@@ -794,7 +1033,7 @@ public interface ICheckInsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any check-ins match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<CheckIns.CheckIn, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<CheckInEvent, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized check-ins operations
     
@@ -803,28 +1042,28 @@ public interface ICheckInsFluentContext
     /// </summary>
     /// <param name="personId">The person identifier</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ByPerson(string personId);
+    ICheckInEventsFluentContext ByPerson(string personId);
     
     /// <summary>
     /// Filters check-ins by event.
     /// </summary>
     /// <param name="eventId">The event identifier</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ByEvent(string eventId);
+    ICheckInEventsFluentContext ByEvent(string eventId);
     
     /// <summary>
     /// Filters check-ins by event time.
     /// </summary>
     /// <param name="eventTimeId">The event time identifier</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ByEventTime(string eventTimeId);
+    ICheckInEventsFluentContext ByEventTime(string eventTimeId);
     
     /// <summary>
     /// Filters check-ins by location.
     /// </summary>
     /// <param name="locationId">The location identifier</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ByLocation(string locationId);
+    ICheckInEventsFluentContext ByLocation(string locationId);
     
     /// <summary>
     /// Filters check-ins by date range.
@@ -832,75 +1071,75 @@ public interface ICheckInsFluentContext
     /// <param name="startDate">The start date</param>
     /// <param name="endDate">The end date</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ByDateRange(DateTime startDate, DateTime endDate);
+    ICheckInEventsFluentContext ByDateRange(DateTime startDate, DateTime endDate);
     
     /// <summary>
     /// Filters check-ins occurring today.
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext Today();
+    ICheckInEventsFluentContext Today();
     
     /// <summary>
     /// Filters check-ins occurring this week.
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ThisWeek();
+    ICheckInEventsFluentContext ThisWeek();
     
     /// <summary>
     /// Filters to check-ins that are currently checked in (not checked out).
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext CheckedIn();
+    ICheckInEventsFluentContext CheckedIn();
     
     /// <summary>
     /// Filters to check-ins that have been checked out.
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext CheckedOut();
+    ICheckInEventsFluentContext CheckedOut();
     
     /// <summary>
     /// Filters to confirmed check-ins.
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext Confirmed();
+    ICheckInEventsFluentContext Confirmed();
     
     /// <summary>
     /// Filters to unconfirmed check-ins.
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext Unconfirmed();
+    ICheckInEventsFluentContext Unconfirmed();
     
     /// <summary>
     /// Filters to one-time guests.
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext Guests();
+    ICheckInEventsFluentContext Guests();
     
     /// <summary>
     /// Filters to regular members (non-guests).
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext Members();
+    ICheckInEventsFluentContext Members();
     
     /// <summary>
     /// Filters to check-ins with medical notes.
     /// </summary>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext WithMedicalNotes();
+    ICheckInEventsFluentContext WithMedicalNotes();
     
     /// <summary>
     /// Filters check-ins by name containing the specified text.
     /// </summary>
     /// <param name="nameFragment">The text to search for in names</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ByNameContains(string nameFragment);
+    ICheckInEventsFluentContext ByNameContains(string nameFragment);
     
     /// <summary>
     /// Filters check-ins by kind/type.
     /// </summary>
     /// <param name="kind">The check-in kind</param>
     /// <returns>The fluent context for method chaining</returns>
-    ICheckInsFluentContext ByKind(string kind);
+    ICheckInEventsFluentContext ByKind(string kind);
     
     // Advanced aggregation methods
     
@@ -970,42 +1209,42 @@ public interface IGroupsFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGroupsFluentContext Where(Expression<Func<Groups.Group, bool>> predicate);
+    IGroupsFluentContext Where(Expression<Func<Group, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGroupsFluentContext Include(Expression<Func<Groups.Group, object>> include);
+    IGroupsFluentContext Include(Expression<Func<Group, object>> include);
     
     /// <summary>
     /// Specifies the primary sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGroupsFluentContext OrderBy(Expression<Func<Groups.Group, object>> orderBy);
+    IGroupsFluentContext OrderBy(Expression<Func<Group, object>> orderBy);
     
     /// <summary>
     /// Specifies the primary sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGroupsFluentContext OrderByDescending(Expression<Func<Groups.Group, object>> orderBy);
+    IGroupsFluentContext OrderByDescending(Expression<Func<Group, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGroupsFluentContext ThenBy(Expression<Func<Groups.Group, object>> thenBy);
+    IGroupsFluentContext ThenBy(Expression<Func<Group, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IGroupsFluentContext ThenByDescending(Expression<Func<Groups.Group, object>> thenBy);
+    IGroupsFluentContext ThenByDescending(Expression<Func<Group, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -1015,7 +1254,7 @@ public interface IGroupsFluentContext
     /// <param name="id">The group's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The group, or null if not found</returns>
-    Task<Groups.Group?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<Group?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -1024,7 +1263,7 @@ public interface IGroupsFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Groups.Group>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Group>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -1033,7 +1272,7 @@ public interface IGroupsFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Groups.Group>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Group>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all groups matching the query criteria.
@@ -1043,7 +1282,7 @@ public interface IGroupsFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All groups matching the criteria</returns>
-    Task<IReadOnlyList<Groups.Group>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Group>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams groups matching the query criteria for memory-efficient processing.
@@ -1052,7 +1291,7 @@ public interface IGroupsFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields groups from all pages</returns>
-    IAsyncEnumerable<Groups.Group> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Group> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -1062,14 +1301,14 @@ public interface IGroupsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first group matching the criteria</returns>
-    Task<Groups.Group> FirstAsync(CancellationToken cancellationToken = default);
+    Task<Group> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first group matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first group matching the criteria, or null</returns>
-    Task<Groups.Group?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Group?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first group matching the additional predicate.
@@ -1077,7 +1316,7 @@ public interface IGroupsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first group matching all criteria</returns>
-    Task<Groups.Group> FirstAsync(Expression<Func<Groups.Group, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Group> FirstAsync(Expression<Func<Group, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first group matching the additional predicate, or null if none found.
@@ -1085,7 +1324,7 @@ public interface IGroupsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first group matching all criteria, or null</returns>
-    Task<Groups.Group?> FirstOrDefaultAsync(Expression<Func<Groups.Group, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Group?> FirstOrDefaultAsync(Expression<Func<Group, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single group matching the query criteria.
@@ -1093,7 +1332,7 @@ public interface IGroupsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single group matching the criteria</returns>
-    Task<Groups.Group> SingleAsync(CancellationToken cancellationToken = default);
+    Task<Group> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single group matching the query criteria, or null if none found.
@@ -1101,7 +1340,7 @@ public interface IGroupsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single group matching the criteria, or null</returns>
-    Task<Groups.Group?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Group?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all groups matching the query criteria across all pages.
@@ -1123,7 +1362,7 @@ public interface IGroupsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any groups match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<Groups.Group, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<Group, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized groups operations
     
@@ -1335,42 +1574,42 @@ public interface IRegistrationsFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    IRegistrationsFluentContext Where(Expression<Func<Registrations.Signup, bool>> predicate);
+    IRegistrationsFluentContext Where(Expression<Func<Signup, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    IRegistrationsFluentContext Include(Expression<Func<Registrations.Signup, object>> include);
+    IRegistrationsFluentContext Include(Expression<Func<Signup, object>> include);
     
     /// <summary>
     /// Specifies the primary sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IRegistrationsFluentContext OrderBy(Expression<Func<Registrations.Signup, object>> orderBy);
+    IRegistrationsFluentContext OrderBy(Expression<Func<Signup, object>> orderBy);
     
     /// <summary>
     /// Specifies the primary sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IRegistrationsFluentContext OrderByDescending(Expression<Func<Registrations.Signup, object>> orderBy);
+    IRegistrationsFluentContext OrderByDescending(Expression<Func<Signup, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IRegistrationsFluentContext ThenBy(Expression<Func<Registrations.Signup, object>> thenBy);
+    IRegistrationsFluentContext ThenBy(Expression<Func<Signup, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IRegistrationsFluentContext ThenByDescending(Expression<Func<Registrations.Signup, object>> thenBy);
+    IRegistrationsFluentContext ThenByDescending(Expression<Func<Signup, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -1380,7 +1619,7 @@ public interface IRegistrationsFluentContext
     /// <param name="id">The signup's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The signup, or null if not found</returns>
-    Task<Registrations.Signup?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<Signup?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -1389,7 +1628,7 @@ public interface IRegistrationsFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Registrations.Signup>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Signup>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -1398,7 +1637,7 @@ public interface IRegistrationsFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Registrations.Signup>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Signup>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all signups matching the query criteria.
@@ -1408,7 +1647,7 @@ public interface IRegistrationsFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All signups matching the criteria</returns>
-    Task<IReadOnlyList<Registrations.Signup>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Signup>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams signups matching the query criteria for memory-efficient processing.
@@ -1417,7 +1656,7 @@ public interface IRegistrationsFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields signups from all pages</returns>
-    IAsyncEnumerable<Registrations.Signup> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Signup> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -1427,14 +1666,14 @@ public interface IRegistrationsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first signup matching the criteria</returns>
-    Task<Registrations.Signup> FirstAsync(CancellationToken cancellationToken = default);
+    Task<Signup> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first signup matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first signup matching the criteria, or null</returns>
-    Task<Registrations.Signup?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Signup?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first signup matching the additional predicate.
@@ -1442,7 +1681,7 @@ public interface IRegistrationsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first signup matching all criteria</returns>
-    Task<Registrations.Signup> FirstAsync(Expression<Func<Registrations.Signup, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Signup> FirstAsync(Expression<Func<Signup, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first signup matching the additional predicate, or null if none found.
@@ -1450,7 +1689,7 @@ public interface IRegistrationsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first signup matching all criteria, or null</returns>
-    Task<Registrations.Signup?> FirstOrDefaultAsync(Expression<Func<Registrations.Signup, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Signup?> FirstOrDefaultAsync(Expression<Func<Signup, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single signup matching the query criteria.
@@ -1458,7 +1697,7 @@ public interface IRegistrationsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single signup matching the criteria</returns>
-    Task<Registrations.Signup> SingleAsync(CancellationToken cancellationToken = default);
+    Task<Signup> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single signup matching the query criteria, or null if none found.
@@ -1466,7 +1705,7 @@ public interface IRegistrationsFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single signup matching the criteria, or null</returns>
-    Task<Registrations.Signup?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Signup?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single signup matching the additional predicate.
@@ -1475,7 +1714,7 @@ public interface IRegistrationsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single signup matching all criteria</returns>
-    Task<Registrations.Signup> SingleAsync(Expression<Func<Registrations.Signup, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Signup> SingleAsync(Expression<Func<Signup, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single signup matching the additional predicate, or null if none found.
@@ -1484,7 +1723,7 @@ public interface IRegistrationsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single signup matching all criteria, or null</returns>
-    Task<Registrations.Signup?> SingleOrDefaultAsync(Expression<Func<Registrations.Signup, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Signup?> SingleOrDefaultAsync(Expression<Func<Signup, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all signups matching the query criteria across all pages.
@@ -1506,7 +1745,7 @@ public interface IRegistrationsFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any signups match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<Registrations.Signup, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<Signup, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized registration operations
     
@@ -1734,42 +1973,42 @@ public interface IPublishingFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    IPublishingFluentContext Where(Expression<Func<Publishing.Episode, bool>> predicate);
+    IPublishingFluentContext Where(Expression<Func<Episode, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    IPublishingFluentContext Include(Expression<Func<Publishing.Episode, object>> include);
+    IPublishingFluentContext Include(Expression<Func<Episode, object>> include);
     
     /// <summary>
     /// Specifies the primary sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IPublishingFluentContext OrderBy(Expression<Func<Publishing.Episode, object>> orderBy);
+    IPublishingFluentContext OrderBy(Expression<Func<Episode, object>> orderBy);
     
     /// <summary>
     /// Specifies the primary sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IPublishingFluentContext OrderByDescending(Expression<Func<Publishing.Episode, object>> orderBy);
+    IPublishingFluentContext OrderByDescending(Expression<Func<Episode, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IPublishingFluentContext ThenBy(Expression<Func<Publishing.Episode, object>> thenBy);
+    IPublishingFluentContext ThenBy(Expression<Func<Episode, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IPublishingFluentContext ThenByDescending(Expression<Func<Publishing.Episode, object>> thenBy);
+    IPublishingFluentContext ThenByDescending(Expression<Func<Episode, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -1779,7 +2018,7 @@ public interface IPublishingFluentContext
     /// <param name="id">The episode's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The episode, or null if not found</returns>
-    Task<Publishing.Episode?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<Episode?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -1788,7 +2027,7 @@ public interface IPublishingFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Publishing.Episode>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Episode>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -1797,7 +2036,7 @@ public interface IPublishingFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Publishing.Episode>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Episode>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all episodes matching the query criteria.
@@ -1807,7 +2046,7 @@ public interface IPublishingFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All episodes matching the criteria</returns>
-    Task<IReadOnlyList<Publishing.Episode>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Episode>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams episodes matching the query criteria for memory-efficient processing.
@@ -1816,7 +2055,7 @@ public interface IPublishingFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields episodes from all pages</returns>
-    IAsyncEnumerable<Publishing.Episode> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Episode> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -1826,14 +2065,14 @@ public interface IPublishingFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first episode matching the criteria</returns>
-    Task<Publishing.Episode> FirstAsync(CancellationToken cancellationToken = default);
+    Task<Episode> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first episode matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first episode matching the criteria, or null</returns>
-    Task<Publishing.Episode?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Episode?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first episode matching the additional predicate.
@@ -1842,7 +2081,7 @@ public interface IPublishingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first episode matching all criteria</returns>
-    Task<Publishing.Episode> FirstAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Episode> FirstAsync(Expression<Func<Episode, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first episode matching the additional predicate, or null if none found.
@@ -1850,7 +2089,7 @@ public interface IPublishingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first episode matching all criteria, or null</returns>
-    Task<Publishing.Episode?> FirstOrDefaultAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Episode?> FirstOrDefaultAsync(Expression<Func<Episode, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single episode matching the query criteria.
@@ -1858,7 +2097,7 @@ public interface IPublishingFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single episode matching the criteria</returns>
-    Task<Publishing.Episode> SingleAsync(CancellationToken cancellationToken = default);
+    Task<Episode> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single episode matching the query criteria, or null if none found.
@@ -1866,7 +2105,7 @@ public interface IPublishingFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single episode matching the criteria, or null</returns>
-    Task<Publishing.Episode?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Episode?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single episode matching the additional predicate.
@@ -1875,7 +2114,7 @@ public interface IPublishingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single episode matching all criteria</returns>
-    Task<Publishing.Episode> SingleAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Episode> SingleAsync(Expression<Func<Episode, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single episode matching the additional predicate, or null if none found.
@@ -1884,7 +2123,7 @@ public interface IPublishingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single episode matching all criteria, or null</returns>
-    Task<Publishing.Episode?> SingleOrDefaultAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Episode?> SingleOrDefaultAsync(Expression<Func<Episode, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all episodes matching the query criteria across all pages.
@@ -1906,7 +2145,7 @@ public interface IPublishingFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any episodes match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<Publishing.Episode, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<Episode, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized publishing operations
     
@@ -2261,42 +2500,42 @@ public interface IServicesFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    IServicesFluentContext Where(Expression<Func<Services.Plan, bool>> predicate);
+    IServicesFluentContext Where(Expression<Func<Plan, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    IServicesFluentContext Include(Expression<Func<Services.Plan, object>> include);
+    IServicesFluentContext Include(Expression<Func<Plan, object>> include);
     
     /// <summary>
     /// Specifies the primary sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IServicesFluentContext OrderBy(Expression<Func<Services.Plan, object>> orderBy);
+    IServicesFluentContext OrderBy(Expression<Func<Plan, object>> orderBy);
     
     /// <summary>
     /// Specifies the primary sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IServicesFluentContext OrderByDescending(Expression<Func<Services.Plan, object>> orderBy);
+    IServicesFluentContext OrderByDescending(Expression<Func<Plan, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IServicesFluentContext ThenBy(Expression<Func<Services.Plan, object>> thenBy);
+    IServicesFluentContext ThenBy(Expression<Func<Plan, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IServicesFluentContext ThenByDescending(Expression<Func<Services.Plan, object>> thenBy);
+    IServicesFluentContext ThenByDescending(Expression<Func<Plan, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -2306,7 +2545,7 @@ public interface IServicesFluentContext
     /// <param name="id">The plan's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The service plan, or null if not found</returns>
-    Task<Services.Plan?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<Plan?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -2315,7 +2554,7 @@ public interface IServicesFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Services.Plan>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Plan>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -2324,7 +2563,7 @@ public interface IServicesFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Services.Plan>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Plan>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all service plans matching the query criteria.
@@ -2334,7 +2573,7 @@ public interface IServicesFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All service plans matching the criteria</returns>
-    Task<IReadOnlyList<Services.Plan>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Plan>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams service plans matching the query criteria for memory-efficient processing.
@@ -2343,7 +2582,7 @@ public interface IServicesFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields service plans from all pages</returns>
-    IAsyncEnumerable<Services.Plan> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<Plan> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -2353,14 +2592,14 @@ public interface IServicesFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first service plan matching the criteria</returns>
-    Task<Services.Plan> FirstAsync(CancellationToken cancellationToken = default);
+    Task<Plan> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first service plan matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first service plan matching the criteria, or null</returns>
-    Task<Services.Plan?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Plan?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first service plan matching the additional predicate.
@@ -2368,7 +2607,7 @@ public interface IServicesFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first service plan matching all criteria</returns>
-    Task<Services.Plan> FirstAsync(Expression<Func<Services.Plan, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Plan> FirstAsync(Expression<Func<Plan, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first service plan matching the additional predicate, or null if none found.
@@ -2376,7 +2615,7 @@ public interface IServicesFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first service plan matching all criteria, or null</returns>
-    Task<Services.Plan?> FirstOrDefaultAsync(Expression<Func<Services.Plan, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<Plan?> FirstOrDefaultAsync(Expression<Func<Plan, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single service plan matching the query criteria.
@@ -2384,7 +2623,7 @@ public interface IServicesFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single service plan matching the criteria</returns>
-    Task<Services.Plan> SingleAsync(CancellationToken cancellationToken = default);
+    Task<Plan> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single service plan matching the query criteria, or null if none found.
@@ -2392,7 +2631,7 @@ public interface IServicesFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single service plan matching the criteria, or null</returns>
-    Task<Services.Plan?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<Plan?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all service plans matching the query criteria across all pages.
@@ -2414,7 +2653,7 @@ public interface IServicesFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any service plans match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<Services.Plan, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<Plan, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized services operations
     
@@ -2630,42 +2869,42 @@ public interface IWebhooksFluentContext
     /// </summary>
     /// <param name="predicate">The filter condition</param>
     /// <returns>The fluent context for method chaining</returns>
-    IWebhooksFluentContext Where(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate);
+    IWebhooksFluentContext Where(Expression<Func<WebhookSubscription, bool>> predicate);
     
     /// <summary>
     /// Specifies related data to include in the response.
     /// </summary>
     /// <param name="include">The related data to include</param>
     /// <returns>The fluent context for method chaining</returns>
-    IWebhooksFluentContext Include(Expression<Func<Webhooks.WebhookSubscription, object>> include);
+    IWebhooksFluentContext Include(Expression<Func<WebhookSubscription, object>> include);
     
     /// <summary>
     /// Specifies the primary sort order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IWebhooksFluentContext OrderBy(Expression<Func<Webhooks.WebhookSubscription, object>> orderBy);
+    IWebhooksFluentContext OrderBy(Expression<Func<WebhookSubscription, object>> orderBy);
     
     /// <summary>
     /// Specifies the primary sort order in descending order.
     /// </summary>
     /// <param name="orderBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IWebhooksFluentContext OrderByDescending(Expression<Func<Webhooks.WebhookSubscription, object>> orderBy);
+    IWebhooksFluentContext OrderByDescending(Expression<Func<WebhookSubscription, object>> orderBy);
     
     /// <summary>
     /// Specifies a secondary sort order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IWebhooksFluentContext ThenBy(Expression<Func<Webhooks.WebhookSubscription, object>> thenBy);
+    IWebhooksFluentContext ThenBy(Expression<Func<WebhookSubscription, object>> thenBy);
     
     /// <summary>
     /// Specifies a secondary sort order in descending order.
     /// </summary>
     /// <param name="thenBy">The field to sort by</param>
     /// <returns>The fluent context for method chaining</returns>
-    IWebhooksFluentContext ThenByDescending(Expression<Func<Webhooks.WebhookSubscription, object>> thenBy);
+    IWebhooksFluentContext ThenByDescending(Expression<Func<WebhookSubscription, object>> thenBy);
     
     // Execution methods with built-in pagination support
     
@@ -2675,7 +2914,7 @@ public interface IWebhooksFluentContext
     /// <param name="id">The subscription's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The webhook subscription, or null if not found</returns>
-    Task<Webhooks.WebhookSubscription?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<WebhookSubscription?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a paginated response with the specified page size.
@@ -2684,7 +2923,7 @@ public interface IWebhooksFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Webhooks.WebhookSubscription>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<WebhookSubscription>> GetPagedAsync(int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a specific page of results.
@@ -2693,7 +2932,7 @@ public interface IWebhooksFluentContext
     /// <param name="pageSize">Number of items per page</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in navigation helpers</returns>
-    Task<IPagedResponse<Webhooks.WebhookSubscription>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<WebhookSubscription>> GetPageAsync(int page, int pageSize = 25, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all webhook subscriptions matching the query criteria.
@@ -2703,7 +2942,7 @@ public interface IWebhooksFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All webhook subscriptions matching the criteria</returns>
-    Task<IReadOnlyList<Webhooks.WebhookSubscription>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<WebhookSubscription>> GetAllAsync(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Streams webhook subscriptions matching the query criteria for memory-efficient processing.
@@ -2712,7 +2951,7 @@ public interface IWebhooksFluentContext
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields webhook subscriptions from all pages</returns>
-    IAsyncEnumerable<Webhooks.WebhookSubscription> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
+    IAsyncEnumerable<WebhookSubscription> AsAsyncEnumerable(PaginationOptions? options = null, CancellationToken cancellationToken = default);
     
     // LINQ-like terminal operations
     
@@ -2722,14 +2961,14 @@ public interface IWebhooksFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first webhook subscription matching the criteria</returns>
-    Task<Webhooks.WebhookSubscription> FirstAsync(CancellationToken cancellationToken = default);
+    Task<WebhookSubscription> FirstAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first webhook subscription matching the query criteria, or null if none found.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first webhook subscription matching the criteria, or null</returns>
-    Task<Webhooks.WebhookSubscription?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<WebhookSubscription?> FirstOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first webhook subscription matching the additional predicate.
@@ -2738,7 +2977,7 @@ public interface IWebhooksFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first webhook subscription matching all criteria</returns>
-    Task<Webhooks.WebhookSubscription> FirstAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<WebhookSubscription> FirstAsync(Expression<Func<WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the first webhook subscription matching the additional predicate, or null if none found.
@@ -2746,7 +2985,7 @@ public interface IWebhooksFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The first webhook subscription matching all criteria, or null</returns>
-    Task<Webhooks.WebhookSubscription?> FirstOrDefaultAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<WebhookSubscription?> FirstOrDefaultAsync(Expression<Func<WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single webhook subscription matching the query criteria.
@@ -2754,7 +2993,7 @@ public interface IWebhooksFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single webhook subscription matching the criteria</returns>
-    Task<Webhooks.WebhookSubscription> SingleAsync(CancellationToken cancellationToken = default);
+    Task<WebhookSubscription> SingleAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single webhook subscription matching the query criteria, or null if none found.
@@ -2762,7 +3001,7 @@ public interface IWebhooksFluentContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single webhook subscription matching the criteria, or null</returns>
-    Task<Webhooks.WebhookSubscription?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
+    Task<WebhookSubscription?> SingleOrDefaultAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single webhook subscription matching the additional predicate.
@@ -2771,7 +3010,7 @@ public interface IWebhooksFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single webhook subscription matching all criteria</returns>
-    Task<Webhooks.WebhookSubscription> SingleAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<WebhookSubscription> SingleAsync(Expression<Func<WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets the single webhook subscription matching the additional predicate, or null if none found.
@@ -2780,7 +3019,7 @@ public interface IWebhooksFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The single webhook subscription matching all criteria, or null</returns>
-    Task<Webhooks.WebhookSubscription?> SingleOrDefaultAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<WebhookSubscription?> SingleOrDefaultAsync(Expression<Func<WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Counts all webhook subscriptions matching the query criteria across all pages.
@@ -2802,7 +3041,7 @@ public interface IWebhooksFluentContext
     /// <param name="predicate">Additional filter condition</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>True if any webhook subscriptions match all criteria, false otherwise</returns>
-    Task<bool> AnyAsync(Expression<Func<Webhooks.WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
+    Task<bool> AnyAsync(Expression<Func<WebhookSubscription, bool>> predicate, CancellationToken cancellationToken = default);
     
     // Specialized webhook operations
     

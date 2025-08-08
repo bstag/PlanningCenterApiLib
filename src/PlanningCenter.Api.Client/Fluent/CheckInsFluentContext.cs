@@ -1,8 +1,9 @@
 using System.Linq.Expressions;
 using PlanningCenter.Api.Client.Fluent.QueryBuilder;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.CheckIns;
-using PlanningCenter.Api.Client.Models.Fluent;
+
 
 namespace PlanningCenter.Api.Client.Fluent;
 
@@ -200,6 +201,24 @@ public class CheckInsFluentContext : ICheckInsFluentContext
         
         var contextWithPredicate = Where(predicate);
         return await contextWithPredicate.AnyAsync(cancellationToken);
+    }
+
+    public async Task<Dictionary<TKey, List<CheckIn>>> GroupByAsync<TKey>(Expression<Func<CheckIn, TKey>> keySelector, CancellationToken cancellationToken = default) where TKey : notnull
+    {
+        if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
+        
+        var allCheckIns = await GetAllAsync(cancellationToken: cancellationToken);
+        var compiledSelector = keySelector.Compile();
+        
+        return allCheckIns
+            .GroupBy(compiledSelector)
+            .ToDictionary(g => g.Key, g => g.ToList());
+    }
+
+    public ICheckInsFluentContext Include(params string[] relationships)
+    {
+        _queryBuilder.Include(relationships);
+        return this;
     }
 
     #endregion

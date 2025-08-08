@@ -1,5 +1,4 @@
 
-
 namespace PlanningCenter.Api.Client.Models.JsonApi
 {
     /// <summary>

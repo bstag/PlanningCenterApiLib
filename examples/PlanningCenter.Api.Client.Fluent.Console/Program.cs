@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client;
 using PlanningCenter.Api.Client.Extensions;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Models.Exceptions;

@@ -1,4 +1,7 @@
-namespace PlanningCenter.Api.Client.Models;
+
+using PlanningCenter.Api.Client.Models;
+
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Core HTTP communication interface for the Planning Center API.

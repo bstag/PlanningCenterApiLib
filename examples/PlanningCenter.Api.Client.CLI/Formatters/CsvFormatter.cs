@@ -73,7 +73,7 @@ public class CsvFormatter : IOutputFormatter
         {
             HasHeaderRecord = true,
             TrimOptions = TrimOptions.Trim,
-            ShouldQuote = args => args.Field.Contains(',') || args.Field.Contains('"') || args.Field.Contains('\n')
+            ShouldQuote = args => args.Field?.Contains(',') == true || args.Field?.Contains('"') == true || args.Field?.Contains('\n') == true
         };
     }
 

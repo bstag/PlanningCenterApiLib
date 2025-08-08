@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.Webhooks;
@@ -48,7 +49,7 @@ public class WebhooksServiceTests
         // Act & Assert
         await _webhooksService.Invoking(s => s.GetSubscriptionAsync(""))
             .Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Subscription ID cannot be null or empty*");
+            .WithMessage("id cannot be null or empty*");
     }
 
     [Fact]

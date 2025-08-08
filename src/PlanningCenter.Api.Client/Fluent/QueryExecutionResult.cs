@@ -1,4 +1,5 @@
 using PlanningCenter.Api.Client.Fluent.QueryBuilder;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 
 namespace PlanningCenter.Api.Client.Fluent;

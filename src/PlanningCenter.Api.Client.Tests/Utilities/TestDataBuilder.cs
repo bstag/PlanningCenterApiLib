@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.JsonApi;
 using PlanningCenter.Api.Client.Models.JsonApi.People;

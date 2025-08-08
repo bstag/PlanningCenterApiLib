@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using System.Text;
 
@@ -63,11 +64,9 @@ public class PersonalAccessTokenAuthenticator : IAuthenticator
     public Task<string> GetAccessTokenAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        //_logger.LogDebug("Returning Personal Access Token for authentication (Base64 only, no 'Basic ' prefix)");
+        _logger.LogDebug("Returning Personal Access Token for authentication (Base64 only, no 'Basic ' prefix)");
         var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken!));
-        var _basicAuthHeader = $"Basic {encodedCredentials}";
-        //var encodedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.PersonalAccessToken));
-        return Task.FromResult(_basicAuthHeader);
+        return Task.FromResult(encodedCredentials);
     }
 
     /// <summary>

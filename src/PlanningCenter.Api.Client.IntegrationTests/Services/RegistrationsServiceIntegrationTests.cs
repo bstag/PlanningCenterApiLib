@@ -1,5 +1,6 @@
 using FluentAssertions;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Requests;
 using System;
@@ -171,14 +172,14 @@ public class RegistrationsServiceIntegrationTests : RegistrationsServiceIntegrat
         var firstPage = await _registrationsService.ListSignupsAsync(new QueryParameters { PerPage = 1 });
         firstPage.Should().NotBeNull();
         firstPage.Data.Should().NotBeEmpty();
-        firstPage.Data.Should().HaveCountLessOrEqualTo(1);
+        firstPage.Data.Should().HaveCountLessThanOrEqualTo(1);
 
         if (firstPage.HasNextPage)
         {
             var secondPage = await _registrationsService.ListSignupsAsync(new QueryParameters { PerPage = 1, Offset = 1 });
             secondPage.Should().NotBeNull();
             secondPage.Data.Should().NotBeEmpty();
-            secondPage.Data.Should().HaveCountLessOrEqualTo(1);
+            secondPage.Data.Should().HaveCountLessThanOrEqualTo(1);
         }
     }
 
@@ -200,14 +201,14 @@ public class RegistrationsServiceIntegrationTests : RegistrationsServiceIntegrat
         var firstPage = await _registrationsService.ListRegistrationsAsync(testSignup.Id, new QueryParameters { PerPage = 1 });
         firstPage.Should().NotBeNull();
         firstPage.Data.Should().NotBeEmpty();
-        firstPage.Data.Should().HaveCountLessOrEqualTo(1);
+        firstPage.Data.Should().HaveCountLessThanOrEqualTo(1);
 
         if (firstPage.HasNextPage)
         {
             var secondPage = await _registrationsService.ListRegistrationsAsync(testSignup.Id, new QueryParameters { PerPage = 1, Offset = 1 });
             secondPage.Should().NotBeNull();
             secondPage.Data.Should().NotBeEmpty();
-            secondPage.Data.Should().HaveCountLessOrEqualTo(1);
+            secondPage.Data.Should().HaveCountLessThanOrEqualTo(1);
         }
     }
 
@@ -229,14 +230,14 @@ public class RegistrationsServiceIntegrationTests : RegistrationsServiceIntegrat
         var firstPage = await _registrationsService.ListSelectionTypesAsync(testSignup.Id, new QueryParameters { PerPage = 1 });
         firstPage.Should().NotBeNull();
         firstPage.Data.Should().NotBeEmpty();
-        firstPage.Data.Should().HaveCountLessOrEqualTo(1);
+        firstPage.Data.Should().HaveCountLessThanOrEqualTo(1);
 
         if (firstPage.HasNextPage)
         {
             var secondPage = await _registrationsService.ListSelectionTypesAsync(testSignup.Id, new QueryParameters { PerPage = 1, Offset = 1 });
             secondPage.Should().NotBeNull();
             secondPage.Data.Should().NotBeEmpty();
-            secondPage.Data.Should().HaveCountLessOrEqualTo(1);
+            secondPage.Data.Should().HaveCountLessThanOrEqualTo(1);
         }
     }
 

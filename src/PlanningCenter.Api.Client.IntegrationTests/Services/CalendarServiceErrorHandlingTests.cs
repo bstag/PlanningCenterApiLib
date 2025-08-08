@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Exceptions;
 using PlanningCenter.Api.Client.Models.Requests;

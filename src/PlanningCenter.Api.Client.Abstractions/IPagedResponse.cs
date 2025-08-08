@@ -1,4 +1,8 @@
-namespace PlanningCenter.Api.Client.Models;
+
+
+using PlanningCenter.Api.Client.Models;
+
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Represents a paginated response from the Planning Center API with built-in navigation helpers.

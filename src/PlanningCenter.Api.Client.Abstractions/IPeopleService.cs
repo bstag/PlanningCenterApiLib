@@ -1,6 +1,10 @@
+
+using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.Core;
+using PlanningCenter.Api.Client.Models.People;
 using PlanningCenter.Api.Client.Models.Requests;
 
-namespace PlanningCenter.Api.Client.Models;
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Service interface for the Planning Center People module.
@@ -16,7 +20,7 @@ public interface IPeopleService
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The current user's person record</returns>
-    Task<Core.Person> GetMeAsync(CancellationToken cancellationToken = default);
+    Task<Person> GetMeAsync(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a single person by ID.
@@ -24,7 +28,7 @@ public interface IPeopleService
     /// <param name="id">The person's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The person, or null if not found</returns>
-    Task<Core.Person?> GetAsync(string id, CancellationToken cancellationToken = default);
+    Task<Person?> GetAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Lists people with optional filtering, sorting, and pagination.
@@ -33,7 +37,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with built-in pagination helpers</returns>
-    Task<IPagedResponse<Core.Person>> ListAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Person>> ListAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Creates a new person.
@@ -41,7 +45,7 @@ public interface IPeopleService
     /// <param name="request">The person creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created person</returns>
-    Task<Core.Person> CreateAsync(PersonCreateRequest request, CancellationToken cancellationToken = default);
+    Task<Person> CreateAsync(PersonCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates an existing person.
@@ -50,7 +54,7 @@ public interface IPeopleService
     /// <param name="request">The person update request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The updated person</returns>
-    Task<Core.Person> UpdateAsync(string id, PersonUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<Person> UpdateAsync(string id, PersonUpdateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Deletes a person.
@@ -70,7 +74,7 @@ public interface IPeopleService
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>All people matching the criteria</returns>
-    Task<IReadOnlyList<Core.Person>> GetAllAsync(
+    Task<IReadOnlyList<Person>> GetAllAsync(
         QueryParameters? parameters = null,
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default);
@@ -83,7 +87,7 @@ public interface IPeopleService
     /// <param name="options">Pagination options for performance tuning</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>An async enumerable that yields people from all pages</returns>
-    IAsyncEnumerable<Core.Person> StreamAsync(
+    IAsyncEnumerable<Person> StreamAsync(
         QueryParameters? parameters = null,
         PaginationOptions? options = null,
         CancellationToken cancellationToken = default);
@@ -97,7 +101,7 @@ public interface IPeopleService
     /// <param name="request">The address creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created address</returns>
-    Task<Core.Address> AddAddressAsync(string personId, AddressCreateRequest request, CancellationToken cancellationToken = default);
+    Task<Address> AddAddressAsync(string personId, AddressCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates an address for a person.
@@ -107,7 +111,7 @@ public interface IPeopleService
     /// <param name="request">The address update request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The updated address</returns>
-    Task<Core.Address> UpdateAddressAsync(string personId, string addressId, AddressUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<Address> UpdateAddressAsync(string personId, string addressId, AddressUpdateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Removes an address from a person.
@@ -126,7 +130,7 @@ public interface IPeopleService
     /// <param name="request">The email creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created email</returns>
-    Task<Core.Email> AddEmailAsync(string personId, EmailCreateRequest request, CancellationToken cancellationToken = default);
+    Task<Email> AddEmailAsync(string personId, EmailCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates an email address for a person.
@@ -136,7 +140,7 @@ public interface IPeopleService
     /// <param name="request">The email update request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The updated email</returns>
-    Task<Core.Email> UpdateEmailAsync(string personId, string emailId, EmailUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<Email> UpdateEmailAsync(string personId, string emailId, EmailUpdateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Removes an email address from a person.
@@ -155,7 +159,7 @@ public interface IPeopleService
     /// <param name="request">The phone number creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created phone number</returns>
-    Task<Core.PhoneNumber> AddPhoneNumberAsync(string personId, PhoneNumberCreateRequest request, CancellationToken cancellationToken = default);
+    Task<PhoneNumber> AddPhoneNumberAsync(string personId, PhoneNumberCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates a phone number for a person.
@@ -165,7 +169,7 @@ public interface IPeopleService
     /// <param name="request">The phone number update request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The updated phone number</returns>
-    Task<Core.PhoneNumber> UpdatePhoneNumberAsync(string personId, string phoneId, PhoneNumberUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<PhoneNumber> UpdatePhoneNumberAsync(string personId, string phoneId, PhoneNumberUpdateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Removes a phone number from a person.
@@ -183,7 +187,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with workflows</returns>
-    Task<IPagedResponse<People.Workflow>> ListWorkflowsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Workflow>> ListWorkflowsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a single workflow by ID.
@@ -191,7 +195,7 @@ public interface IPeopleService
     /// <param name="id">The workflow's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The workflow, or null if not found</returns>
-    Task<People.Workflow?> GetWorkflowAsync(string id, CancellationToken cancellationToken = default);
+    Task<Workflow?> GetWorkflowAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Lists workflow cards with optional filtering, sorting, and pagination.
@@ -200,7 +204,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with workflow cards</returns>
-    Task<IPagedResponse<People.WorkflowCard>> ListWorkflowCardsAsync(string workflowId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<WorkflowCard>> ListWorkflowCardsAsync(string workflowId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a single workflow card by ID.
@@ -209,7 +213,7 @@ public interface IPeopleService
     /// <param name="cardId">The workflow card's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The workflow card, or null if not found</returns>
-    Task<People.WorkflowCard?> GetWorkflowCardAsync(string workflowId, string cardId, CancellationToken cancellationToken = default);
+    Task<WorkflowCard?> GetWorkflowCardAsync(string workflowId, string cardId, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Creates a new workflow card.
@@ -218,7 +222,7 @@ public interface IPeopleService
     /// <param name="request">The workflow card creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created workflow card</returns>
-    Task<People.WorkflowCard> CreateWorkflowCardAsync(string workflowId, WorkflowCardCreateRequest request, CancellationToken cancellationToken = default);
+    Task<WorkflowCard> CreateWorkflowCardAsync(string workflowId, WorkflowCardCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates an existing workflow card.
@@ -228,7 +232,7 @@ public interface IPeopleService
     /// <param name="request">The workflow card update request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The updated workflow card</returns>
-    Task<People.WorkflowCard> UpdateWorkflowCardAsync(string workflowId, string cardId, WorkflowCardUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<WorkflowCard> UpdateWorkflowCardAsync(string workflowId, string cardId, WorkflowCardUpdateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Deletes a workflow card.
@@ -246,7 +250,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with forms</returns>
-    Task<IPagedResponse<People.Form>> ListFormsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Form>> ListFormsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a single form by ID.
@@ -254,7 +258,7 @@ public interface IPeopleService
     /// <param name="id">The form's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The form, or null if not found</returns>
-    Task<People.Form?> GetFormAsync(string id, CancellationToken cancellationToken = default);
+    Task<Form?> GetFormAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Lists form submissions for a specific form.
@@ -263,7 +267,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with form submissions</returns>
-    Task<IPagedResponse<People.FormSubmission>> ListFormSubmissionsAsync(string formId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<FormSubmission>> ListFormSubmissionsAsync(string formId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a single form submission by ID.
@@ -272,7 +276,7 @@ public interface IPeopleService
     /// <param name="submissionId">The form submission's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The form submission, or null if not found</returns>
-    Task<People.FormSubmission?> GetFormSubmissionAsync(string formId, string submissionId, CancellationToken cancellationToken = default);
+    Task<FormSubmission?> GetFormSubmissionAsync(string formId, string submissionId, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Submits a form with the provided data.
@@ -281,7 +285,7 @@ public interface IPeopleService
     /// <param name="request">The form submission request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created form submission</returns>
-    Task<People.FormSubmission> SubmitFormAsync(string formId, FormSubmitRequest request, CancellationToken cancellationToken = default);
+    Task<FormSubmission> SubmitFormAsync(string formId, FormSubmitRequest request, CancellationToken cancellationToken = default);
     
     // List management
     
@@ -291,7 +295,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with people lists</returns>
-    Task<IPagedResponse<People.PeopleList>> ListPeopleListsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<PeopleList>> ListPeopleListsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a single people list by ID.
@@ -299,7 +303,7 @@ public interface IPeopleService
     /// <param name="id">The list's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The people list, or null if not found</returns>
-    Task<People.PeopleList?> GetPeopleListAsync(string id, CancellationToken cancellationToken = default);
+    Task<PeopleList?> GetPeopleListAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Creates a new people list.
@@ -307,7 +311,7 @@ public interface IPeopleService
     /// <param name="request">The list creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created people list</returns>
-    Task<People.PeopleList> CreatePeopleListAsync(PeopleListCreateRequest request, CancellationToken cancellationToken = default);
+    Task<PeopleList> CreatePeopleListAsync(PeopleListCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates an existing people list.
@@ -316,7 +320,7 @@ public interface IPeopleService
     /// <param name="request">The list update request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The updated people list</returns>
-    Task<People.PeopleList> UpdatePeopleListAsync(string id, PeopleListUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<PeopleList> UpdatePeopleListAsync(string id, PeopleListUpdateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Deletes a people list.
@@ -332,7 +336,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with people in the list</returns>
-    Task<IPagedResponse<Core.Person>> ListPeopleInListAsync(string listId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Person>> ListPeopleInListAsync(string listId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Adds a person to a list.
@@ -341,7 +345,7 @@ public interface IPeopleService
     /// <param name="request">The list member creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created list membership</returns>
-    Task<People.ListMember> AddPersonToListAsync(string listId, ListMemberCreateRequest request, CancellationToken cancellationToken = default);
+    Task<ListMember> AddPersonToListAsync(string listId, ListMemberCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Removes a person from a list.
@@ -359,7 +363,7 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with households</returns>
-    Task<IPagedResponse<People.Household>> ListHouseholdsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Household>> ListHouseholdsAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets a single household by ID.
@@ -367,7 +371,7 @@ public interface IPeopleService
     /// <param name="id">The household's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The household, or null if not found</returns>
-    Task<People.Household?> GetHouseholdAsync(string id, CancellationToken cancellationToken = default);
+    Task<Household?> GetHouseholdAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Creates a new household.
@@ -375,7 +379,7 @@ public interface IPeopleService
     /// <param name="request">The household creation request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created household</returns>
-    Task<People.Household> CreateHouseholdAsync(HouseholdCreateRequest request, CancellationToken cancellationToken = default);
+    Task<Household> CreateHouseholdAsync(HouseholdCreateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates an existing household.
@@ -384,7 +388,7 @@ public interface IPeopleService
     /// <param name="request">The household update request</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The updated household</returns>
-    Task<People.Household> UpdateHouseholdAsync(string id, HouseholdUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<Household> UpdateHouseholdAsync(string id, HouseholdUpdateRequest request, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Deletes a household.
@@ -400,5 +404,5 @@ public interface IPeopleService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with people in the household</returns>
-    Task<IPagedResponse<Core.Person>> ListPeopleInHouseholdAsync(string householdId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<Person>> ListPeopleInHouseholdAsync(string householdId, QueryParameters? parameters = null, CancellationToken cancellationToken = default);
 }

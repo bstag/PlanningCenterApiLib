@@ -1,4 +1,8 @@
-namespace PlanningCenter.Api.Client.Models;
+
+
+using PlanningCenter.Api.Client.Models;
+
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Interface for caching API responses to improve performance and reduce API calls.

@@ -2,6 +2,7 @@ using FluentAssertions;
 using Moq;
 using PlanningCenter.Api.Client.Extensions;
 using PlanningCenter.Api.Client.Fluent;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using Xunit;
 

@@ -1,7 +1,8 @@
 using System.Linq.Expressions;
 using PlanningCenter.Api.Client.Fluent.QueryBuilder;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
-using PlanningCenter.Api.Client.Models.Fluent;
+
 using PlanningCenter.Api.Client.Models.Groups;
 
 namespace PlanningCenter.Api.Client.Fluent;

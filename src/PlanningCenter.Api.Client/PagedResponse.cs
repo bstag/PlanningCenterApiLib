@@ -1,5 +1,7 @@
+using PlanningCenter.Api.Client.Abstractions;
+using PlanningCenter.Api.Client.Models;
 
-namespace PlanningCenter.Api.Client.Models;
+namespace PlanningCenter.Api.Client;
 
 /// <summary>
 /// Implementation of IPagedResponse that provides built-in pagination helpers.

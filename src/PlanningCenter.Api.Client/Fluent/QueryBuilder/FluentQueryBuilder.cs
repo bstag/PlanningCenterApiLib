@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using PlanningCenter.Api.Client.Fluent.ExpressionParsing;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Core;
 

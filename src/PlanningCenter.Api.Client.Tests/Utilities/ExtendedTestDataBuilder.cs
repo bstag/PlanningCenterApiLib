@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using AutoFixture;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.JsonApi.Services;
 using PlanningCenter.Api.Client.Models.JsonApi.Groups;
@@ -9,6 +10,10 @@ using PlanningCenter.Api.Client.Models.JsonApi.Calendar;
 using PlanningCenter.Api.Client.Models.JsonApi.Giving;
 using PlanningCenter.Api.Client.Models.JsonApi.Publishing;
 using PlanningCenter.Api.Client.Models.JsonApi.Webhooks;
+using PlanningCenter.Api.Client.Models.Publishing;
+using PlanningCenter.Api.Client.Models.Requests;
+using PlanningCenter.Api.Client.Models.JsonApi.Registrations;
+using PeopleModels = PlanningCenter.Api.Client.Models.People;
 
 namespace PlanningCenter.Api.Client.Tests.Utilities;
 
@@ -804,5 +809,520 @@ public class ExtendedTestDataBuilder
             Meta = new PagedResponseMeta { Count = count, TotalCount = count },
             Links = new PagedResponseLinks { Self = "/webhooks/v2/events" }
         };
+    }
+
+    // Domain model builders for Publishing module
+    public Episode BuildEpisode(string? id = null)
+    {
+        return new Episode
+        {
+            Id = id ?? _fixture.Create<string>(),
+            Title = _fixture.Create<string>() + " Episode",
+            Description = _fixture.Create<string>(),
+            PublishedAt = DateTime.UtcNow.AddDays(-1),
+            LengthInSeconds = _fixture.Create<int>() % 3600 + 600,
+            VideoUrl = "https://example.com/video.mp4",
+            AudioUrl = "https://example.com/audio.mp3",
+            ArtworkUrl = "https://example.com/artwork.jpg",
+            Notes = _fixture.Create<string>(),
+            CreatedAt = DateTime.UtcNow.AddDays(-7),
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    public Series BuildSeries(string? id = null)
+    {
+        return new Series
+        {
+            Id = id ?? _fixture.Create<string>(),
+            Title = _fixture.Create<string>() + " Series",
+            Description = _fixture.Create<string>(),
+            ArtworkUrl = "https://example.com/series-artwork.jpg",
+            PublishedAt = DateTime.UtcNow.AddDays(-30),
+            CreatedAt = DateTime.UtcNow.AddDays(-60),
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    public Speaker BuildSpeaker(string? id = null)
+    {
+        return new Speaker
+        {
+            Id = id ?? _fixture.Create<string>(),
+            FirstName = _fixture.Create<string>(),
+            LastName = _fixture.Create<string>(),
+            DisplayName = _fixture.Create<string>(),
+            Title = "Pastor",
+            Biography = _fixture.Create<string>(),
+            Email = _fixture.Create<string>() + "@example.com",
+            PhoneNumber = "555-123-4567",
+            WebsiteUrl = "https://example.com",
+            PhotoUrl = "https://example.com/photo.jpg",
+            Organization = "Test Church",
+            Location = "Test City",
+            Active = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-90),
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    public Media BuildMedia(string? id = null)
+    {
+        return new Media
+        {
+            Id = id ?? _fixture.Create<string>(),
+            FileName = _fixture.Create<string>() + ".mp3",
+            ContentType = "audio/mpeg",
+            FileSizeInBytes = _fixture.Create<int>() % 10000000 + 1000000,
+            MediaType = "audio",
+            Quality = "high",
+            FileUrl = "https://example.com/media.mp3",
+            DownloadUrl = "https://example.com/download/media.mp3",
+            IsPrimary = true,
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    public Speakership BuildSpeakership(string? id = null)
+    {
+        return new Speakership
+        {
+            Id = id ?? _fixture.Create<string>(),
+            Role = "Primary Speaker",
+            CreatedAt = DateTime.UtcNow.AddDays(-1),
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    // Request builders for Publishing module
+    public EpisodeCreateRequest BuildEpisodeCreateRequest()
+    {
+        return new EpisodeCreateRequest
+        {
+            Title = _fixture.Create<string>() + " Episode",
+            Description = _fixture.Create<string>(),
+            Notes = _fixture.Create<string>()
+        };
+    }
+
+    public EpisodeUpdateRequest BuildEpisodeUpdateRequest()
+    {
+        return new EpisodeUpdateRequest
+        {
+            Title = _fixture.Create<string>() + " Updated Episode",
+            Description = _fixture.Create<string>(),
+            Notes = _fixture.Create<string>()
+        };
+    }
+
+    public SeriesCreateRequest BuildSeriesCreateRequest()
+    {
+        return new SeriesCreateRequest
+        {
+            Title = _fixture.Create<string>() + " Series",
+            Description = _fixture.Create<string>()
+        };
+    }
+
+    public SeriesUpdateRequest BuildSeriesUpdateRequest()
+    {
+        return new SeriesUpdateRequest
+        {
+            Title = _fixture.Create<string>() + " Updated Series",
+            Description = _fixture.Create<string>()
+        };
+    }
+
+    public SpeakerCreateRequest BuildSpeakerCreateRequest()
+    {
+        return new SpeakerCreateRequest
+        {
+            FirstName = _fixture.Create<string>(),
+            LastName = _fixture.Create<string>(),
+            Email = _fixture.Create<string>() + "@example.com"
+        };
+    }
+
+    public SpeakerUpdateRequest BuildSpeakerUpdateRequest()
+    {
+        return new SpeakerUpdateRequest
+        {
+            FirstName = _fixture.Create<string>(),
+            LastName = _fixture.Create<string>(),
+            Email = _fixture.Create<string>() + "@example.com"
+        };
+    }
+
+    // Analytics builders
+    public EpisodeAnalytics BuildEpisodeAnalytics(string episodeId)
+    {
+        return new EpisodeAnalytics
+        {
+            EpisodeId = episodeId,
+            ViewCount = _fixture.Create<int>() % 10000,
+            DownloadCount = _fixture.Create<int>() % 5000,
+            AverageWatchTimeSeconds = _fixture.Create<double>() % 3600,
+            PeriodStart = DateTime.UtcNow.AddDays(-30),
+            PeriodEnd = DateTime.UtcNow,
+            AdditionalData = new Dictionary<string, object>()
+        };
+    }
+
+    public SeriesAnalytics BuildSeriesAnalytics(string seriesId)
+    {
+        return new SeriesAnalytics
+        {
+            SeriesId = seriesId,
+            TotalViewCount = _fixture.Create<int>() % 100000,
+            TotalDownloadCount = _fixture.Create<int>() % 50000,
+            EpisodeCount = _fixture.Create<int>() % 50 + 1,
+            PeriodStart = DateTime.UtcNow.AddDays(-30),
+            PeriodEnd = DateTime.UtcNow,
+            AdditionalData = new Dictionary<string, object>()
+        };
+    }
+
+    // Generic paged response builder
+    public PagedResponse<T> BuildPagedResponse<T>(IReadOnlyList<T> data)
+    {
+        return new PagedResponse<T>
+        {
+            Data = data,
+            Meta = new PagedResponseMeta { Count = data.Count, TotalCount = data.Count },
+            Links = new PagedResponseLinks { Self = "/api/endpoint" }
+        };
+    }
+
+    // Distribution and reporting builders
+    public DistributionChannel BuildDistributionChannel(string? id = null)
+    {
+        return new DistributionChannel
+        {
+            Id = id ?? _fixture.Create<string>(),
+            Name = _fixture.Create<string>() + " Channel",
+            Description = _fixture.Create<string>(),
+            ChannelType = "podcast",
+            Active = true,
+            AutoDistribute = false,
+            SupportedContentTypes = new List<string> { "audio", "video" },
+            SupportedFormats = new List<string> { "mp3", "mp4" },
+            Configuration = new Dictionary<string, object>(),
+            Credentials = new Dictionary<string, string>(),
+            Metadata = new Dictionary<string, object>(),
+            CreatedAt = DateTime.UtcNow.AddDays(-30),
+            UpdatedAt = DateTime.UtcNow
+        };
+    }
+
+    public DistributionResult BuildDistributionResult()
+    {
+        return new DistributionResult
+        {
+            Success = true,
+            Message = "Successfully distributed",
+            DistributedAt = DateTime.UtcNow
+        };
+    }
+
+    public PublishingReportRequest BuildPublishingReportRequest()
+    {
+        return new PublishingReportRequest
+        {
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            EndDate = DateTime.UtcNow,
+            IncludeEpisodeDetails = true,
+            IncludeSeriesDetails = true,
+            Format = "json"
+        };
+    }
+
+    public PublishingReport BuildPublishingReport()
+    {
+        return new PublishingReport
+        {
+            TotalEpisodes = _fixture.Create<int>() % 100,
+            TotalSeries = _fixture.Create<int>() % 20,
+            TotalViews = _fixture.Create<int>() % 100000,
+            TotalDownloads = _fixture.Create<int>() % 50000,
+            GeneratedAt = DateTime.UtcNow,
+            PeriodStart = DateTime.UtcNow.AddDays(-30),
+            PeriodEnd = DateTime.UtcNow,
+            AdditionalData = new Dictionary<string, object>()
+        };
+    }
+
+    public AnalyticsRequest BuildAnalyticsRequest()
+    {
+        return new AnalyticsRequest
+        {
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            EndDate = DateTime.UtcNow
+        };
+    }
+
+    public MediaUploadRequest BuildMediaUploadRequest()
+    {
+        return new MediaUploadRequest
+        {
+            FileName = "test-media.mp4",
+            ContentType = "video/mp4",
+            FileSizeInBytes = 1024000,
+            MediaType = "video",
+            Quality = "HD",
+            IsPrimary = true
+        };
+    }
+
+    public MediaUpdateRequest BuildMediaUpdateRequest()
+    {
+        return new MediaUpdateRequest
+        {
+            FileName = "updated-media.mp4",
+            Quality = "HD",
+            IsPrimary = true
+        };
+    }
+
+    // Missing DTO creation methods
+    public ChannelDto CreateChannelDto(Action<ChannelDto>? customize = null)
+    {
+        var dto = new ChannelDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Channel",
+            Attributes = new ChannelAttributes
+            {
+                Name = _fixture.Create<string>() + " Channel",
+                Description = _fixture.Create<string>(),
+                Published = true,
+                CreatedAt = DateTime.UtcNow.AddDays(-30),
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public EpisodeAnalyticsDto CreateEpisodeAnalyticsDto(Action<EpisodeAnalyticsDto>? customize = null)
+    {
+        var dto = new EpisodeAnalyticsDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "EpisodeAnalytics",
+            Attributes = new EpisodeAnalyticsAttributesDto
+            {
+                EpisodeId = _fixture.Create<string>(),
+                ViewCount = _fixture.Create<int>() % 1000 + 1,
+                DownloadCount = _fixture.Create<int>() % 500 + 1,
+                AverageWatchTimeSeconds = _fixture.Create<double>() % 3600 + 60,
+                PeriodStart = DateTime.UtcNow.AddDays(-7),
+                PeriodEnd = DateTime.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public SeriesAnalyticsDto CreateSeriesAnalyticsDto(Action<SeriesAnalyticsDto>? customize = null)
+    {
+        var dto = new SeriesAnalyticsDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "SeriesAnalytics",
+            Attributes = new SeriesAnalyticsAttributesDto
+            {
+                TotalViews = _fixture.Create<int>() % 50000,
+                TotalDownloads = _fixture.Create<int>() % 25000,
+                TotalPlays = _fixture.Create<int>() % 30000
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public PublishingReportDto CreatePublishingReportDto(Action<PublishingReportDto>? customize = null)
+    {
+        var dto = new PublishingReportDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "PublishingReport",
+            Attributes = new PublishingReportAttributesDto
+            {
+                Summary = _fixture.Create<string>(),
+                TotalViews = _fixture.Create<int>() % 100000,
+                UniqueViewers = _fixture.Create<int>() % 50000,
+                AverageWatchTime = _fixture.Create<int>() % 3600,
+                TotalViewCount = _fixture.Create<int>() % 100000,
+                TotalDownloadCount = _fixture.Create<int>() % 50000,
+                EpisodeCount = _fixture.Create<int>() % 100 + 1
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    // Registrations Module Test Data
+    public SignupDto CreateSignupDto(Action<SignupDto>? customize = null)
+    {
+        var dto = new SignupDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Signup",
+            Attributes = new SignupAttributesDto
+            {
+                Name = _fixture.Create<string>() + " Event",
+                Description = _fixture.Create<string>(),
+                OpenAt = DateTime.UtcNow.AddDays(-7),
+                CloseAt = DateTime.UtcNow.AddDays(6),
+                RegistrationLimit = _fixture.Create<int>() % 100 + 10,
+                RegistrationCount = _fixture.Create<int>() % 50,
+                WaitlistEnabled = true,
+                CreatedAt = DateTime.UtcNow.AddDays(-30),
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public RegistrationDto CreateRegistrationDto(Action<RegistrationDto>? customize = null)
+    {
+        var dto = new RegistrationDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Registration",
+            Attributes = new RegistrationAttributesDto
+            {
+                Status = "confirmed",
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public AttendeeDto CreateAttendeeDto(Action<AttendeeDto>? customize = null)
+    {
+        var dto = new AttendeeDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Attendee",
+            Attributes = new AttendeeAttributesDto
+            {
+                FirstName = _fixture.Create<string>(),
+                LastName = _fixture.Create<string>(),
+                Email = _fixture.Create<string>() + "@example.com",
+                PhoneNumber = $"{_fixture.Create<int>() % 900 + 100}-{_fixture.Create<int>() % 900 + 100}-{_fixture.Create<int>() % 9000 + 1000}",
+                Status = "confirmed",
+                CreatedAt = DateTime.UtcNow.AddDays(-1),
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public PeopleModels.PersonDto CreatePersonDto(Action<PeopleModels.PersonDto>? customize = null)
+    {
+        var dto = new PeopleModels.PersonDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Person",
+            Attributes = new PeopleModels.PersonAttributesDto
+            {
+                FirstName = _fixture.Create<string>(),
+                LastName = _fixture.Create<string>(),
+                Birthdate = DateTime.UtcNow.AddYears(-25).AddDays(_fixture.Create<int>() % 365),
+                CreatedAt = DateTime.UtcNow.AddDays(-30),
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public CampusDto CreateCampusDto(Action<CampusDto>? customize = null)
+    {
+        var dto = new CampusDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Campus",
+            Attributes = new CampusAttributesDto
+            {
+                Name = _fixture.Create<string>() + " Campus",
+                Description = _fixture.Create<string>(),
+                Timezone = "America/New_York",
+                Address = _fixture.Create<string>(),
+                Street = _fixture.Create<string>(),
+                City = _fixture.Create<string>(),
+                State = _fixture.Create<string>(),
+                PostalCode = _fixture.Create<string>(),
+                Zip = _fixture.Create<string>(),
+                Country = "US",
+                PhoneNumber = $"{_fixture.Create<int>() % 900 + 100}-{_fixture.Create<int>() % 900 + 100}-{_fixture.Create<int>() % 9000 + 1000}",
+                Active = true,
+                SortOrder = _fixture.Create<int>() % 100,
+                SignupCount = _fixture.Create<int>() % 50,
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-30),
+                UpdatedAt = DateTimeOffset.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public SelectionTypeDto CreateSelectionTypeDto(Action<SelectionTypeDto>? customize = null)
+    {
+        var dto = new SelectionTypeDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "SelectionType",
+            Attributes = new SelectionTypeAttributesDto
+            {
+                Name = _fixture.Create<string>() + " Selection",
+                Description = _fixture.Create<string>(),
+                Required = false,
+                AllowMultiple = false,
+                CreatedAt = DateTimeOffset.UtcNow.AddDays(-30),
+                UpdatedAt = DateTimeOffset.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public CategoryDto CreateCategoryDto(Action<CategoryDto>? customize = null)
+    {
+        var dto = new CategoryDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Category",
+            Attributes = new CategoryAttributesDto
+            {
+                Name = _fixture.Create<string>() + " Category",
+                Description = _fixture.Create<string>(),
+                CreatedAt = DateTime.UtcNow.AddDays(-30),
+                UpdatedAt = DateTime.UtcNow
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
+    }
+
+    public CountDto CreateCountDto(Action<CountDto>? customize = null)
+    {
+        var dto = new CountDto
+        {
+            Id = _fixture.Create<string>(),
+            Type = "Count",
+            Attributes = new CountAttributesDto
+            {
+                Count = _fixture.Create<int>() % 1000
+            }
+        };
+        customize?.Invoke(dto);
+        return dto;
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Primitives;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 
 namespace PlanningCenter.Api.Client.Tests.Utilities;
@@ -83,6 +84,27 @@ public class MockApiConnection : IApiConnection
         return obj?.GetType().IsGenericType == true && 
                obj.GetType().GetGenericTypeDefinition() == typeof(PagedResponse<>);
     }
+    
+    private static bool TryConvertToPagedResponse<T>(object? obj, out IPagedResponse<T>? result)
+    {
+        result = null;
+        
+        // Direct interface check
+        if (obj is IPagedResponse<T> directMatch)
+        {
+            result = directMatch;
+            return true;
+        }
+        
+        // Check if it's a PagedResponse<T> that implements IPagedResponse<T>
+        if (obj is PagedResponse<T> pagedResponse)
+        {
+            result = pagedResponse;
+            return true;
+        }
+        
+        return false;
+    }
 
     public Task<T> PostAsync<T>(string endpoint, object data, CancellationToken cancellationToken = default) =>
         ReturnMutation<T>("POST", endpoint);
@@ -102,13 +124,13 @@ public class MockApiConnection : IApiConnection
     public Task<IPagedResponse<T>> GetPagedAsync<T>(string endpoint, QueryParameters? parameters = null, CancellationToken cancellationToken = default)
     {
         // Try exact match first
-        if (_getResponses.TryGetValue(endpoint, out var obj) && obj is IPagedResponse<T> pagedResponse)
-            return Task.FromResult(pagedResponse);
+        if (_getResponses.TryGetValue(endpoint, out var obj) && TryConvertToPagedResponse<T>(obj, out var pagedResponse))
+            return Task.FromResult(pagedResponse!);
         
         // Try base endpoint without query parameters
         var baseEndpoint = endpoint.Split('?')[0];
-        if (_getResponses.TryGetValue(baseEndpoint, out var baseObj) && baseObj is IPagedResponse<T> basePagedResponse)
-            return Task.FromResult(basePagedResponse);
+        if (_getResponses.TryGetValue(baseEndpoint, out var baseObj) && TryConvertToPagedResponse<T>(baseObj, out var basePagedResponse))
+            return Task.FromResult(basePagedResponse!);
         
         // If no paged response is configured, try to create one from a regular response
         if (_getResponses.TryGetValue(endpoint, out var regularObj) && regularObj is IEnumerable<T> items)

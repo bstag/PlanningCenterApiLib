@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningCenter.Api.Client.CLI.Configuration;
 using PlanningCenter.Api.Client;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Services;

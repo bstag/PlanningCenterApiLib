@@ -1,6 +1,9 @@
+using System.Linq.Expressions;
+using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.Requests;
 
-namespace PlanningCenter.Api.Client.Models.Fluent;
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Fluent API context for creating people with related data.
@@ -33,5 +36,5 @@ public interface IPeopleCreateContext
     /// </summary>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The created person with all related data</returns>
-    Task<Core.Person> ExecuteAsync(CancellationToken cancellationToken = default);
+    Task<Person> ExecuteAsync(CancellationToken cancellationToken = default);
 }

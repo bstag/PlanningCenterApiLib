@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.CLI.Configuration;
 using PlanningCenter.Api.Client.CLI.Formatters;
 using PlanningCenter.Api.Client.CLI.Services;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using System.CommandLine;
 using System.CommandLine.Invocation;

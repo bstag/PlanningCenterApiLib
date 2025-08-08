@@ -3,6 +3,7 @@ using PlanningCenter.Api.Client.Models.JsonApi.Publishing;
 using PlanningCenter.Api.Client.Models.Publishing;
 using PlanningCenter.Api.Client.Models.Requests;
 using PlanningCenter.Api.Client.Models.JsonApi;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 
 namespace PlanningCenter.Api.Client.Mapping.Publishing;

@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Registrations;
 using PlanningCenter.Api.Client.Models.Requests;
@@ -50,16 +51,16 @@ public abstract class RegistrationsServiceIntegrationTestBase : IClassFixture<Te
         {
             _createdSignupIds.Add(createdSignup.Id);
         }
-        return createdSignup;
+        return createdSignup!;
     }
 
-    protected async Task<Registration> CreateTestRegistrationAsync(string signupId = null)
+    protected async Task<Registration> CreateTestRegistrationAsync(string? signupId = null)
     {
         // If no signupId provided, create a test signup first
         if (string.IsNullOrEmpty(signupId))
         {
             var testSignup = await CreateTestSignupAsync();
-            signupId = testSignup?.Id;
+            signupId = testSignup?.Id!;
         }
 
         if (string.IsNullOrEmpty(signupId))
@@ -79,16 +80,16 @@ public abstract class RegistrationsServiceIntegrationTestBase : IClassFixture<Te
         {
             _createdRegistrationIds.Add(createdRegistration.Id);
         }
-        return createdRegistration;
+        return createdRegistration!;
     }
 
-    protected async Task<SelectionType> CreateTestSelectionTypeAsync(string signupId = null)
+    protected async Task<SelectionType> CreateTestSelectionTypeAsync(string? signupId = null)
     {
         // If no signupId provided, create a test signup first
         if (string.IsNullOrEmpty(signupId))
         {
             var testSignup = await CreateTestSignupAsync();
-            signupId = testSignup?.Id;
+            signupId = testSignup?.Id!;
         }
 
         if (string.IsNullOrEmpty(signupId))
@@ -108,7 +109,7 @@ public abstract class RegistrationsServiceIntegrationTestBase : IClassFixture<Te
         {
             _createdSelectionTypeIds.Add(createdSelectionType.Id);
         }
-        return createdSelectionType;
+        return createdSelectionType!;
     }
 
 
@@ -138,6 +139,7 @@ public abstract class RegistrationsServiceIntegrationTestBase : IClassFixture<Te
             {
                 // Note: Registration deletion may not be supported in the API
                 // await RegistrationsService.DeleteRegistrationAsync(registrationId);
+                await Task.CompletedTask;
             }
             catch
             {

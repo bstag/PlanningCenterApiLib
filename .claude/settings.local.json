@@ -9,7 +9,25 @@
       "Bash(git add:*)",
       "Bash(ls:*)",
       "Bash(git commit:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "mcp__serena__read_file",
+      "mcp__serena__list_dir",
+      "mcp__serena__get_symbols_overview",
+      "mcp__serena__find_file",
+      "mcp__serena__find_symbol",
+      "mcp__serena__write_memory",
+      "mcp__serena__activate_project",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__think_about_collected_information",
+      "mcp__serena__create_text_file",
+      "mcp__serena__replace_regex",
+      "Bash(cat \"C:\\Source\\PlanningCenterApiLib\\src\\PlanningCenter.Api.Client.Models\\Fluent\\IModuleFluentContexts.cs\")",
+      "Bash(cp:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "mcp__serena__execute_shell_command",
+      "Bash(del \"C:\\Source\\PlanningCenterApiLib\\src\\PlanningCenter.Api.Client.Models\\PagedResponse.cs\")",
+      "mcp__serena__insert_before_symbol"
     ],
     "deny": []
   }

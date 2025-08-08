@@ -1,4 +1,5 @@
 using FluentAssertions;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using Xunit;
 

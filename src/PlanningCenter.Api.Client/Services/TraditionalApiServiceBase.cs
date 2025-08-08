@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.Interfaces;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 
 namespace PlanningCenter.Api.Client.Services;

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using PlanningCenter.Api.Client.Fluent;
 using PlanningCenter.Api.Client.Mapping.People;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.People;

@@ -67,12 +67,13 @@ public class ExpressionParserTests
     public void ParseSort_ShouldHandleSimpleProperty_ForEvent()
     {
         // Arrange
-        Expression<Func<Event, object>> expression = e => e.StartsAt;
+        Expression<Func<Event, object>> expression = e => e.StartsAt!;
 
         // Act
         var result = ExpressionParser.ParseSort(expression);
 
         // Assert
+        result.Should().NotBeNull();
         result.Should().Be("starts_at");
     }
 
@@ -111,12 +112,13 @@ public class ExpressionParserTests
     public void ParseInclude_ShouldHandleNestedPropertyAccess_EventOwner()
     {
         // Arrange
-        Expression<Func<Event, object>> expression = e => e.OwnerName;
+        Expression<Func<Event, object>> expression = e => e.OwnerName!;
 
         // Act
         var result = ExpressionParser.ParseInclude(expression);
 
         // Assert
+        result.Should().NotBeNull();
         result.Should().Be("owner_name");
     }
 
@@ -248,6 +250,7 @@ public class ExpressionParserTests
         var result = ExpressionParser.ParseSort(lambda);
 
         // Assert
+        result.Should().NotBeNull();
         result.Should().Be(expectedApiField);
     }
 
@@ -280,7 +283,7 @@ public class ExpressionParserTests
     public void ParseFilter_ShouldReturnEmptyResult_ForUnsupportedExpression()
     {
         // Arrange
-        Expression<Func<Person, bool>> expression = p => p.ToString().Contains("test");
+        Expression<Func<Person, bool>> expression = p => p.ToString()!.Contains("test");
 
         // Act
         var result = ExpressionParser.ParseFilter(expression);
@@ -340,7 +343,7 @@ public class ExpressionParserTests
     public void ParseInclude_ShouldWorkWithGenericMethod_ForEvent()
     {
         // Arrange
-        Expression<Func<Event, object>> expression = e => e.OwnerName;
+        Expression<Func<Event, object>> expression = e => e.OwnerName!;
 
         // Act
         var result = ExpressionParser.ParseInclude<Event>(expression);

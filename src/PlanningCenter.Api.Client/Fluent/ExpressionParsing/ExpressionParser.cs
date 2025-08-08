@@ -55,7 +55,7 @@ public static class ExpressionParser
 
         try
         {
-            return ParsePropertyAccess(expression.Body, typeof(Person));
+            return ParsePropertyAccess(expression.Body, typeof(Person)) ?? string.Empty;
         }
         catch
         {
@@ -89,7 +89,7 @@ public static class ExpressionParser
 
         try
         {
-            return ParsePropertyAccess(expression.Body, typeof(T));
+            return ParsePropertyAccess(expression.Body, typeof(T)) ?? string.Empty;
         }
         catch
         {
@@ -106,7 +106,7 @@ public static class ExpressionParser
 
         try
         {
-            return ParsePropertyAccess(expression.Body, typeof(T));
+            return ParsePropertyAccess(expression.Body, typeof(T)) ?? string.Empty;
         }
         catch
         {
@@ -378,7 +378,7 @@ public static class ExpressionParser
         return string.Empty;
     }
 
-    private static string? ExtractPropertyName(Expression? expression)
+    private static string ExtractPropertyName(Expression? expression)
     {
         if (expression is MemberExpression member)
         {
@@ -403,7 +403,7 @@ public static class ExpressionParser
             }
         }
 
-        return null;
+        return string.Empty;
     }
 
     /// <summary>
@@ -550,7 +550,7 @@ public static class ExpressionParser
         }
         catch
         {
-            return null;
+            return string.Empty;
         }
     }
 

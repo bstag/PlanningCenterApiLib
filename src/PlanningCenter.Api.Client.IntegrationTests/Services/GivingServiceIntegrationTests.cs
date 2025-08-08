@@ -1,5 +1,6 @@
 using FluentAssertions;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Giving;
 using PlanningCenter.Api.Client.Models.Requests;
@@ -74,7 +75,7 @@ public class GivingServiceIntegrationTests : GivingServiceIntegrationTestBase
         response.Should().NotBeNull();
         response.Data.Should().NotBeNull();
         response.Data.Count.Should().BeGreaterThan(0);
-        response.Data.Count.Should().BeLessOrEqualTo(5);
+        response.Data.Count.Should().BeLessThanOrEqualTo(5);
         response.Meta.Should().NotBeNull();
         response.Meta.TotalCount.Should().BeGreaterThan(0);
     }
@@ -142,7 +143,7 @@ public class GivingServiceIntegrationTests : GivingServiceIntegrationTestBase
         response.Should().NotBeNull();
         response.Data.Should().NotBeNull();
         response.Data.Count.Should().BeGreaterThan(0);
-        response.Data.Count.Should().BeLessOrEqualTo(5);
+        response.Data.Count.Should().BeLessThanOrEqualTo(5);
         response.Meta.Should().NotBeNull();
         response.Meta.TotalCount.Should().BeGreaterThan(0);
     }
@@ -223,7 +224,7 @@ public class GivingServiceIntegrationTests : GivingServiceIntegrationTestBase
         response.Should().NotBeNull();
         response.Data.Should().NotBeNull();
         response.Data.Count.Should().BeGreaterThan(0);
-        response.Data.Count.Should().BeLessOrEqualTo(5);
+        response.Data.Count.Should().BeLessThanOrEqualTo(5);
         response.Meta.Should().NotBeNull();
         response.Meta.TotalCount.Should().BeGreaterThan(0);
     }
@@ -327,7 +328,7 @@ public class GivingServiceIntegrationTests : GivingServiceIntegrationTestBase
         response.Should().NotBeNull();
         response.Data.Should().NotBeNull();
         response.Data.Count.Should().BeGreaterThan(0);
-        response.Data.Count.Should().BeLessOrEqualTo(5);
+        response.Data.Count.Should().BeLessThanOrEqualTo(5);
         response.Meta.Should().NotBeNull();
         response.Meta.TotalCount.Should().BeGreaterThan(0);
     }
@@ -401,7 +402,7 @@ public class GivingServiceIntegrationTests : GivingServiceIntegrationTestBase
         response.Should().NotBeNull();
         response.Data.Should().NotBeNull();
         response.Data.Count.Should().BeGreaterThan(0);
-        response.Data.Count.Should().BeLessOrEqualTo(5);
+        response.Data.Count.Should().BeLessThanOrEqualTo(5);
         response.Meta.Should().NotBeNull();
         response.Meta.TotalCount.Should().BeGreaterThan(0);
     }

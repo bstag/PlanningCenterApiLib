@@ -128,7 +128,7 @@ public class GlobalExceptionHandlerTests
         _mockLogger.Verify(x => x.Log(
             LogLevel.Warning,
             It.IsAny<EventId>(),
-            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Rate limit exceeded for MakeRequest: Rate limit exceeded, Retry after: 00:05:00")),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Rate limit exceeded for MakeRequest: Rate limit exceeded, Retry after: 300 seconds")),
             It.IsAny<Exception>(),
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningCenter.Api.Client;
 using PlanningCenter.Api.Client.IntegrationTests.Infrastructure;
 using PlanningCenter.Api.Client.IntegrationTests.Models;
+using PlanningCenter.Api.Client.Abstractions;
 using PlanningCenter.Api.Client.Models;
 using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.Exceptions;

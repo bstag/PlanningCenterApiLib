@@ -1,7 +1,10 @@
+
+using PlanningCenter.Api.Client.Models;
+using PlanningCenter.Api.Client.Models.Core;
 using PlanningCenter.Api.Client.Models.Registrations;
 using PlanningCenter.Api.Client.Models.Requests;
 
-namespace PlanningCenter.Api.Client.Models;
+namespace PlanningCenter.Api.Client.Abstractions;
 
 /// <summary>
 /// Service interface for the Planning Center Registrations module.
@@ -329,7 +332,7 @@ public interface IRegistrationsService
     /// <param name="id">The campus's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The campus, or null if not found</returns>
-    Task<Campus?> GetCampusAsync(string id, CancellationToken cancellationToken = default);
+    Task<PlanningCenter.Api.Client.Models.Registrations.Campus?> GetCampusAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Lists campuses with optional filtering, sorting, and pagination.
@@ -337,7 +340,7 @@ public interface IRegistrationsService
     /// <param name="parameters">Query parameters for filtering and sorting</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>A paginated response with campuses</returns>
-    Task<IPagedResponse<Campus>> ListCampusesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
+    Task<IPagedResponse<PlanningCenter.Api.Client.Models.Registrations.Campus>> ListCampusesAsync(QueryParameters? parameters = null, CancellationToken cancellationToken = default);
     
     // Person-specific operations
     
@@ -347,7 +350,7 @@ public interface IRegistrationsService
     /// <param name="id">The person's unique identifier</param>
     /// <param name="cancellationToken">Cancellation token for the operation</param>
     /// <returns>The person, or null if not found</returns>
-    Task<Core.Person?> GetPersonAsync(string id, CancellationToken cancellationToken = default);
+    Task<Person?> GetPersonAsync(string id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets attendee records for a specific person.
