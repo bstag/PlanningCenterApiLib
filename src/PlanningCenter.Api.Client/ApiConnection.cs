@@ -35,7 +35,7 @@ public class ApiConnection : IApiConnection, IDisposable
 
         _options.Validate();
         ConfigureHttpClient();
-        
+
         _jsonOptions = new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
@@ -50,36 +50,14 @@ public class ApiConnection : IApiConnection, IDisposable
     public async Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("GET request to endpoint: {Endpoint}", endpoint);
-        
+
         var response = await ExecuteWithRetryAsync(
             () => SendRequestAsync(HttpMethod.Get, endpoint, null, cancellationToken),
             cancellationToken);
 
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        
-        if (_options.EnableDetailedLogging)
-        {
-            _logger.LogDebug("Response content: {Content}", content);
-        }
-
         try
         {
-            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
-            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
-            {
-                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
-                if (expando == null)
-                {
-                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
-                }
-                return (T)(object)expando;
-            }
-            var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
-            if (result == null)
-            {
-                throw new PlanningCenterApiGeneralException($"Failed to deserialize response to {typeof(T).Name}");
-            }
-            return result;
+            return await DeserializeResponseAsync<T>(response, cancellationToken);
         }
         catch (JsonException ex)
         {
@@ -94,31 +72,14 @@ public class ApiConnection : IApiConnection, IDisposable
     public async Task<T> PostAsync<T>(string endpoint, object data, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("POST request to endpoint: {Endpoint}", endpoint);
-        
+
         var response = await ExecuteWithRetryAsync(
             () => SendRequestAsync(HttpMethod.Post, endpoint, data, cancellationToken),
             cancellationToken);
 
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        
         try
         {
-            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
-            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
-            {
-                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
-                if (expando == null)
-                {
-                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
-                }
-                return (T)(object)expando;
-            }
-            var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
-            if (result == null)
-            {
-                throw new PlanningCenterApiGeneralException($"Failed to deserialize response to {typeof(T).Name}");
-            }
-            return result;
+            return await DeserializeResponseAsync<T>(response, cancellationToken);
         }
         catch (JsonException ex)
         {
@@ -133,31 +94,14 @@ public class ApiConnection : IApiConnection, IDisposable
     public async Task<T> PutAsync<T>(string endpoint, object data, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("PUT request to endpoint: {Endpoint}", endpoint);
-        
+
         var response = await ExecuteWithRetryAsync(
             () => SendRequestAsync(HttpMethod.Put, endpoint, data, cancellationToken),
             cancellationToken);
 
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        
         try
         {
-            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
-            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
-            {
-                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
-                if (expando == null)
-                {
-                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
-                }
-                return (T)(object)expando;
-            }
-            var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
-            if (result == null)
-            {
-                throw new PlanningCenterApiGeneralException($"Failed to deserialize response to {typeof(T).Name}");
-            }
-            return result;
+            return await DeserializeResponseAsync<T>(response, cancellationToken);
         }
         catch (JsonException ex)
         {
@@ -172,31 +116,14 @@ public class ApiConnection : IApiConnection, IDisposable
     public async Task<T> PatchAsync<T>(string endpoint, object data, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("PATCH request to endpoint: {Endpoint}", endpoint);
-        
+
         var response = await ExecuteWithRetryAsync(
             () => SendRequestAsync(HttpMethod.Patch, endpoint, data, cancellationToken),
             cancellationToken);
 
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        
         try
         {
-            // Patch: If T is object or ExpandoObject, use ExpandoObject for dynamic deserialization
-            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
-            {
-                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
-                if (expando == null)
-                {
-                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
-                }
-                return (T)(object)expando;
-            }
-            var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
-            if (result == null)
-            {
-                throw new PlanningCenterApiGeneralException($"Failed to deserialize response to {typeof(T).Name}");
-            }
-            return result;
+            return await DeserializeResponseAsync<T>(response, cancellationToken);
         }
         catch (JsonException ex)
         {
@@ -211,7 +138,7 @@ public class ApiConnection : IApiConnection, IDisposable
     public async Task DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("DELETE request to endpoint: {Endpoint}", endpoint);
-        
+
         await ExecuteWithRetryAsync(
             () => SendRequestAsync(HttpMethod.Delete, endpoint, null, cancellationToken),
             cancellationToken);
@@ -222,30 +149,35 @@ public class ApiConnection : IApiConnection, IDisposable
     /// This is the core method that enables all the pagination helpers throughout the SDK.
     /// </summary>
     public async Task<IPagedResponse<T>> GetPagedAsync<T>(
-        string endpoint, 
-        QueryParameters? parameters = null, 
+        string endpoint,
+        QueryParameters? parameters = null,
         CancellationToken cancellationToken = default)
     {
         var queryString = parameters?.ToQueryString() ?? string.Empty;
         var fullEndpoint = string.IsNullOrEmpty(queryString) ? endpoint : $"{endpoint}?{queryString}";
-        
+
         _logger.LogDebug("GET paginated request to endpoint: {Endpoint}", fullEndpoint);
-        
+
         var response = await ExecuteWithRetryAsync(
             () => SendRequestAsync(HttpMethod.Get, fullEndpoint, null, cancellationToken),
             cancellationToken);
 
-        var content = await response.Content.ReadAsStringAsync(cancellationToken);
-        
-        if (_options.EnableDetailedLogging)
-        {
-            _logger.LogDebug("Paginated response content: {Content}", content);
-        }
-
         try
         {
-            // Parse the JSON:API response structure
-            var apiResponse = JsonSerializer.Deserialize<JsonApiResponse<T>>(content, _jsonOptions);
+            JsonApiResponse<T>? apiResponse;
+
+            if (_options.EnableDetailedLogging)
+            {
+                var content = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogDebug("Paginated response content: {Content}", content);
+                apiResponse = JsonSerializer.Deserialize<JsonApiResponse<T>>(content, _jsonOptions);
+            }
+            else
+            {
+                using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                apiResponse = await JsonSerializer.DeserializeAsync<JsonApiResponse<T>>(stream, _jsonOptions, cancellationToken);
+            }
+
             if (apiResponse == null)
             {
                 throw new PlanningCenterApiGeneralException("Failed to deserialize paginated response");
@@ -279,13 +211,58 @@ public class ApiConnection : IApiConnection, IDisposable
         }
     }
 
+    private async Task<T> DeserializeResponseAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (_options.EnableDetailedLogging)
+        {
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogDebug("Response content: {Content}", content);
+
+            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
+            {
+                var expando = JsonSerializer.Deserialize<System.Dynamic.ExpandoObject>(content, _jsonOptions);
+                if (expando == null)
+                {
+                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
+                }
+                return (T)(object)expando;
+            }
+            var result = JsonSerializer.Deserialize<T>(content, _jsonOptions);
+            if (result == null)
+            {
+                throw new PlanningCenterApiGeneralException($"Failed to deserialize response to {typeof(T).Name}");
+            }
+            return result;
+        }
+        else
+        {
+            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+            if (typeof(T) == typeof(object) || typeof(T) == typeof(System.Dynamic.ExpandoObject))
+            {
+                var expando = await JsonSerializer.DeserializeAsync<System.Dynamic.ExpandoObject>(stream, _jsonOptions, cancellationToken);
+                if (expando == null)
+                {
+                    throw new PlanningCenterApiGeneralException($"Failed to deserialize response to ExpandoObject");
+                }
+                return (T)(object)expando;
+            }
+            var result = await JsonSerializer.DeserializeAsync<T>(stream, _jsonOptions, cancellationToken);
+            if (result == null)
+            {
+                throw new PlanningCenterApiGeneralException($"Failed to deserialize response to {typeof(T).Name}");
+            }
+            return result;
+        }
+    }
+
     private void ConfigureHttpClient()
     {
         _httpClient.BaseAddress = new Uri(_options.BaseUrl);
         _httpClient.Timeout = _options.RequestTimeout;
         _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(_options.UserAgent);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.api+json"));
-        
+
         // Add custom headers
         foreach (var (key, value) in _options.DefaultHeaders)
         {
@@ -294,16 +271,16 @@ public class ApiConnection : IApiConnection, IDisposable
     }
 
     private async Task<HttpResponseMessage> SendRequestAsync(
-        HttpMethod method, 
-        string endpoint, 
-        object? data, 
+        HttpMethod method,
+        string endpoint,
+        object? data,
         CancellationToken cancellationToken)
     {
         var request = new HttpRequestMessage(method, endpoint);
-        
+
         // Add authentication
         var authValue = await _authenticator.GetAccessTokenAsync(cancellationToken);
-        
+
         // Check if it's a Basic auth header (for PAT) or Bearer token (for OAuth)
         if (authValue.StartsWith("Basic "))
         {
@@ -315,13 +292,13 @@ public class ApiConnection : IApiConnection, IDisposable
             // For OAuth - use Bearer token
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", authValue);
         }
-        
+
         // Add request body for POST/PUT/PATCH
         if (data != null && (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch))
         {
             var json = JsonSerializer.Serialize(data, _jsonOptions);
             request.Content = new StringContent(json, Encoding.UTF8, "application/vnd.api+json");
-            
+
             if (_options.EnableDetailedLogging)
             {
                 _logger.LogDebug("Request body: {RequestBody}", json);
@@ -329,7 +306,7 @@ public class ApiConnection : IApiConnection, IDisposable
         }
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
-        
+
         // Handle different response status codes
         if (response.IsSuccessStatusCode)
         {
@@ -337,7 +314,7 @@ public class ApiConnection : IApiConnection, IDisposable
         }
 
         await HandleErrorResponseAsync(response, endpoint, method.Method, cancellationToken);
-        
+
         // This should never be reached due to the exception thrown above
         throw new PlanningCenterApiGeneralException("Unexpected error occurred");
     }
@@ -347,11 +324,11 @@ public class ApiConnection : IApiConnection, IDisposable
         CancellationToken cancellationToken)
     {
         var attempt = 0;
-        
+
         while (true)
         {
             attempt++;
-            
+
             try
             {
                 return await operation();
@@ -359,9 +336,9 @@ public class ApiConnection : IApiConnection, IDisposable
             catch (Exception ex) when (ShouldRetry(ex, attempt))
             {
                 var delay = CalculateRetryDelay(attempt);
-                _logger.LogWarning(ex, "Request failed on attempt {Attempt}, retrying in {Delay}ms", 
+                _logger.LogWarning(ex, "Request failed on attempt {Attempt}, retrying in {Delay}ms",
                     attempt, delay.TotalMilliseconds);
-                
+
                 await Task.Delay(delay, cancellationToken);
             }
         }
@@ -387,16 +364,16 @@ public class ApiConnection : IApiConnection, IDisposable
         // Exponential backoff with jitter
         var delay = TimeSpan.FromMilliseconds(
             _options.RetryBaseDelay.TotalMilliseconds * Math.Pow(2, attempt - 1));
-        
+
         // Add jitter to prevent thundering herd
         var jitter = TimeSpan.FromMilliseconds(Random.Shared.Next(0, 1000));
-        
+
         return delay + jitter;
     }
 
     private async Task HandleErrorResponseAsync(
-        HttpResponseMessage response, 
-        string endpoint, 
+        HttpResponseMessage response,
+        string endpoint,
         string method,
         CancellationToken cancellationToken)
     {
@@ -406,8 +383,8 @@ public class ApiConnection : IApiConnection, IDisposable
         {
             requestId = requestIdValues.FirstOrDefault();
         }
-        
-        _logger.LogError("HTTP {StatusCode} error for {Method} {Endpoint}: {Content}", 
+
+        _logger.LogError("HTTP {StatusCode} error for {Method} {Endpoint}: {Content}",
             response.StatusCode, method, endpoint, content);
 
         string? retryAfter = null;
@@ -415,7 +392,7 @@ public class ApiConnection : IApiConnection, IDisposable
         {
             retryAfter = retryAfterValues.FirstOrDefault();
         }
-        
+
         switch (response.StatusCode)
         {
             case HttpStatusCode.NotFound:
@@ -451,9 +428,9 @@ public class ApiConnection : IApiConnection, IDisposable
                 var headers = response.Headers.ToDictionary(h => h.Key, h => h.Value);
                 throw PlanningCenterApiRateLimitException.FromHeaders(
                     "Rate limit exceeded",
-                    headers, 
-                    requestId, 
-                    endpoint, 
+                    headers,
+                    requestId,
+                    endpoint,
                     method);
 
             case HttpStatusCode.BadRequest:
