@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace PlanningCenter.Api.Client;
 
@@ -296,12 +297,20 @@ public class ApiConnection : IApiConnection, IDisposable
         // Add request body for POST/PUT/PATCH
         if (data != null && (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch))
         {
-            var json = JsonSerializer.Serialize(data, _jsonOptions);
-            request.Content = new StringContent(json, Encoding.UTF8, "application/vnd.api+json");
-
+            // Optimization: Use JsonContent when detailed logging is not enabled to avoid
+            // intermediate string allocation and reduce memory pressure.
             if (_options.EnableDetailedLogging)
             {
+                var json = JsonSerializer.Serialize(data, _jsonOptions);
+                request.Content = new StringContent(json, Encoding.UTF8, "application/vnd.api+json");
                 _logger.LogDebug("Request body: {RequestBody}", json);
+            }
+            else
+            {
+                request.Content = JsonContent.Create(
+                    data,
+                    new MediaTypeHeaderValue("application/vnd.api+json") { CharSet = "utf-8" },
+                    _jsonOptions);
             }
         }
 
