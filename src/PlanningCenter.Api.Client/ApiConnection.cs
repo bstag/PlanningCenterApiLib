@@ -307,7 +307,10 @@ public class ApiConnection : IApiConnection, IDisposable
             }
             else
             {
-                request.Content = JsonContent.Create(data, new MediaTypeHeaderValue("application/vnd.api+json"), _jsonOptions);
+                request.Content = JsonContent.Create(
+                    data,
+                    new MediaTypeHeaderValue("application/vnd.api+json") { CharSet = "utf-8" },
+                    _jsonOptions);
             }
         }
 
