@@ -20,8 +20,15 @@ public class ApiConnection : IApiConnection, IDisposable
     private readonly PlanningCenterOptions _options;
     private readonly IAuthenticator _authenticator;
     private readonly ILogger<ApiConnection> _logger;
-    private readonly JsonSerializerOptions _jsonOptions;
     private bool _disposed;
+
+    // Optimization: Reuse JsonSerializerOptions to avoid repeated allocation and metadata caching overhead.
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
 
     public ApiConnection(
         HttpClient httpClient,
@@ -36,13 +43,6 @@ public class ApiConnection : IApiConnection, IDisposable
 
         _options.Validate();
         ConfigureHttpClient();
-
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            PropertyNameCaseInsensitive = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
     }
 
     /// <summary>
